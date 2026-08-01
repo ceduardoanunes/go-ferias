@@ -4,33 +4,38 @@
 <!--
 ================================================================================
   GO FÉRIAS · Go & Grow — INSTRUÇÕES DE MANUTENÇÃO (leia antes de editar)
-  Última atualização: 27/07/2026
+  Última atualização: 01/08/2026
 ================================================================================
 
-  ESTE ARQUIVO É A VERSÃO CANÔNICA. Ele é publicado como artefato em:
-  https://claude.ai/code/artifact/dc86256e-32b0-47ea-807e-8bd8245b52e8
+  ESTE ARQUIVO É A VERSÃO CANÔNICA E VIVE NO GITHUB (privado):
+  https://github.com/ceduardoanunes/go-ferias — branch main, arquivo index.html
 
-  O autor trabalha alternando entre DOIS AMBIENTES (um Mac e um Windows) que
-  NÃO sincronizam entre si. O artefato é o único ponto que as duas máquinas
-  alcançam, então ele manda. Qualquer go-ferias_*.html numa pasta local é uma
-  cópia velha até prova em contrário.
+  MUDOU EM 01/08/2026: até então o autor alternava entre DOIS AMBIENTES (Mac
+  e Windows) que não sincronizavam entre si, e o artefato publicado no
+  claude.ai era o único ponto que as duas máquinas alcançavam. Isso foi
+  substituído: agora o Git/GitHub é o ponto de sincronismo, com VS Code no
+  Mac e no Windows apontando pro mesmo repositório.
 
   FLUXO OBRIGATÓRIO EM TODA SESSÃO, EM QUALQUER MÁQUINA:
-    1. PUXAR o conteúdo atual do artefato (WebFetch na URL acima; ele salva o
-       HTML completo em tool-results/).
-    2. EDITAR em cima desse conteúdo baixado.
-    3. PUBLICAR de volta com a ferramenta Artifact, passando url: com o link
-       acima para atualizar no mesmo endereço.
-    Nunca publique um arquivo local sem antes comparar com o artefato. Em
-    27/07/2026 a cópia do Windows estava cerca de 1000 linhas atrasada;
-    publicá-la teria apagado o sistema de solicitações e o dashboard novo.
+    1. PUXAR antes de editar: git pull (ou, no VS Code, Source Control →
+       Sync/Pull). Nunca editar sem puxar — o outro lado pode ter dado push
+       antes.
+    2. EDITAR o index.html normalmente.
+    3. PUBLICAR: commit + push (Source Control → Commit → Sync/Push, ou
+       git add / git commit / git push no terminal).
 
-  ESTRUTURA DO HTML BAIXADO DO ARTEFATO:
-    linha 1 ................ wrapper "frame runtime" da plataforma → DESCARTAR
-    linha 2 até a penúltima  conteúdo real (começa neste comentário) → USAR
-    última linha ........... </body></html> → DESCARTAR
-    Ao publicar, envie SEM doctype, html, head e body: a plataforma põe o
-    wrapper dela. Se for abrir localmente no navegador, aí sim reconstrua.
+  O ARTEFATO DO CLAUDE.AI virou OPCIONAL:
+  https://claude.ai/code/artifact/dc86256e-32b0-47ea-807e-8bd8245b52e8
+  Só é republicado de vez em quando pra dar um link de visualização/demo sem
+  precisar de login. NÃO é mais fonte da verdade e NÃO precisa ser puxado no
+  início da sessão — quem manda agora é o GitHub.
+
+  SE FOR PUBLICAR ESTE ARQUIVO NO ARTEFATO (fluxo raro, só para preview):
+  a ferramenta Artifact não aceita doctype/html/head/body — ela mesma injeta
+  esse wrapper. Como este index.html já é standalone completo, tire a
+  primeira linha (<!doctype html><html><head>) e as duas últimas
+  (</body></html>) antes de publicar; o conteúdo do meio (a partir deste
+  comentário) é o que ela espera receber.
 
 ================================================================================
   O PROJETO
@@ -114,9 +119,9 @@
 ================================================================================
   COMO TESTAR (headless, nos dois ambientes)
 ================================================================================
-  O arquivo é autossuficiente, então abrir via file:// FUNCIONA; não precisa
-  subir servidor. Só lembre de reconstruir doctype/html/head/body para uso
-  local (o head termina logo após o fechamento do bloco style principal).
+  O arquivo já é standalone completo (doctype/html/head/body), então abrir
+  via file:// FUNCIONA direto, sem precisar reconstruir nada nem subir
+  servidor.
 
   WINDOWS: não há Chrome instalado; use o Edge. Não há Node nem Python.
     & "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" `
