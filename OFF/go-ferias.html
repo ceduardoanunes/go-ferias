@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go Férias! Gestão de Férias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F0EFED;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.06);
+  --text-primary: #1A1A1A;
+  --text-secondary: #6E6E6E;
+  --text-tertiary: #A8A8A8;
+  --green: #3DAA78;
+  --green-bg: rgba(61,180,110,0.15);
+  --green-text: #1E6647;
+  --red: #F26B4E;
+  --red-bg: rgba(245,100,70,0.13);
+  --red-text: #B23A20;
+  --amber: #E8913C;
+  --amber-bg: rgba(232,145,60,0.16);
+  --amber-text: #8A5015;
+  --blue: #4A82C4;
+  --blue-bg: rgba(74,130,196,0.14);
+  --blue-text: #1E3F6E;
+  --purple: #7A5ADE;
+  --purple-bg: rgba(122,90,222,0.14);
+  --holiday: #DCDAD5;
+  --holiday-text: #4A4944;
+  --purple: #7A5ADE;
+  --purple-bg: rgba(122,90,222,0.14);
+  --purple-text: #4A3494;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --glass-shadow: 0 1px 2px rgba(20,19,18,0.04), 0 8px 24px -6px rgba(20,19,18,0.08);
+}
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-shell { display: flex; min-height: 100vh; }
+
+/* Sidebar (idêntica ao Go! Time) */
+.icon-nav {
+  width: 116px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #1C1B1A;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 28px 0 20px;
+  border-radius: 0 28px 28px 0;
+  z-index: 20;
+}
+.icon-nav-top { margin-bottom: 40px; }
+.icon-nav-brand-img { height: 30px; width: auto; display: block; }
+.icon-nav-links { display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 1; }
+.icon-nav-btn {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  position: relative;
+}
+.icon-nav-icon { font-size: 21px; color: rgba(255,255,255,0.55); transition: color 0.15s; }
+.icon-nav-btn:hover { background: rgba(255,255,255,0.08); }
+.icon-nav-btn:hover .icon-nav-icon { color: #fff; }
+.icon-nav-btn:focus { outline: none; }
+.icon-nav-btn:focus-visible { outline: 2px solid rgba(255,255,255,0.35); outline-offset: 2px; }
+.icon-nav-btn.active { background: #fff; }
+.icon-nav-btn.active .icon-nav-icon { color: #1C1B1A; }
+.icon-nav-badge {
+  position: absolute;
+  top: 4px; right: 4px;
+  min-width: 16px; height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #F43F5E;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #1C1B1A;
+}
+.icon-nav-btn.active .icon-nav-badge { border-color: #fff; }
+.icon-nav-credit { font-size: 9px; line-height: 1.5; color: rgba(255,255,255,0.35); text-align: center; }
+
+/* Nav secundária (ações ocasionais, não do dia a dia) */
+.icon-nav-secondary { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-bottom: 12px; width: 100%; display: flex; justify-content: center; }
+.icon-nav-btn.subtle .icon-nav-icon { color: rgba(255,255,255,0.3); font-size: 18px; }
+.icon-nav-btn.subtle:hover .icon-nav-icon { color: rgba(255,255,255,0.8); }
+.icon-nav-btn.subtle.active { background: rgba(255,255,255,0.12); }
+.icon-nav-btn.subtle.active .icon-nav-icon { color: #fff; }
+
+/* Page */
+.page { flex: 1; padding: 48px 56px 80px; max-width: 1420px; }
+.header { margin-bottom: 8px; }
+.title { font-size: 34px; font-weight: 300; letter-spacing: -0.03em; line-height: 1.1; color: var(--text-primary); margin-bottom: 18px; }
+.title strong { font-weight: 500; }
+.month-header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 36px; }
+.month-title { font-size: 52px; font-weight: 600; letter-spacing: -0.005em; color: var(--text-primary); line-height: 1; }
+.month-sub { font-size: 15px; color: var(--text-secondary); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 36px 40px;
+  margin-bottom: 36px;
+  box-shadow: var(--glass-shadow);
+}
+.card-compact { padding: 24px 28px; border-radius: var(--radius-lg); margin-bottom: 16px; }
+.section-label { font-size: 11px; font-weight: 500; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 24px; }
+
+/* KPI cards */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px; }
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 26px 28px;
+  box-shadow: var(--glass-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 130px;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+.kpi-value { font-size: 44px; font-weight: 700; letter-spacing: -0.025em; line-height: 1; }
+.kpi-sub { font-size: 13px; color: var(--text-tertiary); }
+.kpi-icon {
+  position: absolute; right: 20px; top: 20px; width: 38px; height: 38px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--text-secondary); background: rgba(0,0,0,0.05);
+}
+.kpi-card.tint-green { background: linear-gradient(135deg, #fff 15%, rgba(61,180,110,0.20)); }
+.kpi-card.tint-green .kpi-icon { background: var(--green); color: #fff; }
+.kpi-card.tint-blue { background: linear-gradient(135deg, #fff 15%, rgba(74,130,196,0.20)); }
+.kpi-card.tint-blue .kpi-icon { background: var(--blue); color: #fff; }
+.kpi-card.tint-red { background: linear-gradient(135deg, #fff 12%, rgba(245,100,70,0.24)); }
+.kpi-card.tint-red .kpi-icon { background: var(--red); color: #fff; }
+.kpi-card.tint-purple { background: linear-gradient(135deg, #fff 15%, rgba(122,90,222,0.18)); }
+.kpi-card.tint-purple .kpi-icon { background: var(--purple); color: #fff; }
+
+/* Badges */
+.badge { display: inline-block; font-size: 12px; padding: 4px 12px; border-radius: 10px; font-weight: 500; white-space: nowrap; }
+.badge-ok { background: var(--green-bg); color: var(--green-text); }
+.badge-neg { background: var(--red-bg); color: var(--red-text); }
+.badge-partial { background: var(--amber-bg); color: var(--amber-text); }
+.badge-blue { background: var(--blue-bg); color: var(--blue-text); }
+.badge-neutral { background: #F1EFE8; color: #888; }
+.badge-holiday { background: var(--holiday); color: var(--holiday-text); }
+
+/* Dashboard split */
+.dash-split { display: grid; grid-template-columns: 1.35fr 1fr; gap: 24px; align-items: start; }
+@media (max-width: 1100px) { .dash-split { grid-template-columns: 1fr; } .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+
+/* Próximas férias list */
+.next-item { display: flex; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+.next-item:last-child { border-bottom: none; }
+.next-when { min-width: 92px; text-align: center; }
+.next-when-day { font-size: 20px; font-weight: 600; line-height: 1.05; }
+.next-when-rel { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; }
+.next-info { flex: 1; min-width: 0; }
+.next-name { font-size: 15px; font-weight: 500; }
+.next-range { font-size: 13px; color: var(--text-secondary); }
+.empty-note { font-size: 14px; color: var(--text-tertiary); padding: 12px 0; }
+
+/* Avatar */
+.avatar { width: 42px; height: 42px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0; }
+.avatar-sm { width: 30px; height: 30px; font-size: 12px; }
+
+/* Diretório: busca solta (sem caixa) */
+.dir-toolbar { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 28px; }
+.search-field { position: relative; flex: 1 1 260px; min-width: 220px; max-width: 420px; }
+.search-field i { position: absolute; left: 2px; top: 50%; transform: translateY(-50%); color: var(--text-tertiary); font-size: 17px; }
+.search-field input {
+  width: 100%; font-family: 'DM Sans', sans-serif; font-size: 15px;
+  padding: 8px 8px 8px 28px; border: none; border-bottom: 1.5px solid var(--border);
+  background: transparent; outline: none; transition: border-color 0.15s;
+}
+.search-field input::placeholder { color: var(--text-tertiary); }
+.search-field input:focus { border-color: var(--text-primary); }
+
+/* Setores como abas horizontais — cada uma mostra só o próprio grupo */
+.dir-tabs { display: flex; gap: 26px; border-bottom: 1px solid var(--border); margin-bottom: 26px; overflow-x: auto; }
+.dir-tab {
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; color: var(--text-tertiary);
+  background: none; border: none; cursor: pointer; padding: 11px 2px 12px;
+  border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; transition: color 0.15s;
+}
+.dir-tab:hover { color: var(--text-secondary); }
+.dir-tab.active { color: var(--text-primary); border-bottom-color: #1C1B1A; }
+.dir-tab .dt-count { font-variant-numeric: tabular-nums; opacity: 0.65; margin-left: 3px; }
+.dir-tab.geral.active { color: var(--red-text); border-bottom-color: var(--red); }
+
+/* Diretório: cards horizontais e compactos (avatar à esquerda) */
+.profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.profile-tile {
+  display: flex; align-items: center; gap: 12px; padding: 13px 15px; border-radius: var(--radius-md);
+  cursor: pointer; border: 1px solid var(--border); background: #fff; transition: all 0.15s;
+}
+.profile-tile:hover { box-shadow: var(--glass-shadow); transform: translateY(-1px); border-color: rgba(0,0,0,0.14); }
+.profile-avatar-wrap { position: relative; flex-shrink: 0; }
+.profile-avatar {
+  width: 46px; height: 46px; border-radius: 50%; color: #fff; font-weight: 700; font-size: 15.5px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.14);
+}
+.profile-dot { position: absolute; bottom: -1px; right: -1px; width: 12px; height: 12px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 2px #fff; }
+.profile-info { min-width: 0; }
+.profile-name { font-size: 13.5px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-role { font-size: 11.5px; color: var(--text-tertiary); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Diretório: visão em lista (tabela densa) */
+.dir-table { width: 100%; border-collapse: collapse; }
+.dir-table th {
+  text-align: left; font-size: 11px; font-weight: 600; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.06em; padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.dir-table td { padding: 13px 16px; border-bottom: 1px solid var(--border); font-size: 13.5px; vertical-align: middle; }
+.dir-table tbody tr { cursor: pointer; transition: background 0.12s; }
+.dir-table tbody tr:hover { background: rgba(0,0,0,0.022); }
+.dt-pessoa { display: flex; align-items: center; gap: 12px; }
+.dt-nome { font-size: 14px; font-weight: 700; line-height: 1.2; display: flex; align-items: center; gap: 7px; }
+.dt-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+.dt-dias { font-weight: 700; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.dt-dias small { font-weight: 500; color: var(--text-tertiary); font-size: 11.5px; }
+.dt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); display: inline-block; }
+
+/* Timeline (calendário Gantt) */
+.gantt-wrap { overflow-x: auto; }
+.gantt { min-width: 860px; }
+.gantt-header, .gantt-row { display: grid; grid-template-columns: 190px 1fr; align-items: stretch; }
+.gantt-days { display: grid; gap: 3px; }
+.gantt-dow { font-size: 9.5px; font-weight: 500; color: var(--text-tertiary); text-align: center; text-transform: uppercase; }
+.gantt-dnum { font-size: 12px; font-weight: 500; text-align: center; color: var(--text-secondary); padding: 3px 0 8px; border-radius: 8px; }
+.gantt-dnum.today { background: #1C1B1A; color: #fff; }
+.gantt-dnum.holiday { color: var(--holiday-text); }
+.gantt-label { display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 0; font-size: 13.5px; font-weight: 500; }
+.gantt-track { position: relative; display: grid; gap: 3px; align-items: center; min-height: 44px; }
+.gantt-cell { height: 36px; border-radius: 8px; background: rgba(0,0,0,0.035); }
+.gantt-cell.weekend { background: rgba(0,0,0,0.075); }
+.gantt-cell.holiday { background: var(--holiday); }
+.gantt-cell.today-col { outline: 2px solid rgba(28,27,26,0.55); outline-offset: -2px; }
+.gantt-bar {
+  height: 26px; margin: 5px 0; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #fff;
+  z-index: 2; overflow: hidden; white-space: nowrap; padding: 0 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+.gantt-bar.contabil { background: var(--green); }
+.gantt-bar.folga { background: var(--blue); }
+.gantt-legend { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 22px; }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-secondary); }
+.legend-dot { width: 11px; height: 11px; border-radius: 4px; }
+.cal-nav { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
+.cal-nav-title { font-size: 22px; font-weight: 600; min-width: 190px; }
+.mes-arrow {
+  width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--border);
+  background: #fff; cursor: pointer; font-size: 17px; color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+}
+.mes-arrow:hover { background: #1C1B1A; color: #fff; }
+
+/* Tabs pill */
+.month-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+.month-tab {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 700;
+  padding: 11px 22px; border-radius: 999px; border: none;
+  background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  color: var(--text-secondary); cursor: pointer; white-space: nowrap;
+  transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.03em;
+}
+.month-tab:hover { color: var(--text-primary); }
+.month-tab.active { background: #1C1B1A; color: #fff; }
+
+/* Charts */
+.chart-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
+.chart-grid-2 { display: grid; grid-template-columns: 1fr; gap: 24px; }
+@media (max-width: 1100px) { .chart-grid { grid-template-columns: 1fr; } }
+.chart-card { margin-bottom: 0; }
+.chart-box { position: relative; height: 260px; }
+
+/* Forms */
+.form-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin-bottom: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 160px; }
+.field label { font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+.field input, .field select, .field textarea {
+  font-size: 15px; font-family: 'DM Sans', sans-serif;
+  padding: 13px 16px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  background: #F6F5F3;
+  color: var(--text-primary);
+  outline: none;
+  transition: border 0.15s;
+  width: 100%;
+}
+.field input:focus, .field select:focus { border-color: rgba(0,0,0,0.3); }
+.btn {
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  padding: 13px 26px; border-radius: 999px; border: none;
+  background: #1C1B1A; color: #fff; cursor: pointer; transition: all 0.15s;
+}
+.btn:hover { opacity: 0.85; }
+.btn-ghost { background: #fff; color: var(--text-primary); border: 1px solid rgba(0,0,0,0.12); }
+.warn-box { border-radius: 12px; padding: 12px 16px; font-size: 13.5px; margin-bottom: 8px; display: flex; gap: 8px; align-items: flex-start; }
+.warn-box.err { background: var(--red-bg); color: var(--red-text); }
+.warn-box.warn { background: var(--amber-bg); color: var(--amber-text); }
+.warn-box.ok { background: var(--green-bg); color: var(--green-text); }
+.hint { font-size: 12.5px; color: var(--text-tertiary); margin-top: 4px; }
+
+/* Alert cards */
+.alert-card { display: flex; gap: 16px; align-items: flex-start; padding: 22px 26px; border-radius: var(--radius-lg); margin-bottom: 14px; background: #fff; border: 1px solid var(--border); box-shadow: var(--glass-shadow); }
+.alert-icon { width: 42px; height: 42px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.alert-icon.crit { background: var(--red-bg); color: var(--red-text); }
+.alert-icon.warn { background: var(--amber-bg); color: var(--amber-text); }
+.alert-icon.info { background: var(--blue-bg); color: var(--blue-text); }
+.alert-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+.alert-desc { font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; }
+
+/* Histórico como linha do tempo vertical conectada (ref. Convenia) —
+   sem card fechado com borda+sombra; a separação vem do espaço e da linha conectora. */
+.timeline { display: flex; flex-direction: column; }
+.tl-item { display: flex; gap: 16px; }
+.tl-node-wrap { display: flex; flex-direction: column; align-items: center; width: 14px; flex-shrink: 0; padding-top: 7px; }
+.tl-node { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--border); flex-shrink: 0; z-index: 2; }
+.tl-line { flex: 1; width: 2px; background: var(--border); margin-top: 2px; min-height: 20px; }
+.tl-item:last-child .tl-line { display: none; }
+.tl-content { flex: 1; min-width: 0; padding-bottom: 22px; }
+.tl-head { display: flex; align-items: center; gap: 14px; cursor: pointer; user-select: none; padding: 2px 0; }
+.tl-head:hover .tl-title { color: var(--text-primary); }
+.tl-title { font-size: 15.5px; font-weight: 700; }
+.tl-sub { font-size: 12.5px; color: var(--text-tertiary); margin-top: 2px; }
+.tl-sub.venceu { color: var(--red-text); font-weight: 700; }
+.periodo-chevron { margin-left: auto; color: var(--text-tertiary); font-size: 16px; transition: transform 0.2s; flex-shrink: 0; }
+.tl-item.aberto .periodo-chevron { transform: rotate(180deg); }
+.tl-body { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.32s ease, opacity 0.25s ease; }
+.tl-item.aberto .tl-body { max-height: 500px; opacity: 1; padding-top: 14px; }
+
+/* Chips de fração/lançamento — pastel com borda da mesma cor (linguagem das referências) */
+.range-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--green-bg); border: 1px solid rgba(61,170,120,0.4); color: var(--green-text);
+  border-radius: 11px; padding: 9px 14px; font-size: 13px; font-weight: 600; margin: 0 8px 8px 0;
+}
+.range-chip .rc-ord { font-size: 10.5px; font-weight: 700; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.05em; }
+.folga-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 2px; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13.5px; }
+.folga-row:last-child { border-bottom: none; }
+.folga-dias {
+  color: var(--blue-text); font-weight: 700; font-size: 12.5px;
+  background: var(--blue-bg); border: 1px solid rgba(74,130,196,0.38);
+  border-radius: 9px; padding: 4px 11px;
+}
+.sum-line { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-secondary); margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.sum-line strong { color: var(--text-primary); font-size: 14.5px; }
+.mini-progress { height: 7px; border-radius: 999px; background: rgba(0,0,0,0.06); overflow: hidden; margin-top: 12px; }
+.mini-progress > div { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--green), #5BC98F); transition: width 0.4s ease; }
+
+/* Badges — pastel com borda (refresh global, alinhado às referências) */
+.badge { border: 1px solid transparent; }
+.badge-ok { border-color: rgba(61,170,120,0.4); }
+.badge-neg { border-color: rgba(245,100,70,0.4); }
+.badge-partial { border-color: rgba(232,145,60,0.42); }
+.badge-blue { border-color: rgba(74,130,196,0.38); }
+
+/* Diretório: filtros e agrupamento por área */
+.app-tab { display: none; }
+.app-tab.active { display: block; }
+
+/* ===== FICHA DO COLABORADOR — duas colunas (referência: painel lateral + conteúdo) ===== */
+.ficha-voltar { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--text-secondary); cursor: pointer; margin-bottom: 20px; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 0; }
+.ficha-voltar:hover { color: var(--text-primary); }
+.ficha-grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
+@media (max-width: 1000px) { .ficha-grid { grid-template-columns: 1fr; } }
+
+/* Coluna esquerda: cartão de perfil */
+.painel-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--glass-shadow); padding: 0 24px 24px; margin-bottom: 18px; overflow: hidden; }
+.perfil-cover {
+  height: 78px; margin: 0 -24px 0; position: relative; overflow: hidden;
+  background: var(--cover-base, #ddd);
+}
+.perfil-cover::before, .perfil-cover::after {
+  content:''; position: absolute; border-radius: 50%; filter: blur(22px); opacity: 0.55;
+}
+.perfil-cover::before { width: 120px; height: 120px; background: var(--cover-a, #fff); top: -40px; left: -20px; }
+.perfil-cover::after { width: 140px; height: 100px; background: var(--cover-b, #fff); bottom: -50px; right: -10px; }
+.perfil-avatar-wrap { position: relative; width: 96px; margin: -48px auto 16px; z-index: 2; }
+.perfil-avatar {
+  width: 96px; height: 96px; border-radius: 50%; color: #fff; font-weight: 700; font-size: 30px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 5px #fff, 0 10px 26px rgba(0,0,0,0.18);
+}
+.perfil-status-dot { position: absolute; bottom: 4px; right: 4px; width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 0 0 3px #fff; }
+.perfil-nome { font-size: 20px; font-weight: 700; text-align: center; line-height: 1.2; letter-spacing: -0.01em; }
+.perfil-funcao { font-size: 13px; color: var(--text-secondary); text-align: center; margin-top: 4px; }
+.perfil-selos { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 14px 0 20px; }
+.selo { font-size: 12px; padding: 6px 13px 6px 11px; border-radius: 999px; font-weight: 600; background: #F1EFEA; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 6px; }
+.selo i { font-size: 12px; color: var(--text-tertiary); }
+/* Pares rótulo/valor — sem linha divisória, só espaço (ref. Convenia) */
+.perfil-linha { display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; font-size: 14px; }
+.perfil-linha .pl-label { color: var(--text-tertiary); font-size: 13px; }
+.perfil-linha .pl-valor { font-weight: 700; }
+/* Saldo em destaque — pílula, como o dado de salário na referência */
+.saldo-pill {
+  display: flex; align-items: center; gap: 14px; background: #F6F5F3; border-radius: var(--radius-lg);
+  padding: 16px 18px; margin-top: 18px;
+}
+.saldo-pill-icon { width: 38px; height: 38px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-secondary); flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.saldo-pill-texto { flex: 1; font-size: 16px; font-weight: 700; line-height: 1.3; }
+.saldo-pill-texto small { font-weight: 500; color: var(--text-tertiary); font-size: 12px; display: block; margin-top: 3px; line-height: 1.35; }
+.perfil-acoes { display: flex; flex-direction: column; gap: 9px; margin-top: 18px; }
+.perfil-acoes .btn { width: 100%; text-align: center; padding: 12px 0; font-size: 13.5px; }
+
+/* Coluna direita: card de resumo humanizado (substitui a fileira fria de pills) */
+.resumo-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--glass-shadow); padding: 30px 32px; margin-bottom: 26px; text-align: center; }
+.resumo-frase { font-size: 17px; line-height: 1.55; color: var(--text-primary); max-width: 480px; margin: 0 auto 20px; }
+.resumo-frase strong { font-weight: 700; }
+.resumo-frase .rf-dias { color: var(--blue-text); }
+.resumo-frase .rf-data { color: var(--purple-text); }
+.resumo-acoes { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.resumo-acoes .btn { padding: 13px 34px; font-size: 14px; }
+.resumo-secundario { background: none; border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text-tertiary); text-decoration: underline; cursor: pointer; }
+.resumo-secundario:hover { color: var(--text-secondary); }
+/* Abas da ficha */
+.ficha-tabs { display: flex; gap: 8px; margin-bottom: 22px; border-bottom: 1px solid var(--border); }
+.ficha-tab {
+  font-family: 'DM Sans', sans-serif; font-size: 14.5px; font-weight: 600;
+  padding: 12px 4px; margin-right: 24px; border: none; background: none; cursor: pointer;
+  color: var(--text-tertiary); border-bottom: 2px solid transparent; margin-bottom: -1px;
+  display: flex; align-items: center; gap: 8px; transition: all 0.15s;
+}
+.ficha-tab:hover { color: var(--text-secondary); }
+.ficha-tab.active { color: var(--text-primary); border-bottom-color: #1C1B1A; }
+.ficha-tab-badge { background: var(--red); color: #fff; font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 1px 7px; }
+
+/* Calendário anual da pessoa (referência: agenda anual com faixas coloridas) */
+.mini-year { display: grid; grid-template-columns: repeat(auto-fill, minmax(212px, 1fr)); gap: 18px; }
+.mini-mes { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 14px; box-shadow: var(--glass-shadow); }
+.mini-mes-titulo { font-size: 13px; font-weight: 700; margin-bottom: 10px; padding-left: 4px; }
+.mini-dow { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 4px; }
+.mini-dow span { font-size: 9px; font-weight: 600; color: var(--text-tertiary); text-align: center; text-transform: uppercase; }
+.mini-dias { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.mini-dia { font-size: 10.5px; text-align: center; padding: 4px 0; border-radius: 7px; color: var(--text-secondary); }
+.mini-dia.vazio { visibility: hidden; }
+.mini-dia.fer { background: var(--green-bg); color: var(--green-text); font-weight: 700; box-shadow: inset 0 0 0 1px rgba(61,170,120,0.35); }
+.mini-dia.fol { background: var(--blue-bg); color: var(--blue-text); font-weight: 700; box-shadow: inset 0 0 0 1px rgba(74,130,196,0.32); }
+.mini-dia.feriado { color: var(--text-tertiary); background: rgba(0,0,0,0.045); }
+.mini-dia.hoje { box-shadow: inset 0 0 0 2px #1C1B1A; font-weight: 700; color: var(--text-primary); }
+.cal-ano-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.cal-ano-titulo { font-size: 19px; font-weight: 700; min-width: 64px; text-align: center; }
+
+/* Usuário atual (simulação de login até plugar Supabase) */
+.current-user-pill {
+  position: fixed; top: 24px; right: 32px; z-index: 30;
+  background: #fff; border-radius: 999px; padding: 8px 16px 8px 8px;
+  display: flex; align-items: center; gap: 9px;
+  box-shadow: var(--glass-shadow); font-size: 13px;
+}
+.current-user-pill select {
+  border: none; background: transparent; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 500; color: var(--text-primary); outline: none; cursor: pointer;
+}
+
+/* Remover lançamento */
+.chip-remove { cursor: pointer; opacity: 0.5; margin-left: 6px; transition: opacity 0.15s; }
+.chip-remove:hover { opacity: 1; color: var(--red-text); }
+
+/* Auditoria */
+.audit-row { display: flex; gap: 16px; align-items: center; padding: 18px 24px; border-radius: var(--radius-lg); margin-bottom: 12px; background: #fff; border: 1px solid var(--border); border-left: 3px solid var(--border); box-shadow: var(--glass-shadow); }
+.audit-row.op-insert { border-left-color: var(--green); }
+.audit-row.op-delete { border-left-color: var(--red); }
+.audit-main { flex: 1; min-width: 0; }
+.audit-titulo { font-size: 14.5px; font-weight: 600; margin-bottom: 3px; }
+.audit-detalhe { font-size: 13px; color: var(--text-secondary); }
+.audit-when { text-align: right; font-size: 12px; color: var(--text-tertiary); white-space: nowrap; line-height: 1.5; }
+
+.toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: #1C1B1A; color: #fff; padding: 14px 26px; border-radius: 999px;
+  font-size: 14px; font-weight: 500; opacity: 0; pointer-events: none;
+  transition: all 0.3s ease; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 760px) {
+  .page { padding: 28px 20px 70px; }
+  .icon-nav { width: 74px; padding: 20px 0 14px; }
+  .icon-nav-brand-img { height: 22px; }
+  .month-title { font-size: 36px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .card { padding: 24px 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <nav class="icon-nav">
+    <div class="icon-nav-top">
+      <img src="data:image/png;base64,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" alt="Go &amp; Grow" class="icon-nav-brand-img">
+    </div>
+    <div class="icon-nav-links">
+      <button class="icon-nav-btn active" data-tab="dashboard" onclick="selectTab('dashboard')" title="Dashboard"><i class="ti ti-smart-home icon-nav-icon"></i></button>
+      <button class="icon-nav-btn" data-tab="diretorio" onclick="selectTab('diretorio')" title="Diretório"><i class="ti ti-users icon-nav-icon"></i></button>
+      <button class="icon-nav-btn" data-tab="calendario" onclick="selectTab('calendario')" title="Calendário"><i class="ti ti-calendar icon-nav-icon"></i></button>
+      <button class="icon-nav-btn" data-tab="agendar" onclick="selectTab('agendar')" title="Agendar"><i class="ti ti-beach icon-nav-icon"></i></button>
+      <button class="icon-nav-btn" data-tab="alertas" onclick="selectTab('alertas')" title="Alertas">
+        <i class="ti ti-alert-triangle icon-nav-icon"></i>
+        <span class="icon-nav-badge" id="alert-badge" style="display:none">0</span>
+      </button>
+    </div>
+    <div class="icon-nav-secondary">
+      <button class="icon-nav-btn subtle" data-tab="auditoria" onclick="selectTab('auditoria')" title="Auditoria"><i class="ti ti-history icon-nav-icon"></i></button>
+    </div>
+    <div class="icon-nav-credit">Go Férias!<br>v0.1</div>
+  </nav>
+
+  <!-- Usuário atual (placeholder até o login Google real do Supabase) -->
+  <div class="current-user-pill">
+    <i class="ti ti-user-circle" style="font-size:18px;color:var(--text-tertiary);"></i>
+    <select id="current-user-select" onchange="setCurrentUser()"></select>
+  </div>
+
+  <!-- Página -->
+  <div class="page">
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <div class="app-tab active" id="apptab-dashboard">
+      <div class="header"><div class="title" id="greeting">Olá, <strong>Go &amp; Grow</strong></div></div>
+      <div class="month-header">
+        <div class="month-title" id="dash-title">Férias</div>
+        <div class="month-sub" id="dash-date"></div>
+      </div>
+
+      <div class="kpi-grid" id="kpi-grid"></div>
+
+      <div class="dash-split">
+        <div>
+          <div class="card chart-card" style="margin-bottom:24px;">
+            <div class="section-label">Dias de ausência por mês · <span id="chart-year-label"></span></div>
+            <div class="chart-box"><canvas id="chart-meses"></canvas></div>
+          </div>
+          <div class="card chart-card">
+            <div class="section-label">Saldo do período vigente por colaborador</div>
+            <div class="chart-box" style="height:300px;"><canvas id="chart-saldos"></canvas></div>
+          </div>
+        </div>
+        <div>
+          <div class="card chart-card" style="margin-bottom:24px;">
+            <div class="section-label">Próximas férias e folgas</div>
+            <div id="next-list"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="section-label">Situação dos períodos aquisitivos</div>
+            <div class="chart-box" style="height:240px;"><canvas id="chart-status"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== DIRETÓRIO ==================== -->
+    <div class="app-tab" id="apptab-diretorio">
+      <div class="month-header">
+        <div class="month-title">Diretório</div>
+        <div class="month-sub" id="diretorio-sub"></div>
+      </div>
+
+      <div class="dir-toolbar">
+        <div class="search-field">
+          <i class="ti ti-search"></i>
+          <input type="text" id="dir-busca" placeholder="Buscar por nome…" oninput="setBusca(this.value)">
+        </div>
+      </div>
+
+      <div class="dir-tabs" id="dir-tabs"></div>
+      <div id="diretorio-grupos"></div>
+    </div>
+
+    <!-- ==================== FICHA DO COLABORADOR ==================== -->
+    <div class="app-tab" id="apptab-ficha">
+      <button class="ficha-voltar" onclick="selectTab('diretorio')"><i class="ti ti-arrow-left"></i> Voltar ao diretório</button>
+      <div id="ficha-conteudo"></div>
+    </div>
+
+    <!-- ==================== CALENDÁRIO ==================== -->
+    <div class="app-tab" id="apptab-calendario">
+      <div class="month-header"><div class="month-title">Calendário</div></div>
+      <div class="card">
+        <div class="cal-nav">
+          <button class="mes-arrow" onclick="navCal(-1)" aria-label="Mês anterior"><i class="ti ti-chevron-left"></i></button>
+          <div class="cal-nav-title" id="cal-title"></div>
+          <button class="mes-arrow" onclick="navCal(1)" aria-label="Próximo mês"><i class="ti ti-chevron-right"></i></button>
+          <button class="btn btn-ghost" style="margin-left:auto; padding:10px 20px;" onclick="goToday()">Hoje</button>
+        </div>
+        <div class="gantt-wrap"><div class="gantt" id="gantt"></div></div>
+        <div class="gantt-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Férias (contábil)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Folga (não contábil)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--holiday)"></div>Feriado</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(0,0,0,0.075)"></div>Fim de semana</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== AGENDAR ==================== -->
+    <div class="app-tab" id="apptab-agendar">
+      <div class="month-header"><div class="month-title">Agendar</div></div>
+
+      <div class="month-tabs">
+        <button class="month-tab active" data-ag="contabil" onclick="selectAgTab('contabil')">Férias · contábil</button>
+        <button class="month-tab" data-ag="folga" onclick="selectAgTab('folga')">Folga · não contábil</button>
+      </div>
+
+      <div class="card card-compact" style="max-width:900px;">
+        <div class="form-row">
+          <div class="field">
+            <label>Colaborador</label>
+            <select id="ag-emp" onchange="fillPeriodos()"></select>
+          </div>
+          <div class="field">
+            <label>Período aquisitivo</label>
+            <select id="ag-periodo"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Início</label><input type="date" id="ag-inicio" onchange="validateForm()"></div>
+          <div class="field"><label>Fim</label><input type="date" id="ag-fim" onchange="validateForm()"></div>
+          <div class="field" style="max-width:130px;"><label>Dias</label><input type="text" id="ag-dias" readonly value="—"></div>
+        </div>
+        <div class="form-row" id="ag-obs-row">
+          <div class="field"><label>Observação (opcional)</label><input type="text" id="ag-obs" placeholder="Ex.: emenda de feriado, banco de horas…"></div>
+        </div>
+        <div id="ag-warnings"></div>
+        <div style="display:flex; gap:12px; margin-top:12px; align-items:center;">
+          <button class="btn" onclick="salvarAgendamento()">Salvar agendamento</button>
+          <span class="hint" id="ag-hint">Regras CLT verificadas automaticamente ao escolher as datas.</span>
+        </div>
+      </div>
+
+      <div class="card card-compact" style="max-width:900px;">
+        <div class="section-label" style="margin-bottom:14px;">Regras aplicadas · férias contábeis</div>
+        <div class="alert-desc">
+          Fracionamento em até 3 períodos, sendo um de pelo menos 14 dias e os demais de no mínimo 5 dias corridos (art. 134 §1º).
+          As férias não podem começar nos 2 dias que antecedem feriado ou descanso semanal (art. 134 §3º) e o colaborador deve ser
+          avisado com pelo menos 30 dias de antecedência (art. 135). O período deve ser gozado até 12 meses após o fim do período
+          aquisitivo, sob risco de pagamento em dobro (art. 137). Folgas não contábeis apenas debitam do saldo de 30 dias, sem essas restrições.
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== ALERTAS ==================== -->
+    <div class="app-tab" id="apptab-alertas">
+      <div class="month-header">
+        <div class="month-title">Alertas</div>
+        <div class="month-sub" id="alertas-sub"></div>
+      </div>
+      <div id="alert-list"></div>
+    </div>
+
+    <!-- ==================== AUDITORIA ==================== -->
+    <div class="app-tab" id="apptab-auditoria">
+      <div class="month-header">
+        <div class="month-title">Auditoria</div>
+        <div class="month-sub" id="auditoria-sub"></div>
+      </div>
+      <div class="card card-compact" style="max-width:1100px;">
+        <div class="form-row" style="margin-bottom:0;">
+          <div class="field"><label>Colaborador</label><select id="aud-emp" onchange="renderAuditoria()"></select></div>
+          <div class="field"><label>Ação</label>
+            <select id="aud-op" onchange="renderAuditoria()">
+              <option value="">Todas</option>
+              <option value="INSERT">Lançamentos</option>
+              <option value="DELETE">Remoções</option>
+            </select>
+          </div>
+          <div class="field" style="max-width:180px;"><label>Feito por</label><select id="aud-user" onchange="renderAuditoria()"></select></div>
+        </div>
+      </div>
+      <div id="audit-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   GO FÉRIAS! · Gestão de férias Go & Grow
+   Camada de dados em memória, estruturada para migração ao Supabase.
+   Tabelas equivalentes:
+     ferias_funcionarios(id, nome, empresa, funcao, admissao, cor)
+     ferias_periodos(id, funcionario_id, inicio, fim)
+     ferias_gozos(id, periodo_id, inicio, fim, dias, obs)        -- contábil
+     ferias_folgas(id, periodo_id, inicio, fim, dias, obs)       -- não contábil
+   Para plugar no Supabase: substituir as funções da camada DB.*
+   pelo padrão já usado no Go! Time (sb.from('ferias_...').select()...)
+   ===================================================================== */
+
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MESES_ABREV = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const DOW = ['D','S','T','Q','Q','S','S'];
+
+/* ---------- Feriados nacionais ---------- */
+const FERIADOS = {
+  '2025-01-01':'Confraternização','2025-03-03':'Carnaval','2025-03-04':'Carnaval','2025-04-18':'Sexta-feira Santa',
+  '2025-04-21':'Tiradentes','2025-05-01':'Dia do Trabalho','2025-06-19':'Corpus Christi','2025-09-07':'Independência',
+  '2025-10-12':'N. Sra. Aparecida','2025-11-02':'Finados','2025-11-15':'Proclamação','2025-11-20':'Consciência Negra','2025-12-25':'Natal',
+  '2026-01-01':'Confraternização','2026-02-16':'Carnaval','2026-02-17':'Carnaval','2026-04-03':'Sexta-feira Santa',
+  '2026-04-21':'Tiradentes','2026-05-01':'Dia do Trabalho','2026-06-04':'Corpus Christi','2026-09-07':'Independência',
+  '2026-10-12':'N. Sra. Aparecida','2026-11-02':'Finados','2026-11-15':'Proclamação','2026-11-20':'Consciência Negra','2026-12-25':'Natal',
+  '2027-01-01':'Confraternização','2027-02-08':'Carnaval','2027-02-09':'Carnaval','2027-03-26':'Sexta-feira Santa',
+  '2027-04-21':'Tiradentes','2027-05-01':'Dia do Trabalho','2027-05-27':'Corpus Christi','2027-09-07':'Independência',
+  '2027-10-12':'N. Sra. Aparecida','2027-11-02':'Finados','2027-11-15':'Proclamação','2027-11-20':'Consciência Negra','2027-12-25':'Natal'
+};
+
+/* ---------- Helpers de data ---------- */
+function pd(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d); }
+function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmt(isoStr){ const d=pd(isoStr); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); }
+function fmtShort(isoStr){ const d=pd(isoStr); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'); }
+function addDays(isoStr,n){ const d=pd(isoStr); d.setDate(d.getDate()+n); return iso(d); }
+function addMonths(isoStr,n){ const d=pd(isoStr); d.setMonth(d.getMonth()+n); return iso(d); }
+function diffDays(a,b){ return Math.round((pd(b)-pd(a))/86400000); }
+function daysInclusive(a,b){ return diffDays(a,b)+1; }
+const HOJE = iso(new Date());
+
+/* ---------- Seed de dados (baseado na planilha modelo) ---------- */
+const DB = {
+  funcionarios: [
+    { id:1, nome:'Carlos Eduardo Nunes',           empresa:'Editoração', funcao:'Designer Gráfico',       admissao:'2018-05-14', cor:'#F0623E', area:'Criação',     regime:'CLT',     unidade:'Quintas da Avenida' },
+    { id:2, nome:'Amanda Guerra de Castro Pires',  empresa:'Editoração', funcao:'Atendimento OFF',        admissao:'2019-06-06', cor:'#4A82C4', area:'Atendimento', regime:'CLT',     unidade:'Quintas da Avenida' },
+    { id:3, nome:'Juliana Prates',                 empresa:'Editoração', funcao:'Diretora de Arte',       admissao:'2017-01-10', cor:'#7A5ADE', area:'Direção',     regime:'CLT',     unidade:'Granbery' },
+    { id:4, nome:'Mariana Lopes',                  empresa:'Impressos',  funcao:'Produção Gráfica',       admissao:'2020-02-03', cor:'#3DAA78', area:'ADM',         regime:'CLT',     unidade:'Granbery' },
+    { id:5, nome:'Rafael Torres',                  empresa:'Digital',    funcao:'Social Media',           admissao:'2021-09-15', cor:'#E8913C', area:'Criação',     regime:'MEI',     unidade:'Quintas da Avenida' },
+    { id:6, nome:'Pedro Almeida',                  empresa:'Digital',    funcao:'Motion Designer',        admissao:'2023-03-01', cor:'#D64583', area:'Vídeo',       regime:'CLT',     unidade:'Granbery' },
+    { id:7, nome:'Fernanda Ribeiro',               empresa:'Atendimento',funcao:'Coordenadora de Contas', admissao:'2015-03-10', cor:'#1E6647', area:'Coordenação', regime:'CLT',     unidade:'Granbery' },
+    { id:8, nome:'Lucas Martins',                  empresa:'Digital',    funcao:'Estagiário de Design',   admissao:'2026-05-01', cor:'#8A5015', area:'Estágio',     regime:'Estágio', unidade:'Quintas da Avenida' }
+  ],
+  periodos: [
+    // Carlos
+    { id:101, funcionario_id:1, inicio:'2024-07-30', fim:'2025-07-29' },
+    { id:102, funcionario_id:1, inicio:'2025-07-30', fim:'2026-07-29' },
+    // Amanda
+    { id:201, funcionario_id:2, inicio:'2024-08-06', fim:'2025-08-05' },
+    { id:202, funcionario_id:2, inicio:'2025-08-06', fim:'2026-08-05' },
+    // Juliana
+    { id:301, funcionario_id:3, inicio:'2024-01-10', fim:'2025-01-09' },
+    { id:302, funcionario_id:3, inicio:'2025-01-10', fim:'2026-01-09' },
+    // Mariana
+    { id:401, funcionario_id:4, inicio:'2024-02-03', fim:'2025-02-02' },
+    { id:402, funcionario_id:4, inicio:'2025-02-03', fim:'2026-02-02' },
+    { id:403, funcionario_id:4, inicio:'2026-02-03', fim:'2027-02-02' },
+    // Rafael — período vencido sem gozo (alerta crítico)
+    { id:501, funcionario_id:5, inicio:'2024-09-15', fim:'2025-09-14' },
+    { id:502, funcionario_id:5, inicio:'2025-09-15', fim:'2026-09-14' },
+    // Pedro
+    { id:601, funcionario_id:6, inicio:'2025-03-01', fim:'2026-02-28' },
+    { id:602, funcionario_id:6, inicio:'2026-03-01', fim:'2027-02-28' },
+    // Fernanda — período vencido sem nenhum gozo (concessivo já passou: demo de "Pago em dobro" e ponto vermelho)
+    { id:701, funcionario_id:7, inicio:'2024-03-10', fim:'2025-03-09' },
+    { id:702, funcionario_id:7, inicio:'2025-03-10', fim:'2026-03-09' },
+    // Lucas — recém-contratado (estagiário), período vigente, sem pendência
+    { id:801, funcionario_id:8, inicio:'2026-05-01', fim:'2027-04-30' }
+  ],
+  gozos: [ // férias oficiais (contábil)
+    { id:1,  periodo_id:101, inicio:'2025-07-30', fim:'2025-08-28', dias:30, obs:'1º período' },
+    { id:2,  periodo_id:201, inicio:'2026-01-12', fim:'2026-02-01', dias:21, obs:'1º período' },
+    { id:3,  periodo_id:201, inicio:'2026-05-06', fim:'2026-05-14', dias:9,  obs:'2º período' },
+    { id:4,  periodo_id:301, inicio:'2025-02-03', fim:'2025-03-04', dias:30, obs:'1º período' },
+    { id:5,  periodo_id:302, inicio:'2026-07-06', fim:'2026-07-20', dias:15, obs:'1º período' },
+    { id:6,  periodo_id:302, inicio:'2026-10-05', fim:'2026-10-19', dias:15, obs:'2º período' },
+    { id:7,  periodo_id:401, inicio:'2025-07-07', fim:'2025-08-05', dias:30, obs:'1º período' },
+    { id:8,  periodo_id:402, inicio:'2026-07-27', fim:'2026-08-09', dias:14, obs:'1º período' },
+    { id:9,  periodo_id:402, inicio:'2027-01-04', fim:'2027-01-19', dias:16, obs:'2º período' },
+    { id:10, periodo_id:601, inicio:'2026-09-14', fim:'2026-09-27', dias:14, obs:'1º período' },
+    { id:11, periodo_id:601, inicio:'2026-12-07', fim:'2026-12-22', dias:16, obs:'2º período' }
+  ],
+  folgas: [ // gozo não contábil — debita do saldo de 30 dias do período
+    // Carlos · período vigente (14 dias, como na planilha)
+    { id:1, periodo_id:102, inicio:'2025-10-10', fim:'2025-10-10', dias:1, obs:'Emenda' },
+    { id:2, periodo_id:102, inicio:'2025-11-14', fim:'2025-11-24', dias:6, obs:'Viagem' },
+    { id:3, periodo_id:102, inicio:'2026-02-19', fim:'2026-02-20', dias:2, obs:'Pós-carnaval' },
+    { id:4, periodo_id:102, inicio:'2026-04-10', fim:'2026-04-10', dias:1, obs:'' },
+    { id:5, periodo_id:102, inicio:'2026-04-17', fim:'2026-04-17', dias:1, obs:'' },
+    { id:6, periodo_id:102, inicio:'2026-04-20', fim:'2026-04-20', dias:1, obs:'Emenda Tiradentes' },
+    { id:7, periodo_id:102, inicio:'2026-04-24', fim:'2026-04-24', dias:1, obs:'' },
+    { id:8, periodo_id:102, inicio:'2026-07-24', fim:'2026-07-24', dias:1, obs:'Agendada' },
+    // Amanda · período vigente (12 dias, como na planilha)
+    { id:9,  periodo_id:202, inicio:'2026-03-31', fim:'2026-04-14', dias:10, obs:'' },
+    { id:10, periodo_id:202, inicio:'2026-04-20', fim:'2026-04-20', dias:1,  obs:'' },
+    { id:11, periodo_id:202, inicio:'2026-06-05', fim:'2026-06-05', dias:1,  obs:'' },
+    // Mariana
+    { id:12, periodo_id:403, inicio:'2026-06-05', fim:'2026-06-05', dias:1, obs:'Emenda Corpus Christi' },
+    { id:13, periodo_id:403, inicio:'2026-07-17', fim:'2026-07-17', dias:1, obs:'' },
+    // Pedro
+    { id:14, periodo_id:602, inicio:'2026-07-20', fim:'2026-07-21', dias:2, obs:'' },
+    // Rafael
+    { id:15, periodo_id:502, inicio:'2026-05-22', fim:'2026-05-22', dias:1, obs:'' }
+  ],
+  auditoria: [] // preenchido automaticamente por logAudit() a cada lançamento/remoção
+};
+let nextId = 1000;
+
+/* ---------- Usuário atual (placeholder até plugar login real) ----------
+   Quando conectar ao Supabase, este seletor sai e CURRENT_USER passa a
+   vir do e-mail autenticado (auth.jwt() ->> 'email'), igual ao Go! Time. */
+const RH_USERS = ['Ana Beatriz', 'Bruno Castro', 'Carla Dias', 'Diego Fontes'];
+let CURRENT_USER = RH_USERS[0];
+function setCurrentUser(){ CURRENT_USER = document.getElementById('current-user-select').value; }
+function initCurrentUserSelect(){
+  document.getElementById('current-user-select').innerHTML =
+    RH_USERS.map(u=>`<option value="${u}">${u}</option>`).join('');
+}
+
+/* ---------- Camada de consulta ---------- */
+function empById(id){ return DB.funcionarios.find(f=>f.id===id); }
+function periodosDoEmp(fid){ return DB.periodos.filter(p=>p.funcionario_id===fid).sort((a,b)=>a.inicio<b.inicio?1:-1); }
+function gozosDoPeriodo(pid){ return DB.gozos.filter(g=>g.periodo_id===pid).sort((a,b)=>a.inicio<b.inicio?-1:1); }
+function folgasDoPeriodo(pid){ return DB.folgas.filter(g=>g.periodo_id===pid).sort((a,b)=>a.inicio<b.inicio?-1:1); }
+function periodoVigente(fid){ return periodosDoEmp(fid).find(p=>p.inicio<=HOJE && p.fim>=HOJE) || periodosDoEmp(fid)[0]; }
+
+function diasGozados(pid){ return gozosDoPeriodo(pid).reduce((a,g)=>a+g.dias,0); }
+function diasFolgas(pid){ return folgasDoPeriodo(pid).reduce((a,g)=>a+g.dias,0); }
+
+/* Situação do período — histórico de pagamento, no vocabulário do RH */
+function situacaoPeriodo(p){
+  const gozados = diasGozados(p.id);
+  const limite = addMonths(p.fim, 12);
+  if (p.fim >= HOJE) return { key:'nao_vencida', label:'Não vencida', cls:'badge-blue', limite };
+  if (gozados < 30 && HOJE > limite) return { key:'dobro', label:'Pago em dobro', cls:'badge-neg', limite };
+  if (gozados >= 30){
+    const ultimo = gozosDoPeriodo(p.id).slice(-1)[0];
+    if (ultimo && ultimo.fim > HOJE) return { key:'programado', label:'Programado', cls:'badge-partial', limite };
+    return { key:'pago', label:'Pago', cls:'badge-ok', limite };
+  }
+  return { key:'a_pagar', label:'A pagar', cls:'badge-partial', limite };
+}
+
+/* Todas as ausências (gozos + folgas) com dados do funcionário */
+function todasAusencias(){
+  const out=[];
+  DB.gozos.forEach(g=>{
+    const p=DB.periodos.find(x=>x.id===g.periodo_id); if(!p) return;
+    out.push({tipo:'contabil', emp:empById(p.funcionario_id), ...g});
+  });
+  DB.folgas.forEach(g=>{
+    const p=DB.periodos.find(x=>x.id===g.periodo_id); if(!p) return;
+    out.push({tipo:'folga', emp:empById(p.funcionario_id), ...g});
+  });
+  return out;
+}
+
+function ausenteHoje(fid){
+  return todasAusencias().some(a=>a.emp.id===fid && a.inicio<=HOJE && a.fim>=HOJE);
+}
+
+/* ---------- Auditoria ----------
+   Toda criação e remoção de gozo/folga passa por aqui. Isto é a versão
+   em memória do que, no Supabase, o trigger log_auditoria() faz sozinho
+   no banco (ver go-ferias-schema.sql) — a diferença é que lá é automático
+   e à prova de burla; aqui é chamado manualmente pelas próprias funções. */
+function logAudit(operacao, tabela, empNome, titulo, detalhe){
+  DB.auditoria.unshift({
+    id: ++nextId,
+    quando: new Date(),
+    usuario: CURRENT_USER,
+    operacao,   // 'INSERT' | 'DELETE'
+    tabela,     // 'gozos' | 'folgas'
+    empNome,
+    titulo,     // frase principal: "Férias de X agendadas por Y"
+    detalhe     // linha secundária: datas, dias, observação
+  });
+}
+
+/* ---------- Alertas inteligentes ---------- */
+/* Pendências de UM colaborador — usada na aba "Pendências" da ficha
+   e também como fonte única para o painel geral de alertas (abaixo) */
+function pendenciasDoFuncionario(fid){
+  const out=[];
+  periodosDoEmp(fid).forEach(p=>{
+    const st = situacaoPeriodo(p);
+    const restantes = 30 - diasGozados(p.id);
+    if (st.key==='dobro'){
+      out.push({sev:'crit', icon:'ti-alert-octagon', titulo:'Férias pagas em dobro',
+        desc:`O período ${fmt(p.inicio)} – ${fmt(p.fim)} passou do limite concessivo (${fmt(st.limite)}) com ${restantes} dias não gozados. Pagamento em dobro devido (art. 137).`});
+    } else if (st.key==='a_pagar' && restantes>0){
+      const diasLimite = diffDays(HOJE, st.limite);
+      if (diasLimite <= 120){
+        out.push({sev:'crit', icon:'ti-alarm', titulo:`Concessivo vencendo em ${diasLimite} dias`,
+          desc:`Restam ${restantes} dias do período ${fmt(p.inicio)} – ${fmt(p.fim)} para gozar até ${fmt(st.limite)}. Agende agora para evitar a dobra.`});
+      } else {
+        out.push({sev:'warn', icon:'ti-calendar-exclamation', titulo:'Período aguardando agendamento',
+          desc:`${restantes} dias pendentes do período ${fmt(p.inicio)} – ${fmt(p.fim)}. Limite para gozo: ${fmt(st.limite)}.`});
+      }
+    }
+    const folgas = diasFolgas(p.id);
+    if (folgas > 30){
+      out.push({sev:'warn', icon:'ti-scale', titulo:'Saldo não contábil estourado',
+        desc:`Foram lançados ${folgas} dias de folga no período ${fmt(p.inicio)} – ${fmt(p.fim)} (limite de 30).`});
+    }
+  });
+  return out;
+}
+function temPendencia(fid){ return pendenciasDoFuncionario(fid).length > 0; }
+
+/* Painel geral (todos os colaboradores) — decisão de manter ou não fica pra depois;
+   por ora reaproveita pendenciasDoFuncionario() como fonte única, sem duplicar regra. */
+function computarAlertas(){
+  let alerts = [];
+  DB.funcionarios.forEach(f=>{
+    pendenciasDoFuncionario(f.id).forEach(p=>{
+      alerts.push({ ...p, titulo: `${f.nome.split(' ')[0]} · ${p.titulo}` });
+    });
+  });
+  // Sobreposição de ausências na mesma área
+  const aus = todasAusencias().filter(a=>a.fim>=HOJE);
+  for (let i=0;i<aus.length;i++) for (let j=i+1;j<aus.length;j++){
+    const a=aus[i], b=aus[j];
+    if (a.emp.id!==b.emp.id && a.emp.empresa===b.emp.empresa && a.inicio<=b.fim && b.inicio<=a.fim && a.dias>=5 && b.dias>=5){
+      alerts.push({sev:'info', icon:'ti-users-group', titulo:`Sobreposição em ${a.emp.empresa}`,
+        desc:`${a.emp.nome.split(' ')[0]} (${fmtShort(a.inicio)}–${fmtShort(a.fim)}) e ${b.emp.nome.split(' ')[0]} (${fmtShort(b.inicio)}–${fmtShort(b.fim)}) estarão fora ao mesmo tempo.`});
+    }
+  }
+  return alerts;
+}
+
+/* ---------- Navegação ---------- */
+function selectTab(tab){
+  document.querySelectorAll('.app-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('apptab-'+tab).classList.add('active');
+  document.querySelectorAll('.icon-nav-btn').forEach(el=>el.classList.toggle('active', el.dataset.tab===tab));
+  if (tab==='dashboard') renderDashboard();
+  if (tab==='diretorio') renderDiretorio();
+  if (tab==='calendario') renderGantt();
+  if (tab==='agendar'){ fillEmpSelect(); validateForm(); }
+  if (tab==='alertas') renderAlertas();
+  if (tab==='auditoria') renderAuditoria();
+}
+
+/* ---------- Dashboard ---------- */
+let charts = {};
+function destroyChart(k){ if(charts[k]){ charts[k].destroy(); delete charts[k]; } }
+
+function renderDashboard(){
+  const hoje = pd(HOJE);
+  document.getElementById('dash-date').textContent =
+    hoje.getDate()+' de '+MESES[hoje.getMonth()].toLowerCase()+' de '+hoje.getFullYear();
+
+  const foraHoje = DB.funcionarios.filter(f=>ausenteHoje(f.id));
+  const ano = hoje.getFullYear();
+  const aus = todasAusencias();
+  let diasAno = 0;
+  aus.forEach(a=>{
+    const ini = pd(a.inicio), fim = pd(a.fim);
+    for(let d=new Date(ini); d<=fim; d.setDate(d.getDate()+1)) if(d.getFullYear()===ano) diasAno++;
+  });
+  const alerts = computarAlertas();
+  const crit = alerts.filter(a=>a.sev==='crit').length;
+
+  const proxima = aus.filter(a=>a.inicio>HOJE).sort((a,b)=>a.inicio<b.inicio?-1:1)[0];
+
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi-card tint-purple"><i class="ti ti-users kpi-icon"></i>
+      <span class="kpi-label">Colaboradores</span>
+      <span class="kpi-value">${DB.funcionarios.length}</span>
+      <span class="kpi-sub">${new Set(DB.funcionarios.map(f=>f.area)).size} áreas</span></div>
+    <div class="kpi-card tint-green"><i class="ti ti-beach kpi-icon"></i>
+      <span class="kpi-label">Fora hoje</span>
+      <span class="kpi-value">${foraHoje.length}</span>
+      <span class="kpi-sub">${foraHoje.length? foraHoje.map(f=>f.nome.split(' ')[0]).join(', ') : 'equipe completa'}</span></div>
+    <div class="kpi-card tint-blue"><i class="ti ti-calendar-stats kpi-icon"></i>
+      <span class="kpi-label">Dias de ausência em ${ano}</span>
+      <span class="kpi-value">${diasAno}</span>
+      <span class="kpi-sub">${proxima? 'próxima: '+proxima.emp.nome.split(' ')[0]+' em '+fmtShort(proxima.inicio) : 'nada agendado'}</span></div>
+    <div class="kpi-card ${crit? 'tint-red':''}"><i class="ti ti-alert-triangle kpi-icon"></i>
+      <span class="kpi-label">Alertas críticos</span>
+      <span class="kpi-value" style="${crit? 'color:var(--red-text)':''}">${crit}</span>
+      <span class="kpi-sub">${alerts.length} alertas no total</span></div>`;
+
+  // Próximas férias
+  const prox = aus.filter(a=>a.fim>=HOJE).sort((a,b)=>a.inicio<b.inicio?-1:1).slice(0,6);
+  document.getElementById('next-list').innerHTML = prox.length ? prox.map(a=>{
+    const emCurso = a.inicio<=HOJE;
+    const rel = emCurso ? 'em curso' : 'em '+diffDays(HOJE,a.inicio)+' dias';
+    const d = pd(a.inicio);
+    return `<div class="next-item">
+      <div class="next-when">
+        <div class="next-when-day">${String(d.getDate()).padStart(2,'0')} ${MESES_ABREV[d.getMonth()]}</div>
+        <div class="next-when-rel">${rel}</div>
+      </div>
+      <div class="avatar avatar-sm" style="background:${a.emp.cor}">${iniciais(a.emp.nome)}</div>
+      <div class="next-info">
+        <div class="next-name">${a.emp.nome.split(' ')[0]} ${a.emp.nome.split(' ').slice(-1)}</div>
+        <div class="next-range">${fmtShort(a.inicio)} – ${fmtShort(a.fim)} · ${a.dias} ${a.dias===1?'dia':'dias'}</div>
+      </div>
+      <span class="badge ${a.tipo==='contabil'?'badge-ok':'badge-blue'}">${a.tipo==='contabil'?'Férias':'Folga'}</span>
+    </div>`;
+  }).join('') : '<div class="empty-note">Nenhuma ausência futura registrada. Use a aba Agendar.</div>';
+
+  document.getElementById('chart-year-label').textContent = ano;
+  renderChartMeses(ano);
+  renderChartSaldos();
+  renderChartStatus();
+  updateAlertBadge();
+}
+
+const chartFont = { family:'DM Sans', size:11 };
+const tickColor = '#C7C4BF';
+
+/* Gradiente vertical nas barras — mesma técnica do Go! Time, dá profundidade real ao gráfico */
+function makeGradient(ctx, chartArea, colorTop, colorBottom) {
+  if (!chartArea) return colorTop;
+  const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+  gradient.addColorStop(0, colorTop);
+  gradient.addColorStop(1, colorBottom);
+  return gradient;
+}
+function barGradient(topColor, bottomColor) {
+  return (context) => {
+    const { ctx: c, chartArea } = context.chart;
+    if (!chartArea) return topColor;
+    return makeGradient(c, chartArea, topColor, bottomColor);
+  };
+}
+
+function hexToRgba(hex, alpha){
+  const h = hex.replace('#','');
+  const n = parseInt(h,16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${alpha})`;
+}
+function personGradient(colors){
+  return (context) => {
+    const { ctx:c, chartArea } = context.chart;
+    if (!chartArea) return colors[context.dataIndex];
+    const cor = colors[context.dataIndex];
+    return makeGradient(c, chartArea, hexToRgba(cor,0.95), hexToRgba(cor,0.55));
+  };
+}
+
+function renderChartMeses(ano){
+  const contabil = new Array(12).fill(0), folga = new Array(12).fill(0);
+  todasAusencias().forEach(a=>{
+    const ini=pd(a.inicio), fim=pd(a.fim);
+    for(let d=new Date(ini); d<=fim; d.setDate(d.getDate()+1)){
+      if(d.getFullYear()!==ano) continue;
+      (a.tipo==='contabil'?contabil:folga)[d.getMonth()]++;
+    }
+  });
+  destroyChart('meses');
+  charts.meses = new Chart(document.getElementById('chart-meses'), {
+    type:'bar',
+    data:{ labels:MESES_ABREV.map(m=>m.toUpperCase()),
+      datasets:[
+        {label:'Férias', data:contabil, backgroundColor:barGradient(hexToRgba('#3DAA78',0.95),hexToRgba('#3DAA78',0.5)), borderRadius:8, borderSkipped:false, barPercentage:0.62, categoryPercentage:0.72, stack:'s'},
+        {label:'Folgas', data:folga, backgroundColor:barGradient(hexToRgba('#4A82C4',0.95),hexToRgba('#4A82C4',0.5)), borderRadius:8, borderSkipped:false, barPercentage:0.62, categoryPercentage:0.72, stack:'s'}
+      ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'bottom', labels:{font:chartFont, color:'#6E6E6E', boxWidth:10, boxHeight:10, borderRadius:3, useBorderRadius:true}} },
+      scales:{
+        x:{stacked:true, grid:{display:false}, ticks:{font:chartFont, color:tickColor}},
+        y:{stacked:true, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:chartFont, color:tickColor, precision:0}, border:{display:false}}
+      }}
+  });
+}
+
+function renderChartSaldos(){
+  const labels=[], data=[], cores=[];
+  DB.funcionarios.forEach(f=>{
+    const p = periodoVigente(f.id); if(!p) return;
+    labels.push(f.nome.split(' ')[0]);
+    data.push(Math.max(0, 30 - diasFolgas(p.id)));
+    cores.push(f.cor);
+  });
+  destroyChart('saldos');
+  charts.saldos = new Chart(document.getElementById('chart-saldos'), {
+    type:'bar',
+    data:{ labels, datasets:[{ label:'Saldo (dias)', data, backgroundColor:personGradient(cores), borderRadius:100, borderSkipped:false, barPercentage:0.6, categoryPercentage:0.75 }]},
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{max:30, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:chartFont, color:tickColor, stepSize:5}, border:{display:false}},
+        y:{grid:{display:false}, ticks:{font:{family:'DM Sans', size:13, weight:'600'}, color:'#3A3A38'}}
+      }}
+  });
+}
+
+function renderChartStatus(){
+  const cont = {};
+  DB.periodos.forEach(p=>{ const st=situacaoPeriodo(p); cont[st.label]=(cont[st.label]||0)+1; });
+  const mapCor = {'Não vencida':'#4A82C4','Pago':'#3DAA78','Programado':'#E8913C','A pagar':'#E8913C','Pago em dobro':'#F26B4E'};
+  const labels = Object.keys(cont);
+  destroyChart('status');
+  charts.status = new Chart(document.getElementById('chart-status'), {
+    type:'doughnut',
+    data:{ labels, datasets:[{ data:labels.map(l=>cont[l]), backgroundColor:labels.map(l=>mapCor[l]||'#A8A8A8'), borderWidth:3, borderColor:'#fff' }]},
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'64%',
+      plugins:{ legend:{position:'bottom', labels:{font:chartFont, color:'#6E6E6E', boxWidth:10, boxHeight:10, borderRadius:3, useBorderRadius:true}} } }
+  });
+}
+
+/* ---------- Equipe ---------- */
+function iniciais(nome){ const p=nome.trim().split(/\s+/); return (p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase(); }
+function tempoDeCasa(adm){
+  const a=pd(adm), h=pd(HOJE);
+  let anos = h.getFullYear()-a.getFullYear();
+  if (h.getMonth()<a.getMonth() || (h.getMonth()===a.getMonth() && h.getDate()<a.getDate())) anos--;
+  return anos+(anos===1?' ano':' anos');
+}
+
+/* ---------- Diretório: filtros + agrupamento por área ---------- */
+const AREAS = ['ADM','Direção','Coordenação','Atendimento','Criação','Estágio','Vídeo'];
+const AREA_STYLE = {
+  'ADM':          { icon:'ti-building' },
+  'Direção':      { icon:'ti-crown' },
+  'Coordenação':  { icon:'ti-hierarchy-3' },
+  'Atendimento':  { icon:'ti-headset' },
+  'Criação':      { icon:'ti-palette' },
+  'Estágio':      { icon:'ti-school' },
+  'Vídeo':        { icon:'ti-video' }
+};
+let dirBusca = '';
+let dirTab = 'geral'; // 'geral' | um dos AREAS
+
+function normalizar(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+function shade(hex, pct){ // escurece/clareia uma cor hex
+  const n = parseInt(hex.replace('#',''),16);
+  const f = (v)=>Math.min(255, Math.max(0, Math.round(v + (pct/100)*255)));
+  return `rgb(${f((n>>16)&255)},${f((n>>8)&255)},${f(n&255)})`;
+}
+function avatarGrad(cor){ return `linear-gradient(135deg, ${shade(cor,12)}, ${shade(cor,-14)})`; }
+
+/* Urgência — mesmo vocabulário de 3 níveis usado pra colorir o Diretório inteiro */
+const URGENCIA = {
+  critico:   { label:'Crítico',   cor:'var(--red)',   ordem:0 },
+  alerta:    { label:'Alerta',    cor:'var(--amber)', ordem:1 },
+  tranquilo: { label:'Tranquilo', cor:'var(--green)', ordem:2 }
+};
+function nivelUrgencia(fid){
+  const pend = pendenciasDoFuncionario(fid);
+  if (pend.some(p=>p.sev==='crit')) return 'critico';
+  if (pend.some(p=>p.sev==='warn')) return 'alerta';
+  return 'tranquilo';
+}
+
+function setBusca(v){ dirBusca = v; renderDiretorio(); }
+function setDirTab(t){ dirTab = t; renderDiretorio(); }
+
+function renderDiretorio(){
+  const busca = document.getElementById('dir-busca');
+  if (busca.value !== dirBusca) busca.value = dirBusca;
+
+  const buscados = dirBusca
+    ? DB.funcionarios.filter(f=>normalizar(f.nome).includes(normalizar(dirBusca)))
+    : DB.funcionarios;
+
+  // Contagens por aba (sempre sobre a busca atual, não sobre a aba selecionada)
+  const contGeral = buscados.filter(f=>nivelUrgencia(f.id)!=='tranquilo').length;
+  const tabsHtml = [
+    `<button class="dir-tab geral ${dirTab==='geral'?'active':''}" onclick="setDirTab('geral')">
+       <i class="ti ti-alert-triangle" style="font-size:12px;"></i> Visão geral <span class="dt-count">${contGeral}</span>
+     </button>`,
+    ...AREAS.map(area=>{
+      const n = buscados.filter(f=>f.area===area).length;
+      return `<button class="dir-tab ${dirTab===area?'active':''}" onclick="setDirTab('${area}')">${area} <span class="dt-count">${n}</span></button>`;
+    })
+  ].join('');
+  document.getElementById('dir-tabs').innerHTML = tabsHtml;
+
+  // Lista da aba ativa
+  let lista;
+  if (dirTab === 'geral'){
+    lista = buscados.filter(f=>nivelUrgencia(f.id)!=='tranquilo')
+      .sort((a,b)=> URGENCIA[nivelUrgencia(a.id)].ordem - URGENCIA[nivelUrgencia(b.id)].ordem || a.nome.localeCompare(b.nome));
+  } else {
+    lista = buscados.filter(f=>f.area===dirTab).sort((a,b)=>a.nome.localeCompare(b.nome));
+  }
+
+  document.getElementById('diretorio-sub').textContent =
+    dirTab==='geral' ? contGeral+' colaborador(es) com pendência, de '+DB.funcionarios.length+' no total'
+                      : lista.length+' de '+DB.funcionarios.length+' colaboradores';
+
+  document.getElementById('diretorio-grupos').innerHTML = lista.length
+    ? `<div class="profile-grid">${lista.map(cardColaborador).join('')}</div>`
+    : `<div class="card"><div class="empty-note">${dirTab==='geral' ? 'Nenhuma pendência por aqui. Tudo em dia. \ud83c\udf89' : 'Nenhum colaborador encontrado com essa busca.'}</div></div>`;
+}
+
+function cardColaborador(f){
+  const nivel = nivelUrgencia(f.id);
+  const dotCor = nivel==='critico' ? 'var(--red)' : nivel==='alerta' ? 'var(--amber)' : null;
+  return `<div class="profile-tile" onclick="openFicha(${f.id})">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar" style="background:${avatarGrad(f.cor)}">${iniciais(f.nome)}</div>
+        ${dotCor? `<div class="profile-dot" style="background:${dotCor}" title="${URGENCIA[nivel].label}"></div>`:''}
+      </div>
+      <div class="profile-info">
+        <div class="profile-name">${f.nome}</div>
+        <div class="profile-role">${f.funcao} · ${f.unidade}</div>
+      </div>
+    </div>`;
+}
+
+/* ---------- Ficha do colaborador (página própria) ---------- */
+let fichaAtual = null;   // id do colaborador aberto
+let fichaTab = 'contabil'; // 'contabil' | 'naocontabil' | 'pendencias'
+
+function openFicha(fid){
+  if (fichaAtual !== fid){ periodosAbertos = new Set(); anoFicha = new Date().getFullYear(); }
+  fichaAtual = fid;
+  fichaTab = 'contabil';
+  selectTab('ficha');
+  renderFicha();
+}
+function selectFichaTab(tab){ fichaTab = tab; renderFicha(); }
+
+let periodosAbertos = new Set(); // acordeão: quais períodos estão expandidos
+let anoFicha = new Date().getFullYear();
+
+function togglePeriodo(pid){
+  if (periodosAbertos.has(pid)) periodosAbertos.delete(pid); else periodosAbertos.add(pid);
+  renderFicha();
+}
+function navAnoFicha(d){ anoFicha += d; renderFicha(); }
+
+function renderFicha(){
+  const f = empById(fichaAtual);
+  const periodos = periodosDoEmp(fichaAtual);
+  const pendencias = pendenciasDoFuncionario(fichaAtual);
+
+  const pVigente = periodoVigente(fichaAtual);
+  if (pVigente && periodosAbertos.size === 0) periodosAbertos.add(pVigente.id);
+
+  const folgasUsadas = pVigente ? diasFolgas(pVigente.id) : 0;
+  const saldoFolgas = Math.max(0, 30 - folgasUsadas);
+  const feriasGozadas = pVigente ? diasGozados(pVigente.id) : 0;
+  const stVigente = pVigente ? situacaoPeriodo(pVigente) : null;
+  const fora = ausenteHoje(f.id);
+  const statusDotCor = fora ? 'var(--blue)' : (temPendencia(f.id) ? 'var(--red)' : 'var(--green)');
+  const statusDotTitulo = fora ? 'De férias/folga agora' : (temPendencia(f.id) ? 'Tem pendência' : 'Sem pendências');
+
+  /* ---- coluna esquerda: cartão de perfil (capa orgânica, sem divisórias entre pares) ---- */
+  const corA = shade(f.cor, 22), corB = shade(f.cor, -18);
+  const colEsquerda = `
+    <div>
+      <div class="painel-card">
+        <div class="perfil-cover" style="--cover-base:${f.cor};--cover-a:${corA};--cover-b:${corB}"></div>
+        <div class="perfil-avatar-wrap">
+          <div class="perfil-avatar" style="background:${avatarGrad(f.cor)}">${iniciais(f.nome)}</div>
+          <div class="perfil-status-dot" style="background:${statusDotCor}" title="${statusDotTitulo}"></div>
+        </div>
+        <div class="perfil-nome">${f.nome}</div>
+        <div class="perfil-funcao">${f.funcao}</div>
+        <div class="perfil-selos">
+          <span class="selo"><i class="ti ti-briefcase"></i>${f.regime}</span>
+          <span class="selo"><i class="ti ti-map-pin"></i>${f.unidade}</span>
+        </div>
+        <div class="perfil-linha"><span class="pl-label">Admissão</span><span class="pl-valor">${fmt(f.admissao)}</span></div>
+        <div class="perfil-linha"><span class="pl-label">Tempo de casa</span><span class="pl-valor">${tempoDeCasa(f.admissao)}</span></div>
+        <div class="perfil-linha"><span class="pl-label">Área</span><span class="pl-valor">${f.area}</span></div>
+        <div class="saldo-pill">
+          <div class="saldo-pill-icon"><i class="ti ti-beach"></i></div>
+          <div class="saldo-pill-texto">${saldoFolgas} <span style="font-weight:500;color:var(--text-tertiary);">/ 30 dias</span><small>Saldo não contábil</small></div>
+        </div>
+        <div class="perfil-acoes">
+          <button class="btn" onclick="agendarPara(${f.id},'contabil')">+ Agendar férias</button>
+          <button class="btn btn-ghost" onclick="agendarPara(${f.id},'folga')">+ Agendar folga</button>
+        </div>
+      </div>
+    </div>`;
+
+  /* ---- coluna direita, topo: card de resumo humanizado (substitui a fileira de pills) ---- */
+  const resumo = pVigente ? `
+    <div class="resumo-card">
+      <div class="resumo-frase">
+        ${f.nome.split(' ')[0]} tem <strong class="rf-dias">${saldoFolgas} dias</strong> de folga disponíveis
+        e <strong>${feriasGozadas} dias</strong> de férias já gozados no período vigente.
+        ${stVigente.key==='dobro' || stVigente.key==='a_pagar'
+          ? `O limite para gozar as férias oficiais é <strong class="rf-data">${fmt(stVigente.limite)}</strong>.`
+          : `Próximo limite de gozo: <strong class="rf-data">${fmt(stVigente.limite)}</strong>.`}
+      </div>
+      <div class="resumo-acoes">
+        <button class="btn" onclick="agendarPara(${f.id},'folga')">+ Agendar folga</button>
+        <button class="resumo-secundario" onclick="agendarPara(${f.id},'contabil')">ou agendar férias oficiais</button>
+      </div>
+    </div>` : `
+    <div class="resumo-card"><div class="resumo-frase">Nenhum período aquisitivo em aberto no momento.</div></div>`;
+
+  /* ---- abas ---- */
+  const abas = `
+    <div class="ficha-tabs">
+      <button class="ficha-tab ${fichaTab==='contabil'?'active':''}" onclick="selectFichaTab('contabil')"><i class="ti ti-beach"></i>Gozo contábil</button>
+      <button class="ficha-tab ${fichaTab==='naocontabil'?'active':''}" onclick="selectFichaTab('naocontabil')"><i class="ti ti-calendar-event"></i>Gozo não contábil</button>
+      <button class="ficha-tab ${fichaTab==='calendario'?'active':''}" onclick="selectFichaTab('calendario')"><i class="ti ti-calendar-month"></i>Calendário</button>
+      <button class="ficha-tab ${fichaTab==='pendencias'?'active':''}" onclick="selectFichaTab('pendencias')"><i class="ti ti-alert-triangle"></i>Pendências${pendencias.length? ` <span class="ficha-tab-badge">${pendencias.length}</span>`:''}</button>
+    </div>`;
+
+  /* ---- conteúdo por aba: histórico como linha do tempo vertical conectada ---- */
+  let corpo = '';
+  if (fichaTab==='contabil'){
+    corpo = periodos.length ? renderTimeline(periodos, (p, aberto)=>{
+      const st = situacaoPeriodo(p);
+      const gozos = gozosDoPeriodo(p.id);
+      const totG = diasGozados(p.id);
+      const venceu = st.key==='dobro';
+      return { corNode: st.cls==='badge-ok'?'var(--green)':st.cls==='badge-blue'?'var(--blue)':st.cls==='badge-neg'?'var(--red)':'var(--amber)',
+        head: `
+          <div class="tl-title">${fmt(p.inicio)} – ${fmt(p.fim)}</div>
+          <div class="tl-sub ${venceu?'venceu':''}">limite: ${fmt(st.limite)} <span class="badge ${st.cls}" style="margin-left:6px;">${st.label}</span></div>`,
+        corpo: `
+          ${gozos.length? gozos.map((g,i)=>`<span class="range-chip"><span class="rc-ord">${i+1}º</span>${fmtShort(g.inicio)} – ${fmtShort(g.fim)} · ${g.dias}d<i class="ti ti-x chip-remove" onclick="event.stopPropagation();removerLancamento('gozos', ${g.id})" title="Remover lançamento"></i></span>`).join('') : '<span class="empty-note">Nenhum período agendado.</span>'}
+          <div class="mini-progress"><div style="width:${Math.min(100, totG/30*100)}%"></div></div>
+          <div class="sum-line"><span>Total gozado</span><strong>${totG} de 30 dias</strong></div>`
+      };
+    }) : '<div class="empty-note">Nenhum período aquisitivo registrado.</div>';
+  } else if (fichaTab==='naocontabil'){
+    corpo = periodos.length ? renderTimeline(periodos, (p)=>{
+      const folgas = folgasDoPeriodo(p.id);
+      const totF = diasFolgas(p.id);
+      return { corNode: totF>30?'var(--red)':'var(--blue)',
+        head: `<div class="tl-title">${fmt(p.inicio)} – ${fmt(p.fim)}</div>
+          <div class="tl-sub">${totF}/30d · saldo ${Math.max(0,30-totF)}</div>`,
+        corpo: `
+          ${folgas.length? folgas.map(g=>`<div class="folga-row">
+              <span>${g.inicio===g.fim? fmt(g.inicio) : fmt(g.inicio)+' – '+fmt(g.fim)}${g.obs? ' <span style="color:var(--text-tertiary)">· '+g.obs+'</span>':''}</span>
+              <span style="display:flex;align-items:center;gap:10px;">
+                <span class="folga-dias">${g.dias}d</span>
+                <i class="ti ti-trash chip-remove" onclick="event.stopPropagation();removerLancamento('folgas', ${g.id})" title="Remover lançamento"></i>
+              </span>
+            </div>`).join('') : '<span class="empty-note">Nenhuma folga lançada.</span>'}
+          <div class="mini-progress"><div style="width:${Math.min(100, totF/30*100)}%; background:linear-gradient(90deg, var(--blue), #6FA0DA);"></div></div>
+          <div class="sum-line"><span>Total</span><strong style="color:${totF>30?'var(--red-text)':'inherit'}">${totF} de 30 dias · saldo ${Math.max(0,30-totF)}</strong></div>`
+      };
+    }) : '<div class="empty-note">Nenhum período aquisitivo registrado.</div>';
+  } else if (fichaTab==='calendario'){
+    corpo = renderMiniAno(fichaAtual, anoFicha);
+  } else {
+    corpo = pendencias.length ? pendencias.map(p=>`
+      <div class="alert-card">
+        <div class="alert-icon ${p.sev}"><i class="ti ${p.icon}"></i></div>
+        <div><div class="alert-title">${p.titulo}</div><div class="alert-desc">${p.desc}</div></div>
+      </div>`).join('') : '<div class="empty-note">Nenhuma pendência. Tudo em dia. \ud83c\udf89</div>';
+  }
+
+  document.getElementById('ficha-conteudo').innerHTML = `
+    <div class="ficha-grid">
+      ${colEsquerda}
+      <div>
+        ${resumo}
+        ${abas}
+        ${corpo}
+      </div>
+    </div>`;
+}
+
+/* Histórico como linha do tempo vertical conectada (ref. Convenia) — usada pelas
+   abas contábil e não-contábil; itemRenderer(p, aberto) => {corNode, head, corpo} */
+function renderTimeline(periodos, itemRenderer){
+  return `<div class="timeline">` + periodos.map(p=>{
+    const aberto = periodosAbertos.has(p.id);
+    const { corNode, head, corpo } = itemRenderer(p, aberto);
+    return `<div class="tl-item ${aberto?'aberto':''}">
+      <div class="tl-node-wrap">
+        <div class="tl-node" style="background:${corNode}"></div>
+        <div class="tl-line"></div>
+      </div>
+      <div class="tl-content">
+        <div class="tl-head" onclick="togglePeriodo(${p.id})">
+          <div>${head}</div>
+          <i class="ti ti-chevron-down periodo-chevron"></i>
+        </div>
+        <div class="tl-body">${corpo}</div>
+      </div>
+    </div>`;
+  }).join('') + `</div>`;
+}
+
+/* Calendário anual da pessoa — faixas coloridas por tipo, como nas referências */
+
+function renderMiniAno(fid, ano){
+  const mapa = {}; // iso -> 'fer' | 'fol'
+  todasAusencias().filter(a=>a.emp.id===fid).forEach(a=>{
+    const ini=pd(a.inicio), fim=pd(a.fim);
+    for(let d=new Date(ini); d<=fim; d.setDate(d.getDate()+1)){
+      if (d.getFullYear()!==ano) continue;
+      const k = iso(d);
+      if (a.tipo==='contabil') mapa[k]='fer';
+      else if (!mapa[k]) mapa[k]='fol';
+    }
+  });
+  const meses = MESES.map((nome,m)=>{
+    const nDias = new Date(ano, m+1, 0).getDate();
+    const offset = new Date(ano, m, 1).getDay();
+    let dias = '';
+    for (let i=0;i<offset;i++) dias += '<span class="mini-dia vazio">0</span>';
+    for (let d=1; d<=nDias; d++){
+      const k = iso(new Date(ano,m,d));
+      let cls = mapa[k] || (FERIADOS[k]? 'feriado':'');
+      if (k===HOJE) cls += ' hoje';
+      dias += `<span class="mini-dia ${cls}" ${FERIADOS[k]? 'title="'+FERIADOS[k]+'"':''}>${d}</span>`;
+    }
+    return `<div class="mini-mes">
+      <div class="mini-mes-titulo">${nome}</div>
+      <div class="mini-dow">${DOW.map(x=>'<span>'+x+'</span>').join('')}</div>
+      <div class="mini-dias">${dias}</div>
+    </div>`;
+  }).join('');
+  return `
+    <div class="cal-ano-nav">
+      <button class="mes-arrow" onclick="navAnoFicha(-1)" aria-label="Ano anterior"><i class="ti ti-chevron-left"></i></button>
+      <span class="cal-ano-titulo">${ano}</span>
+      <button class="mes-arrow" onclick="navAnoFicha(1)" aria-label="Próximo ano"><i class="ti ti-chevron-right"></i></button>
+      <div class="gantt-legend" style="margin:0 0 0 auto;">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Férias</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Folga</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(0,0,0,0.15)"></div>Feriado</div>
+      </div>
+    </div>
+    <div class="mini-year">${meses}</div>`;
+}
+
+
+function agendarPara(fid, tipo){
+  selectTab('agendar');
+  selectAgTab(tipo);
+  document.getElementById('ag-emp').value = fid;
+  fillPeriodos();
+}
+
+function removerLancamento(tabela, id){
+  const arr = tabela==='gozos' ? DB.gozos : DB.folgas;
+  const idx = arr.findIndex(x=>x.id===id);
+  if (idx<0) return;
+  const reg = arr[idx];
+  const emp = empById(fichaAtual);
+  const tipoLabel = tabela==='gozos' ? 'férias contábeis' : 'folga não contábil';
+  if (!confirm(`Remover ${reg.dias} dia(s) de ${tipoLabel} de ${emp.nome} (${fmt(reg.inicio)} – ${fmt(reg.fim)})?\n\nEsta ação fica registrada na auditoria.`)) return;
+
+  arr.splice(idx,1);
+  const primeiroNome = emp.nome.split(' ')[0];
+  const titulo = tabela==='gozos'
+    ? `Férias de ${primeiroNome} removidas por ${CURRENT_USER}`
+    : `Folga de ${primeiroNome} removida por ${CURRENT_USER}`;
+  const detalhe = `${fmt(reg.inicio)} – ${fmt(reg.fim)} · ${reg.dias} dia(s)${reg.obs? ' · '+reg.obs:''}`;
+  logAudit('DELETE', tabela, emp.nome, titulo, detalhe);
+
+  renderFicha();   // re-renderiza a ficha já sem o lançamento removido
+  updateAlertBadge();
+  showToast('Lançamento removido e registrado na auditoria');
+}
+
+/* ---------- Calendário Gantt ---------- */
+let calRef = { y: pd(HOJE).getFullYear(), m: pd(HOJE).getMonth() };
+function navCal(d){ calRef.m += d; if(calRef.m<0){calRef.m=11;calRef.y--;} if(calRef.m>11){calRef.m=0;calRef.y++;} renderGantt(); }
+function goToday(){ calRef = { y: pd(HOJE).getFullYear(), m: pd(HOJE).getMonth() }; renderGantt(); }
+
+function renderGantt(){
+  const {y,m} = calRef;
+  document.getElementById('cal-title').textContent = MESES[m]+' '+y;
+  const nDias = new Date(y, m+1, 0).getDate();
+  const cols = `repeat(${nDias}, 1fr)`;
+  const mesIni = iso(new Date(y,m,1)), mesFim = iso(new Date(y,m,nDias));
+
+  let html = `<div class="gantt-header">
+    <div></div>
+    <div class="gantt-days" style="grid-template-columns:${cols}">`;
+  for(let d=1; d<=nDias; d++){
+    const dt = new Date(y,m,d);
+    const dIso = iso(dt);
+    const cls = dIso===HOJE? 'today' : (FERIADOS[dIso]? 'holiday':'');
+    html += `<div><div class="gantt-dow">${DOW[dt.getDay()]}</div><div class="gantt-dnum ${cls}" ${FERIADOS[dIso]? 'title="'+FERIADOS[dIso]+'"':''}>${d}</div></div>`;
+  }
+  html += `</div></div>`;
+
+  const aus = todasAusencias();
+  DB.funcionarios.forEach(f=>{
+    html += `<div class="gantt-row">
+      <div class="gantt-label"><div class="avatar avatar-sm" style="background:${f.cor}">${iniciais(f.nome)}</div>${f.nome.split(' ')[0]}</div>
+      <div class="gantt-track" style="grid-template-columns:${cols}">`;
+    for(let d=1; d<=nDias; d++){
+      const dt=new Date(y,m,d), dIso=iso(dt);
+      const cls = FERIADOS[dIso]? 'holiday' : (dt.getDay()===0||dt.getDay()===6? 'weekend':'');
+      html += `<div class="gantt-cell ${cls} ${dIso===HOJE?'today-col':''}" style="grid-column:${d};grid-row:1;"></div>`;
+    }
+    aus.filter(a=>a.emp.id===f.id && a.inicio<=mesFim && a.fim>=mesIni).forEach(a=>{
+      const s = a.inicio<mesIni? 1 : pd(a.inicio).getDate();
+      const e = a.fim>mesFim? nDias : pd(a.fim).getDate();
+      const label = (e-s)>=2 ? (a.tipo==='contabil'?'Férias':'Folga')+' · '+a.dias+'d' : '';
+      html += `<div class="gantt-bar ${a.tipo==='contabil'?'contabil':'folga'}" style="grid-column:${s} / ${e+1};grid-row:1;" title="${f.nome.split(' ')[0]} · ${fmt(a.inicio)} – ${fmt(a.fim)} (${a.dias}d)${a.obs? ' · '+a.obs:''}">${label}</div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  document.getElementById('gantt').innerHTML = html;
+}
+
+/* ---------- Agendamento ---------- */
+let agTipo = 'contabil';
+function selectAgTab(t){
+  agTipo = t;
+  document.querySelectorAll('[data-ag]').forEach(el=>el.classList.toggle('active', el.dataset.ag===t));
+  validateForm();
+}
+function fillEmpSelect(){
+  const sel = document.getElementById('ag-emp');
+  const cur = sel.value;
+  sel.innerHTML = DB.funcionarios.map(f=>`<option value="${f.id}">${f.nome}</option>`).join('');
+  if (cur) sel.value = cur;
+  fillPeriodos();
+}
+function fillPeriodos(){
+  const fid = Number(document.getElementById('ag-emp').value);
+  const sel = document.getElementById('ag-periodo');
+  sel.innerHTML = periodosDoEmp(fid).map(p=>{
+    const st = situacaoPeriodo(p);
+    return `<option value="${p.id}">${fmt(p.inicio)} – ${fmt(p.fim)} · ${st.label}</option>`;
+  }).join('');
+  validateForm();
+}
+
+function validateForm(){
+  const ini = document.getElementById('ag-inicio').value;
+  const fim = document.getElementById('ag-fim').value;
+  const box = document.getElementById('ag-warnings');
+  const diasEl = document.getElementById('ag-dias');
+  box.innerHTML = ''; diasEl.value='—';
+  if(!ini || !fim) return;
+  if(fim < ini){ box.innerHTML = warn('err','A data final é anterior à inicial.'); return; }
+
+  const dias = daysInclusive(ini,fim);
+  diasEl.value = dias+' dias';
+  const pid = Number(document.getElementById('ag-periodo').value);
+  const p = DB.periodos.find(x=>x.id===pid);
+  const msgs = [];
+
+  if (agTipo==='contabil' && p){
+    const gozos = gozosDoPeriodo(pid);
+    const totAtual = diasGozados(pid);
+    if (gozos.length >= 3) msgs.push(['err','Este período já tem 3 frações de gozo — o máximo permitido (art. 134 §1º).']);
+    if (dias < 5) msgs.push(['err','Fração mínima de 5 dias corridos (art. 134 §1º).']);
+    if (totAtual + dias > 30) msgs.push(['err',`Ultrapassa os 30 dias do período: já há ${totAtual} dias agendados.`]);
+    const temFracao14 = gozos.some(g=>g.dias>=14) || dias>=14;
+    if (totAtual + dias >= 30 && !temFracao14) msgs.push(['warn','Nenhuma fração tem 14 dias ou mais — a lei exige ao menos uma (art. 134 §1º).']);
+    const dowIni = pd(ini).getDay();
+    if (dowIni===0 || dowIni===6) msgs.push(['warn','Início em fim de semana: férias não podem começar 2 dias antes de feriado ou DSR (art. 134 §3º).']);
+    if (FERIADOS[addDays(ini,1)] || FERIADOS[addDays(ini,2)] || dowIni===5)
+      msgs.push(['warn','Início a menos de 2 dias de feriado ou descanso semanal (art. 134 §3º) — verifique.']);
+    if (diffDays(HOJE, ini) < 30 && ini>HOJE) msgs.push(['warn','Menos de 30 dias de antecedência para o aviso de férias (art. 135).']);
+    const limite = addMonths(p.fim,12);
+    if (fim > limite) msgs.push(['warn',`Gozo termina após o limite concessivo (${fmt(limite)}) — risco de dobra.`]);
+  }
+  if (agTipo==='folga' && p){
+    const tot = diasFolgas(pid);
+    if (tot + dias > 30) msgs.push(['warn',`Com este lançamento o período soma ${tot+dias} dias não contábeis (saldo de 30 estourado).`]);
+  }
+  // conflito com a própria agenda
+  const conflito = todasAusencias().find(a=>a.emp.id===Number(document.getElementById('ag-emp').value) && a.inicio<=fim && ini<=a.fim);
+  if (conflito) msgs.push(['warn',`Sobrepõe lançamento existente (${fmtShort(conflito.inicio)} – ${fmtShort(conflito.fim)}).`]);
+
+  if (!msgs.length) msgs.push(['ok','Tudo certo — nenhuma restrição encontrada para essas datas.']);
+  box.innerHTML = msgs.map(m=>warn(m[0],m[1])).join('');
+}
+function warn(tipo,txt){
+  const ic = tipo==='err'?'ti-circle-x': tipo==='warn'?'ti-alert-triangle':'ti-circle-check';
+  return `<div class="warn-box ${tipo}"><i class="ti ${ic}" style="margin-top:1px;"></i><span>${txt}</span></div>`;
+}
+
+function salvarAgendamento(){
+  const ini = document.getElementById('ag-inicio').value;
+  const fim = document.getElementById('ag-fim').value;
+  const pid = Number(document.getElementById('ag-periodo').value);
+  const obs = document.getElementById('ag-obs').value.trim();
+  if(!ini || !fim || fim<ini || !pid){ showToast('Preencha as datas corretamente.'); return; }
+  if (document.querySelector('#ag-warnings .warn-box.err')){ showToast('Há impedimentos legais — revise as datas.'); return; }
+  const dias = daysInclusive(ini,fim);
+  const reg = { id:++nextId, periodo_id:pid, inicio:ini, fim, dias, obs };
+  if (agTipo==='contabil') DB.gozos.push(reg); else DB.folgas.push(reg);
+
+  const empNome = empById(Number(document.getElementById('ag-emp').value)).nome;
+  const primeiroNome = empNome.split(' ')[0];
+  const titulo = agTipo==='contabil'
+    ? `Férias de ${primeiroNome} agendadas por ${CURRENT_USER}`
+    : `Folga de ${primeiroNome} lançada por ${CURRENT_USER}`;
+  const detalhe = `${fmt(ini)} – ${fmt(fim)} · ${dias} dia(s)${obs? ' · '+obs:''}`;
+  logAudit('INSERT', agTipo==='contabil'?'gozos':'folgas', empNome, titulo, detalhe);
+
+  document.getElementById('ag-inicio').value=''; document.getElementById('ag-fim').value='';
+  document.getElementById('ag-obs').value=''; document.getElementById('ag-dias').value='—';
+  document.getElementById('ag-warnings').innerHTML='';
+  updateAlertBadge();
+  showToast((agTipo==='contabil'?'Férias agendadas':'Folga lançada')+' · '+dias+' dias ✓');
+}
+
+/* ---------- Alertas ---------- */
+function renderAlertas(){
+  const alerts = computarAlertas().sort((a,b)=>({crit:0,warn:1,info:2}[a.sev]-{crit:0,warn:1,info:2}[b.sev]));
+  document.getElementById('alertas-sub').textContent = alerts.length+' alertas ativos';
+  document.getElementById('alert-list').innerHTML = alerts.length? alerts.map(a=>`
+    <div class="alert-card">
+      <div class="alert-icon ${a.sev}"><i class="ti ${a.icon}"></i></div>
+      <div><div class="alert-title">${a.titulo}</div><div class="alert-desc">${a.desc}</div></div>
+    </div>`).join('') :
+    '<div class="card"><div class="empty-note">Nenhum alerta ativo. Tudo em dia por aqui. 🎉</div></div>';
+}
+function updateAlertBadge(){
+  const n = computarAlertas().filter(a=>a.sev==='crit').length;
+  const b = document.getElementById('alert-badge');
+  b.style.display = n? 'flex':'none';
+  b.textContent = n;
+}
+
+/* ---------- Auditoria ---------- */
+function fillAuditFilters(){
+  const empSel = document.getElementById('aud-emp');
+  const curEmp = empSel.value;
+  empSel.innerHTML = '<option value="">Todos os colaboradores</option>' +
+    DB.funcionarios.map(f=>`<option value="${f.id}">${f.nome}</option>`).join('');
+  empSel.value = curEmp;
+
+  const userSel = document.getElementById('aud-user');
+  const curUser = userSel.value;
+  userSel.innerHTML = '<option value="">Todos</option>' +
+    RH_USERS.map(u=>`<option value="${u}">${u}</option>`).join('');
+  userSel.value = curUser;
+}
+
+function renderAuditoria(){
+  fillAuditFilters();
+  const fEmpId = document.getElementById('aud-emp').value;
+  const fOp = document.getElementById('aud-op').value;
+  const fUser = document.getElementById('aud-user').value;
+
+  let entries = DB.auditoria.slice();
+  if (fEmpId) entries = entries.filter(e=>e.empNome === empById(Number(fEmpId)).nome);
+  if (fOp) entries = entries.filter(e=>e.operacao === fOp);
+  if (fUser) entries = entries.filter(e=>e.usuario === fUser);
+
+  document.getElementById('auditoria-sub').textContent =
+    entries.length+' registro'+(entries.length===1?'':'s')+' · toda criação e remoção de férias/folgas fica aqui automaticamente';
+
+  document.getElementById('audit-list').innerHTML = entries.length ? entries.map(e=>{
+    const d = e.quando;
+    const dataStr = String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+    const horaStr = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    const opCls = e.operacao==='INSERT' ? 'op-insert' : 'op-delete';
+    return `<div class="audit-row ${opCls}">
+      <div class="avatar avatar-sm" style="background:#1C1B1A;">${iniciais(e.usuario)}</div>
+      <div class="audit-main">
+        <div class="audit-titulo">${e.titulo}</div>
+        <div class="audit-detalhe">${e.detalhe}</div>
+      </div>
+      <div class="audit-when">${dataStr}<br>${horaStr}</div>
+    </div>`;
+  }).join('') : '<div class="card"><div class="empty-note">Nenhum registro ainda. As ações de lançar e remover férias/folgas na aba Agendar e no detalhe do colaborador aparecem aqui automaticamente.</div></div>';
+}
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ---------- Init ---------- */
+Chart.defaults.font.family = 'DM Sans';
+initCurrentUserSelect();
+renderDashboard();
+updateAlertBadge();
+</script>
+</body>
+</html>
