@@ -857,7 +857,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .mini-av.mini-mais{background:var(--gray-soft);color:var(--muted)}
 
 /* stats da agenda: mesmo componente .dx-stat do dashboard */
-.ag-stats{display:flex;gap:12px;align-items:stretch;margin:62px 0 34px}
+.ag-stats{display:flex;gap:18px;align-items:stretch;margin:62px 0 44px}
 @media(max-width:820px){.ag-stats{flex-wrap:wrap;margin-top:64px}}
 .ag-mes-card{padding:28px 30px}
 .ag-week-panel{padding:26px 28px 22px}
@@ -1045,7 +1045,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 }
 /* respiro entre seções padronizado em 65px — controlado por .dx-eyebrow (margin-top) */
 /* grid de colaboradores por setor — cards em linha com ícone (igual "Hoje") */
-.dx-setores-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:11px;margin-top:34px}
+.dx-setores-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:11px;margin-top:34px}
 .dx-setor-tile{
   position:relative;background:var(--card);border:1px solid rgba(28,27,26,.05);border-radius:18px;
   padding:30px 6px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;
@@ -1510,10 +1510,10 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .ag-insta-dias.tipo-folga{background:var(--teal);color:#fff}
 
 /* agenda por setor: 9 setores em grade 3x3, cada setor num card */
-.ag-board-head{display:flex;align-items:center;justify-content:flex-start;gap:16px;flex-wrap:wrap;margin:0 0 18px}
+.ag-board-head{display:flex;align-items:center;justify-content:flex-start;gap:16px;flex-wrap:wrap;margin:8px 0 26px}
 .ag-board-title{font-family:var(--font-display);font-weight:800;font-size:18px;margin:0}
 .ag-tipo-track .tab{cursor:pointer}
-.ag-mes-pills-wrap{margin:10px 0 2px;overflow-x:auto;padding-bottom:2px}
+.ag-mes-pills-wrap{margin:18px 0 10px;overflow-x:auto;padding-bottom:2px}
 .ag-mes-track{gap:9px}
 .ag-mes-track .chip{cursor:pointer;text-transform:uppercase;letter-spacing:.4px}
 .ag-setores-board{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start}
@@ -1549,21 +1549,33 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .ag-setor-col .ag-item:last-child{border-bottom:none}
 .ag-setor-itens{display:grid;gap:2px}
 
-/* agenda: tabela plana de ausências (setor = coluna) */
-.agt-wrap{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-card);padding:4px 24px 14px}
-.agt{width:100%;border-collapse:collapse;font-size:13.5px}
-.agt thead th{text-align:left;font-size:10.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);padding:18px 14px 13px;border-bottom:1px solid var(--line);white-space:nowrap}
-.agt tbody td{padding:16px 14px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
-.agt tbody tr:last-child td{border-bottom:none}
-.agt tbody tr:hover td{background:#FAFAF8}
-.agt-pessoa{display:flex;align-items:center;gap:12px;font-weight:700;color:var(--ink)}
-.agt-pessoa .mini-av{box-shadow:none;width:32px;height:32px;font-size:12px}
-.agt-setor{display:inline-flex;align-items:center;gap:9px;font-weight:600;color:var(--muted)}
-.agt-dot{width:9px;height:9px;border-radius:50%;flex:none}
-.agt-per{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-.agt-setor-cell{vertical-align:middle;border-bottom:none !important;border-right:1px solid var(--line-soft)}
-.agt .ag-item-dias{display:inline-block;min-width:64px;text-align:center;box-sizing:border-box}
+/* agenda: ausências do mês agrupadas por setor (seções + cards) */
+.agt-wrap{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-card);padding:26px 26px 8px}
+.agt2-grupo{margin-bottom:42px}
+.agt2-grupo:first-child{margin-top:6px}
+.agt2-grupo:last-child{margin-bottom:22px}
+.agt2-grupo-head{display:flex;align-items:center;gap:12px;padding:0 6px 14px}
+.agt2-grupo-ico{width:24px;height:24px;border-radius:7px;flex:none;display:grid;place-items:center;color:#fff;box-shadow:0 6px 14px -6px rgba(28,27,26,.4)}
+.agt2-grupo-ico svg{width:14px;height:14px}
+.agt2-grupo-nome{font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+.agt2-grupo-count{font-size:11px;font-weight:600;color:var(--faint);margin-left:2px}
+.agt2-linhas{display:flex;flex-direction:column;gap:8px}
+.agt2-linha{
+  display:grid;grid-template-columns:minmax(160px,2fr) 120px 120px 100px;gap:14px;align-items:center;
+  background:#F8F7F5;border:1px solid transparent;border-radius:14px;padding:13px 16px;
+  text-decoration:none;color:inherit;cursor:pointer;
+}
+.agt-pessoa{display:flex;align-items:center;gap:12px;font-weight:700;color:var(--ink);min-width:0}
+.agt-pessoa span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.agt-pessoa .mini-av{box-shadow:none;width:32px;height:32px;font-size:12px;flex:none}
+.agt-per{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:center}
+.agt2-linha .ag-item-dias{display:inline-block;min-width:64px;text-align:center;box-sizing:border-box;justify-self:center}
 .agt-vazio{color:var(--faint);font-style:italic;padding:30px 4px;text-align:center}
+@media(max-width:680px){
+  .agt2-linha{grid-template-columns:1fr;gap:6px;text-align:left}
+  .agt-per{text-align:left}
+  .agt2-linha .ag-item-dias{justify-self:start;margin-top:2px}
+}
 
 /* ---------- Auditoria ---------- */
 .aud-table{width:100%;border-collapse:collapse;font-size:13px}
@@ -3090,7 +3102,7 @@ const Seed = {
 
     nomes.forEach((n,ix)=>{
       const [nome,funcao,depto,uni,adm]=n;
-      const cid = addColab({nome,funcao,departamento:depto,unidade:uni,regime:'CLT',admissao:adm});
+      const cid = addColab({nome,funcao,departamento:depto,unidade:uni,regime:depto==='Estagiários'?'Estágio':'CLT',admissao:adm});
       const a = pd(adm), h = hoje();
       // gera períodos aquisitivos anuais desde a admissão
       let ini = new Date(a);
@@ -4320,26 +4332,10 @@ UI.renderAgenda = function(){
   const fimMes = new Date(ano, mes+1, 0);
   const ausMes = unicosNoIntervalo(inicioMes, fimMes);
 
-  const infoAusencia = p => {
-    const c = Store.data.colaboradores.find(x=>x.nome===p.nome);
-    if(!c) return null;
-    let achado = null;
-    Dom.periodosDe(c.id).forEach(per=>{
-      const lst = p.tipo==='ferias' ? Dom.feriasDe(per.id) : Dom.folgasDe(per.id);
-      lst.forEach(f=>{
-        if(achado) return;
-        const di = pd(f.inicio), df = pd(f.fim);
-        if(di<=fimMes && df>=inicioMes) achado = f;
-      });
-    });
-    return achado;
-  };
-
   // ---------- stats do mês (mesmo componente .dx-stat do dashboard) ----------
   const ICOag = {
     praia:'<path d="M2 18h20"/><path d="M4 21h4M11 21h2M16 21h4"/><path d="M6.5 14a5.5 5.5 0 0 1 11 0"/><path d="M12 4.5V3M5.8 6.3 4.7 5.2M18.2 6.3l1.1-1.1M3.5 12H2M22 12h-1.5"/>',
     folga:'<path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 1v3M10 1v3M14 1v3"/>',
-    relogio:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     setores:'<path d="M4 21h16M6 21V8l6-4 6 4v13M10 21v-6h4v6"/><path d="M9 11h.01M15 11h.01M9 14h.01M15 14h.01"/>'
   };
   const nomesCurtosAg = (lista, max=2) => {
@@ -4357,14 +4353,12 @@ UI.renderAgenda = function(){
     </div>`;
   const emFerias = ausMes.filter(p=>p.tipo==='ferias');
   const emFolga = ausMes.filter(p=>p.tipo==='folga');
-  const totalDiasMes = ausMes.reduce((s,p)=>{ const info=infoAusencia(p); return s+(info?info.dias:0); },0);
   const setoresAfetados = new Set(ausMes.map(p=>{ const c=Store.data.colaboradores.find(x=>x.nome===p.nome); return c?c.departamento:null; }).filter(Boolean));
   const totalSetores = new Set(Store.data.colaboradores.map(c=>c.departamento)).size;
   $('#agKpis').innerHTML =
-    statAg('red',    ICOag.praia,   'Em férias',        emFerias.length?nomesCurtosAg(emFerias):'ninguém no mês', emFerias.length) +
-    statAg('blue',   ICOag.folga,   'Em folga',         emFolga.length?nomesCurtosAg(emFolga):'ninguém no mês', emFolga.length) +
-    statAg('amber',  ICOag.relogio, 'Dias de ausência', 'férias e folgas somadas', totalDiasMes) +
-    statAg('violet', ICOag.setores, 'Setores afetados', setoresAfetados.size?`de ${totalSetores} no total`:'nenhum setor', setoresAfetados.size);
+    statAg('red',    ICOag.praia,   'Férias Contábeis', emFerias.length?nomesCurtosAg(emFerias):'ninguém no mês', emFerias.length) +
+    statAg('blue',   ICOag.folga,   'Folgas',           emFolga.length?nomesCurtosAg(emFolga):'ninguém no mês', emFolga.length) +
+    statAg('violet', ICOag.setores, 'Setores',          setoresAfetados.size?`de ${totalSetores} no total`:'nenhum setor', setoresAfetados.size);
 
   // ---------- lista do mês, agrupada por setor ----------
   const registrosDoMes = () => {
@@ -4373,11 +4367,11 @@ UI.renderAgenda = function(){
       Dom.periodosDe(c.id).forEach(p=>{
         Dom.feriasDe(p.id).forEach(r=>{
           if(pd(r.inicio) <= fimMes && pd(r.fim) >= inicioMes)
-            out.push({nome:c.nome, foto:c.foto||null, departamento:c.departamento, inicio:r.inicio, fim:r.fim, dias:r.dias, tipo:'ferias'});
+            out.push({id:c.id, nome:c.nome, foto:c.foto||null, departamento:c.departamento, inicio:r.inicio, fim:r.fim, dias:r.dias, tipo:'ferias'});
         });
         Dom.folgasDe(p.id).forEach(r=>{
           if(pd(r.inicio) <= fimMes && pd(r.fim) >= inicioMes)
-            out.push({nome:c.nome, foto:c.foto||null, departamento:c.departamento, inicio:r.inicio, fim:r.fim, dias:r.dias, tipo:'folga'});
+            out.push({id:c.id, nome:c.nome, foto:c.foto||null, departamento:c.departamento, inicio:r.inicio, fim:r.fim, dias:r.dias, tipo:'folga'});
         });
       });
     });
@@ -4393,29 +4387,33 @@ UI.renderAgenda = function(){
     a.departamento.localeCompare(b.departamento,'pt-BR') ||
     a.inicio.localeCompare(b.inicio) ||
     a.nome.localeCompare(b.nome,'pt-BR'));
-  const celulasPessoa = r => `
-            <td><div class="agt-pessoa">${miniAv(r)}${esc(r.nome)}</div></td>
-            <td><span class="agt-per">${fmt(r.inicio)}</span></td>
-            <td><span class="agt-per">${fmt(r.fim)}</span></td>
-            <td><span class="ag-item-dias tipo-${r.tipo}">${r.dias} ${r.dias==1?'dia':'dias'}</span></td>`;
+  const linhaPessoa = r => `
+    <a class="agt2-linha" href="#/colab/${r.id}">
+      <div class="agt-pessoa">${miniAv(r)}<span>${esc(r.nome)}</span></div>
+      <span class="agt-per">${fmt(r.inicio)}</span>
+      <span class="agt-per">${fmt(r.fim)}</span>
+      <span class="ag-item-dias tipo-${r.tipo}">${r.dias} ${r.dias==1?'dia':'dias'}</span>
+    </a>`;
   let corpo = '', i = 0;
   while(i < linhas.length){
     const dep = linhas[i].departamento;
     const grupo = [];
     while(i < linhas.length && linhas[i].departamento === dep){ grupo.push(linhas[i]); i++; }
     const cor = (info[dep]||{}).cor || '#8a8a86';
-    grupo.forEach((r, gi)=>{
-      corpo += `<tr>`;
-      if(gi===0) corpo += `<td rowspan="${grupo.length}" class="agt-setor-cell"><span class="agt-setor"><span class="agt-dot" style="background:${cor}"></span>${esc(dep)}</span></td>`;
-      corpo += celulasPessoa(r) + `</tr>`;
-    });
+    const ico = (info[dep]||{}).ico || ICOag.setores;
+    const nPessoas = new Set(grupo.map(r=>r.nome)).size;
+    corpo += `<div class="agt2-grupo">
+      <div class="agt2-grupo-head">
+        <span class="agt2-grupo-ico" style="background:${cor}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></span>
+        <span class="agt2-grupo-nome">${esc(dep)}</span>
+        <span class="agt2-grupo-count">${nPessoas} ${nPessoas===1?'colaborador':'colaboradores'}</span>
+      </div>
+      <div class="agt2-linhas">${grupo.map(linhaPessoa).join('')}</div>
+    </div>`;
   }
   $('#agPorSetor').innerHTML = !linhas.length
     ? `<div class="agt-wrap"><div class="agt-vazio">${vazioMsg}</div></div>`
-    : `<div class="agt-wrap"><table class="agt">
-        <thead><tr><th>Setor</th><th>Pessoa</th><th>Início</th><th>Fim</th><th>Dias</th></tr></thead>
-        <tbody>${corpo}</tbody>
-      </table></div>`;
+    : `<div class="agt-wrap">${corpo}</div>`;
 };
 
 /* ================================================================
@@ -4702,10 +4700,19 @@ UI.renderDash = function(){
     : `<div class="dx-rank-tile dx-rank-vazio">Sem dados em ${ano}</div>`);
   $('#dxRankFooter').innerHTML = tiles.join('');
 
-  // ---------- colaboradores por setor ----------
-  const SETORES = SETORES_BRAND;
+  // ---------- colaboradores por setor (estagiários contam no setor real onde atuam) ----------
+  const SETORES = SETORES_BRAND.filter(s=>s.nome!=='Estagiários');
+  const MAPA_SETOR_ESTAGIARIO = { 'Mídia':'Digital' };
   const contaSetor = {};
-  cs.forEach(c=>{ contaSetor[c.departamento] = (contaSetor[c.departamento]||0)+1; });
+  cs.forEach(c=>{
+    let dep = c.departamento;
+    if(dep==='Estagiários'){
+      const m = c.funcao.match(/estagi[áa]ri[oa]\s+d[eo]\s+(.+)/i);
+      const real = m ? m[1].trim() : null;
+      dep = real ? (MAPA_SETOR_ESTAGIARIO[real]||real) : null;
+    }
+    if(dep) contaSetor[dep] = (contaSetor[dep]||0)+1;
+  });
   $('#dxSetoresGrid').innerHTML = SETORES.map(s=>`
     <div class="dx-setor-tile">
       <span class="dx-setor-ico" style="background:${s.cor}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${s.ico}</svg></span>
