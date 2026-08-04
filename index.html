@@ -1195,6 +1195,8 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .dx-stat-ico.c-amber{background:linear-gradient(150deg,#F0A93A,#D2860F);box-shadow:0 10px 20px -6px rgba(210,134,15,.5)}
 .dx-stat-ico.c-red{background:linear-gradient(150deg,#D6304F,#A11332);box-shadow:0 10px 20px -6px rgba(161,19,50,.5)}
 .dx-stat-ico.c-violet{background:linear-gradient(150deg,#7C5AD8,#5738AE);box-shadow:0 10px 20px -6px rgba(87,56,174,.5)}
+.dx-stat-ico.c-yellow{background:linear-gradient(150deg,#F7CE3A,#E7AF08);box-shadow:0 10px 20px -6px rgba(217,164,8,.5)}
+.dx-stat-ico.c-orange{background:linear-gradient(150deg,#F5822E,#D25A0C);box-shadow:0 10px 20px -6px rgba(210,90,12,.5)}
 .dx-stat-tit{font-weight:700;font-size:13.5px;color:var(--graphite);line-height:1.2}
 .dx-stat-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.25;min-height:15px}
 .dx-stat-sub::first-letter{text-transform:uppercase}
@@ -1559,14 +1561,15 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .agt2-grupo-count{font-size:11px;font-weight:600;color:var(--faint);margin-left:2px}
 .agt2-linhas{display:flex;flex-direction:column;gap:8px}
 .agt2-linha{
-  display:grid;grid-template-columns:minmax(160px,2fr) 120px 120px 100px;gap:14px;align-items:center;
+  display:grid;grid-template-columns:minmax(160px,1fr) 165px 116px 100px;gap:24px;align-items:center;
   background:#F8F7F5;border:1px solid transparent;border-radius:14px;padding:13px 16px;
   text-decoration:none;color:inherit;cursor:pointer;
 }
 .agt-pessoa{display:flex;align-items:center;gap:12px;font-weight:700;color:var(--ink);min-width:0}
 .agt-pessoa span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .agt-pessoa .mini-av{box-shadow:none;width:32px;height:32px;font-size:12px;flex:none}
-.agt-per{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:center}
+.agt-per{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:left;display:flex;align-items:baseline;justify-content:flex-start;gap:7px}
+.agt-per-lab{font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--faint)}
 .agt2-linha .ag-item-dias{display:inline-block;min-width:64px;text-align:center;box-sizing:border-box;justify-self:center}
 .agt-vazio{color:var(--faint);font-style:italic;padding:30px 4px;text-align:center}
 @media(max-width:680px){
@@ -1803,29 +1806,17 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
       <div>
         <h1 class="page-title">Calendário</h1>
       </div>
-      <div class="cal-year-nav">
-        <button id="calAnoPrev" aria-label="Ano anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></button>
-        <span class="cal-nav-lab" id="calAnoLab"></span>
-        <button id="calAnoNext" aria-label="Próximo ano"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></button>
-        <button id="calAnoHoje" class="link-hoje">Hoje</button>
-      </div>
+      <div class="tabs-track cal-ano-seg" id="calAnoSeg" role="tablist" aria-label="Selecionar ano"></div>
     </div>
 
     <div class="tabs" style="padding:0">
       <div class="tabs-track">
-        <button class="tab" data-caltab="ferias">Férias</button>
-        <button class="tab" data-caltab="folga">Folga</button>
+        <button class="tab" data-caltab="folga">Folgas</button>
+        <button class="tab" data-caltab="ferias">Férias Contábeis</button>
       </div>
     </div>
 
-    <div class="chips" id="calDeptChips" style="margin:22px 0 20px"></div>
-
-    <div class="cal-legend" style="margin-bottom:24px">
-      <span><i style="background:var(--red)"></i>Férias</span>
-      <span><i style="background:var(--teal)"></i>Folga</span>
-      <span><i style="background:rgba(28,27,26,.55)"></i>Feriado</span>
-      <span><i style="background:rgba(28,27,26,.13)"></i>Fim de semana</span>
-    </div>
+    <div class="chips" id="calDeptChips" style="margin:35px 0 35px"></div>
 
     <div class="year-grid" id="yearGridCal"></div>
   </section>
@@ -4073,7 +4064,7 @@ const Actions = {
    ================================================================ */
 UI.anoCal = hoje().getFullYear();
 UI.calFiltro = {depto:''};
-UI.calTab = 'ferias';
+UI.calTab = 'folga'; // folga (padrão, mostrado primeiro) | ferias
 
 UI.diaMap = function(ano, filtro){
   // constrói {iso: {fer:[{nome,unidade}], fol:[...]}} varrendo todos os colaboradores
@@ -4156,11 +4147,18 @@ UI.buildCalGrid = function(tipo, ano, map, feriados, hj){
 
 UI.renderCal = function(){
   const ano = this.anoCal;
-  $('#calAnoLab').textContent = ano;
-  $('#calAnoHoje').classList.toggle('atual', ano===hoje().getFullYear());
+
+  // segmento de ano (ano atual + próximo)
+  const anoBase = hoje().getFullYear();
+  const anosCal = [anoBase, anoBase+1];
+  $('#calAnoSeg').innerHTML = anosCal.map(a=>
+    `<button class="tab${a===ano?' on':''}" data-ano="${a}" role="tab" aria-selected="${a===ano}">${a}</button>`).join('');
+  $$('#calAnoSeg .tab').forEach(t=>{
+    t.onclick=()=>{ this.anoCal=Number(t.dataset.ano); this.renderCal(); };
+  });
 
   // tabs Férias/Folga
-  $$('#viewCal .tabs-track .tab').forEach(t=>{
+  $$('#viewCal .tab[data-caltab]').forEach(t=>{
     t.classList.toggle('on', t.dataset.caltab===this.calTab);
     t.onclick=()=>{ this.calTab=t.dataset.caltab; this.renderCal(); };
   });
@@ -4334,7 +4332,8 @@ UI.renderAgenda = function(){
   const ICOag = {
     praia:'<path d="M2 18h20"/><path d="M4 21h4M11 21h2M16 21h4"/><path d="M6.5 14a5.5 5.5 0 0 1 11 0"/><path d="M12 4.5V3M5.8 6.3 4.7 5.2M18.2 6.3l1.1-1.1M3.5 12H2M22 12h-1.5"/>',
     folga:'<path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 1v3M10 1v3M14 1v3"/>',
-    setores:'<path d="M4 21h16M6 21V8l6-4 6 4v13M10 21v-6h4v6"/><path d="M9 11h.01M15 11h.01M9 14h.01M15 14h.01"/>'
+    setores:'<path d="M4 21h16M6 21V8l6-4 6 4v13M10 21v-6h4v6"/><path d="M9 11h.01M15 11h.01M9 14h.01M15 14h.01"/>',
+    ausentes:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>'
   };
   const nomesCurtosAg = (lista, max=2) => {
     const nomes = lista.map(p=>(p.nome||'').split(' ')[0]);
@@ -4354,9 +4353,10 @@ UI.renderAgenda = function(){
   const setoresAfetados = new Set(ausMes.map(p=>{ const c=Store.data.colaboradores.find(x=>x.nome===p.nome); return c?c.departamento:null; }).filter(Boolean));
   const totalSetores = new Set(Store.data.colaboradores.map(c=>c.departamento)).size;
   $('#agKpis').innerHTML =
-    statAg('red',    ICOag.praia,   'Férias Contábeis', emFerias.length?nomesCurtosAg(emFerias):'ninguém no mês', emFerias.length) +
-    statAg('blue',   ICOag.folga,   'Folgas',           emFolga.length?nomesCurtosAg(emFolga):'ninguém no mês', emFolga.length) +
-    statAg('violet', ICOag.setores, 'Setores',          setoresAfetados.size?`de ${totalSetores} no total`:'nenhum setor', setoresAfetados.size);
+    statAg('amber',  ICOag.ausentes,'Ausentes no Mês',  ausMes.length?'férias + folgas':'ninguém no mês', ausMes.length) +
+    statAg('red',    ICOag.praia,   'Férias Contábeis', emFerias.length?`${MESES[mes]} ${ano}`:'ninguém no mês', emFerias.length) +
+    statAg('teal',   ICOag.folga,   'Folgas',           emFolga.length?`${MESES[mes]} ${ano}`:'ninguém no mês', emFolga.length) +
+    statAg('indigo', ICOag.setores, 'Setores',          setoresAfetados.size?`${MESES[mes]} ${ano}`:'nenhum setor', setoresAfetados.size);
 
   // ---------- lista do mês, agrupada por setor ----------
   const registrosDoMes = () => {
@@ -4388,8 +4388,8 @@ UI.renderAgenda = function(){
   const linhaPessoa = r => `
     <a class="agt2-linha" href="#/colab/${r.id}">
       <div class="agt-pessoa">${miniAv(r)}<span>${esc(r.nome)}</span></div>
-      <span class="agt-per">${fmt(r.inicio)}</span>
-      <span class="agt-per">${fmt(r.fim)}</span>
+      <span class="agt-per"><span class="agt-per-lab">Início</span>${fmt(r.inicio)}</span>
+      <span class="agt-per"><span class="agt-per-lab">Fim</span>${fmt(r.fim)}</span>
       <span class="ag-item-dias tipo-${r.tipo}">${r.dias} ${r.dias==1?'dia':'dias'}</span>
     </a>`;
   let corpo = '', i = 0;
@@ -4562,11 +4562,11 @@ UI.renderDash = function(){
       <span class="dx-stat-go">↗</span>
     </a>`;
   $('#dxHojeStats').innerHTML =
-    statCard('red', ICO.sino, 'Alertas', nAlertas?'férias a vencer':'tudo em dia', nAlertas, '#/colaboradores?pend') +
+    statCard('yellow', ICO.sino, 'Alertas', nAlertas?'férias a vencer':'tudo em dia', nAlertas, '#/colaboradores?pend') +
     statCard('violet', ICO.inbox, 'Solicitações', nSolic?'aguardando RH':'nada pendente', nSolic, '#/solicitacoes') +
-    statCard('teal', ICO.praia, 'Férias Contábeis', feriasHoje.length?nomesCurtos(feriasHoje):'ninguém hoje', feriasHoje.length, '#/agenda') +
-    statCard('blue', ICO.folga, 'Folgas', folgasHoje.length?nomesCurtos(folgasHoje):'ninguém hoje', folgasHoje.length, '#/agenda') +
-    statCard('amber', ICO.trofeu, 'Aniversários', aniversHoje.length?nomesCurtos(aniversHoje):'ninguém hoje', aniversHoje.length, '#/graficos?tab=tempocasa');
+    statCard('red', ICO.praia, 'Férias Contábeis', feriasHoje.length?'hoje':'ninguém hoje', feriasHoje.length, '#/agenda') +
+    statCard('teal', ICO.folga, 'Folgas', folgasHoje.length?'hoje':'ninguém hoje', folgasHoje.length, '#/agenda') +
+    statCard('orange', ICO.trofeu, 'Aniversários', aniversHoje.length?nomesCurtos(aniversHoje):'ninguém hoje', aniversHoje.length, '#/graficos?tab=tempocasa');
 
   // ---------- calendário SEMANAL (agenda de ausências da semana) ----------
   if(!this.dashWeekRef) this.dashWeekRef = hj;
@@ -5205,9 +5205,6 @@ function bootApp(){
   const h=hoje();
   $('#q').addEventListener('input',e=>{UI.filtro.q=e.target.value;UI.renderDir();});
   $('#audAcao').addEventListener('change',e=>{UI.audFiltro.acao=e.target.value;UI.renderAudit();});
-  $('#calAnoPrev').addEventListener('click',()=>{UI.anoCal--; UI.renderCal();});
-  $('#calAnoNext').addEventListener('click',()=>{UI.anoCal++; UI.renderCal();});
-  $('#calAnoHoje').addEventListener('click',()=>{UI.anoCal=hoje().getFullYear(); UI.renderCal();});
   $('#agMesPills').addEventListener('click',e=>{const b=e.target.closest('[data-mes]'); if(!b) return; UI.agMes=new Date(UI.agMes.getFullYear(), Number(b.dataset.mes), 1); UI.renderAgenda();});
   $('#grafAnoPrev').addEventListener('click',()=>{UI.anoGraf--; UI.renderGraficos();});
   $('#grafAnoNext').addEventListener('click',()=>{UI.anoGraf++; UI.renderGraficos();});
