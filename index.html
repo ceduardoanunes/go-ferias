@@ -4185,15 +4185,19 @@ const Actions = {
   pdfHeader(doc){
     const logoImg = document.querySelector('.sb-logo');
     const pageW = doc.internal.pageSize.getWidth();
-    let x = 14;
+    // topo esquerda: marca "go & grow! comunicação" + subtítulo do sistema
+    let hx = 14;
+    pdfTitulo(doc); doc.setFontSize(10.5); doc.setTextColor(28,27,26);
+    doc.text('go & grow', hx, 15); hx += doc.getTextWidth('go & grow');
+    doc.setTextColor(196,25,59); doc.text('!', hx, 15); hx += doc.getTextWidth('!');
+    doc.setTextColor(28,27,26); doc.text(' comunicação', hx, 15); hx += doc.getTextWidth(' comunicação');
+    pdfBody(doc); doc.setFontSize(10); doc.setTextColor(140,138,134);
+    doc.text('  |  Gestão de Férias do Colaborador', hx, 15);
+    // logo (marca) alinhado à direita
     if(logoImg && logoImg.complete && logoImg.naturalWidth){
-      const h = 9, w = h*(logoImg.naturalWidth/logoImg.naturalHeight);
-      doc.addImage(logoImg, 'PNG', 14, 11, w, h);
-      x = 14 + w + 7;
+      const h = 10, w = h*(logoImg.naturalWidth/logoImg.naturalHeight);
+      doc.addImage(logoImg, 'PNG', pageW-14-w, 8, w, h);
     }
-    // "!" em vermelho à direita (marca)
-    pdfTitulo(doc); doc.setFontSize(21); doc.setTextColor(196,25,59);
-    doc.text('!', pageW-14, 19, {align:'right'});
     // divisória sob o cabeçalho
     doc.setDrawColor(228,226,222); doc.setLineWidth(0.4);
     doc.line(14, 24, pageW-14, 24);
@@ -4222,50 +4226,73 @@ const Actions = {
     const base = { margin:{top:30, bottom:20}, didDrawPage:()=>this.pdfHeader(doc) };
 
     const pageW = doc.internal.pageSize.getWidth();
-    // nome (só na 1ª página)
-    pdfTitulo(doc); doc.setFontSize(27); doc.setTextColor(28,27,26);
+    // nome (só na 1ª página) — kerning levemente apertado
+    pdfTitulo(doc); doc.setFontSize(34); doc.setTextColor(28,27,26);
+    doc.setCharSpace(-0.6);
     doc.text(c.nome, 14, 42);
+    doc.setCharSpace(0);
     if(c.ativo===false){
       const nw = doc.getTextWidth(c.nome);
       pdfTitulo(doc); doc.setFontSize(9); doc.setTextColor(196,25,59);
       doc.text('INATIVO', 14+nw+6, 39.5);
     }
-    // caixa cinza com bordas: dados cadastrais rotulados
-    const boxY = 49, boxH = 24;
-    doc.setFillColor(246,245,243);
-    doc.setDrawColor(224,222,218); doc.setLineWidth(0.3);
-    doc.roundedRect(14, boxY, pageW-28, boxH, 2.5, 2.5, 'FD');
-    const kv = (label, val, px, py)=>{
+    // dados cadastrais rotulados com ícones (alinhados ao nome, sem caixa)
+    const boxY = 45, boxH = 24;
+    const ic = {
+      cargo:(x,y,s)=>{ doc.roundedRect(x, y+s*0.34, s, s*0.58, 0.4,0.4,'S'); doc.rect(x+s*0.32, y+s*0.12, s*0.36, s*0.22,'S'); doc.line(x, y+s*0.56, x+s, y+s*0.56); },
+      setor:(x,y,s)=>{ doc.rect(x+s*0.12, y, s*0.76, s,'S'); doc.rect(x+s*0.42, y+s*0.55, s*0.16, s*0.45,'S'); },
+      unidade:(x,y,s)=>{ doc.circle(x+s*0.5, y+s*0.38, s*0.3,'S'); doc.line(x+s*0.5, y+s*1.0, x+s*0.28, y+s*0.5); doc.line(x+s*0.5, y+s*1.0, x+s*0.72, y+s*0.5); },
+      admissao:(x,y,s)=>{ doc.roundedRect(x, y+s*0.14, s, s*0.86, 0.4,0.4,'S'); doc.line(x, y+s*0.4, x+s, y+s*0.4); doc.line(x+s*0.28, y, x+s*0.28, y+s*0.22); doc.line(x+s*0.72, y, x+s*0.72, y+s*0.22); },
+      tempo:(x,y,s)=>{ doc.circle(x+s*0.5, y+s*0.5, s*0.48,'S'); doc.line(x+s*0.5, y+s*0.5, x+s*0.5, y+s*0.22); doc.line(x+s*0.5, y+s*0.5, x+s*0.68, y+s*0.6); },
+      regime:(x,y,s)=>{ doc.roundedRect(x+s*0.1, y, s*0.8, s, 0.4,0.4,'S'); doc.line(x+s*0.28, y+s*0.32, x+s*0.72, y+s*0.32); doc.line(x+s*0.28, y+s*0.52, x+s*0.72, y+s*0.52); doc.line(x+s*0.28, y+s*0.72, x+s*0.56, y+s*0.72); }
+    };
+    const kv = (iconKey, label, val, px, py)=>{
+      const s = 3.4, iy = py - 3.1;
+      doc.setDrawColor(150,148,144); doc.setLineWidth(0.35);
+      ic[iconKey](px, iy, s);
+      const tx = px + s + 3;
       doc.setFontSize(10);
       pdfTitulo(doc); doc.setTextColor(130,128,124);
-      doc.text(`${label}:`, px, py);
-      const lw = doc.getTextWidth(`${label}:`)+2.5;
+      doc.text(`${label}:`, tx, py);
+      const lw = doc.getTextWidth(`${label}:`)+1.5;
       pdfBody(doc); doc.setTextColor(40,38,36);
-      doc.text(String(val||'—'), px+lw, py);
+      doc.text(String(val||'—'), tx+lw, py);
     };
-    const colL = 21, colR = pageW/2 + 2, row1 = boxY+9.5, row2 = boxY+18;
-    kv('Cargo',   c.funcao,        colL, row1);
-    kv('Setor',   c.departamento,  colR, row1);
-    kv('Unidade', c.unidade,       colL, row2);
-    kv('Regime',  c.regime,        colR, row2);
+    const colL = 14, colR = pageW/2 + 2;
+    kv('cargo',   'Cargo',         c.funcao,                       colL, boxY+9);
+    kv('admissao','Admissão',      c.admissao?fmt(c.admissao):'—', colR, boxY+9);
+    kv('setor',   'Setor',         c.departamento,                 colL, boxY+17.5);
+    kv('tempo',   'Tempo de casa', tempoDeCasa(c.admissao),        colR, boxY+17.5);
+    kv('unidade', 'Unidade',       c.unidade,                      colL, boxY+26);
+    kv('regime',  'Regime',        c.regime,                       colR, boxY+26);
 
-    doc.autoTable({
-      ...base,
-      startY: boxY + boxH + 8,
-      head: [['Admissão','Tempo de casa','Saldo de férias','Saldo de folgas']],
-      body: [[fmt(c.admissao), tempoDeCasa(c.admissao), `${r.saldoContabil} dias`, `${r.saldoFolgas} dias`]],
-      styles: {font: pdfFont(doc), fontSize:10, cellPadding:3},
-      headStyles: {fillColor:[28,27,26], textColor:255, fontStyle:'bold', fontSize:10},
-    });
+    // gráficos de saldos disponíveis (barras)
+    const cy = boxY + boxH + 16;
+    const half = (pageW-28-10)/2;
+    const drawStat = (x, label, val, max, cor)=>{
+      pdfBody(doc); doc.setFontSize(8.5); doc.setTextColor(120,118,114);
+      doc.text(label, x, cy);
+      pdfTitulo(doc); doc.setFontSize(17); doc.setTextColor(cor[0],cor[1],cor[2]);
+      doc.text(String(val), x, cy+9);
+      const nvw = doc.getTextWidth(String(val));
+      pdfBody(doc); doc.setFontSize(9.5); doc.setTextColor(150,148,144);
+      doc.text(`/ ${max} dias`, x+nvw+2, cy+9);
+      const barY = cy+13;
+      doc.setFillColor(233,231,227); doc.roundedRect(x, barY, half, 5, 2.5, 2.5, 'F');
+      const frac = Math.max(0, Math.min(1, val/max));
+      if(frac>0){ doc.setFillColor(cor[0],cor[1],cor[2]); doc.roundedRect(x, barY, Math.max(half*frac,5), 5, 2.5, 2.5, 'F'); }
+    };
+    drawStat(14,         'FÉRIAS DISPONÍVEIS', r.saldoContabil,           REGRAS.DIAS_CONTABEIS, [196,25,59]);
+    drawStat(14+half+10, 'FOLGAS DISPONÍVEIS', Math.max(r.saldoFolgas,0), REGRAS.DIAS_FOLGAS,    [18,131,106]);
 
     const feriasLinhas = [];
     Dom.periodosDe(c.id).forEach(p=>Dom.feriasDe(p.id).forEach(f=>
       feriasLinhas.push([fmt(f.inicio), fmt(f.fim), `${f.dias} dias`, f.obs||'—'])));
-    pdfTitulo(doc); doc.setFontSize(12); doc.setTextColor(28,27,26);
-    doc.text('Férias contábeis', 14, doc.lastAutoTable.finalY + 12);
+    pdfTitulo(doc); doc.setFontSize(15); doc.setTextColor(28,27,26);
+    doc.text('Férias contábeis', 14, cy + 36);
     doc.autoTable({
       ...base,
-      startY: doc.lastAutoTable.finalY + 16,
+      startY: cy + 43,
       head: [['Início','Fim','Dias','Observação']],
       body: feriasLinhas.length ? feriasLinhas : [['—','—','—','Nenhum lançamento']],
       styles: {font: pdfFont(doc), fontSize:9, cellPadding:2.5},
@@ -4276,11 +4303,12 @@ const Actions = {
     const folgasLinhas = [];
     Dom.periodosDe(c.id).forEach(p=>Dom.folgasDe(p.id).forEach(f=>
       folgasLinhas.push([fmt(f.inicio), fmt(f.fim), `${f.dias} dias`, f.obs||'—'])));
-    pdfTitulo(doc); doc.setFontSize(12); doc.setTextColor(28,27,26);
-    doc.text('Folgas', 14, doc.lastAutoTable.finalY + 12);
+    doc.addPage(); // folgas sempre começam em página nova
+    pdfTitulo(doc); doc.setFontSize(15); doc.setTextColor(28,27,26);
+    doc.text('Folgas', 14, 34);
     doc.autoTable({
       ...base,
-      startY: doc.lastAutoTable.finalY + 16,
+      startY: 42,
       head: [['Início','Fim','Dias','Observação']],
       body: folgasLinhas.length ? folgasLinhas : [['—','—','—','Nenhum lançamento']],
       styles: {font: pdfFont(doc), fontSize:9, cellPadding:2.5},
