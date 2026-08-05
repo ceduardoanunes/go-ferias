@@ -1645,8 +1645,8 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 #viewCal .ygrid{grid-auto-rows:34px;gap:3px}
 #viewCal .ygrid .ydow{font-size:9px;text-transform:uppercase;letter-spacing:.04em}
 #viewCal .ygrid .yday{aspect-ratio:auto;font-size:11px;font-weight:400;color:var(--muted)}
-#viewCal .ygrid .yday.weekend{background:rgba(28,27,26,.13);color:var(--muted);font-weight:600}
-#viewCal .ygrid .yday.util{background:rgba(28,27,26,.07);color:var(--muted)}
+#viewCal .ygrid .yday.weekend{background:rgba(28,27,26,.04);color:var(--muted);font-weight:400}
+#viewCal .ygrid .yday.util{background:rgba(28,27,26,.04);color:var(--muted)}
 #viewCal .ygrid .yday.i4{background:rgba(196,25,59,.16);color:var(--red-deep);font-weight:600;cursor:pointer}
 #viewCal .ygrid .yday.f3{background:rgba(18,131,106,.16);color:var(--teal);font-weight:600;cursor:pointer}
 #viewCal .ygrid .yday.feriado{background:rgba(28,27,26,.2);color:var(--ink);font-weight:600}
@@ -4091,8 +4091,6 @@ UI.diaMap = function(ano, filtro){
   return {map, total:cs.length};
 };
 
-const EMOJI_CAL_TIPO = {fer:'🏖️', fol:'🛋️'};
-
 UI.buildCalGrid = function(tipo, ano, map, feriados, hj){
   // tipo: 'fer' (férias) ou 'fol' (folga) — usa a mesma estrutura .ymonth/.ygrid/.yday já comprovada
   const dowShort=['D','S','T','Q','Q','S','S'];
@@ -4118,7 +4116,6 @@ UI.buildCalGrid = function(tipo, ano, map, feriados, hj){
       } else if(pessoas.length){
         cls='yday '+claCor;
         diasComGente++;
-        tipEmoji = EMOJI_CAL_TIPO[tipo];
         tipL1 = fmtDiaMesAno(di);
         tipL2 = tipo==='fer'
           ? `${pessoas.length} ${pessoas.length===1?'pessoa de férias':'pessoas de férias'}`
@@ -4165,8 +4162,8 @@ UI.renderCal = function(){
 
   // pills de departamento
   const cs0 = Store.data.colaboradores;
-  const ORDEM_DEPTO = ['Direção','Coordenação','Administrativo','Corporativo','Digital','Criação','Vídeo','TI','Estagiários'];
-  const deps = [...new Set(cs0.map(c=>c.departamento))].sort((a,b)=>{
+  const ORDEM_DEPTO = SETORES_BRAND.map(s=>s.nome);
+  const deps = [...new Set([...ORDEM_DEPTO, ...cs0.map(c=>c.departamento)])].sort((a,b)=>{
     const ia=ORDEM_DEPTO.indexOf(a), ib=ORDEM_DEPTO.indexOf(b);
     if(ia===-1 && ib===-1) return a.localeCompare(b,'pt-BR');
     if(ia===-1) return 1;
