@@ -434,8 +434,8 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .btn-ghost{background:var(--card);color:var(--red);border:1.5px solid #F0C7CF}
 .btn-ghost:hover{background:var(--red-soft)}
 .btn-soft{background:var(--gray-soft);color:var(--ink)}
-.btn-dark{background:#5A5854;color:#fff;box-shadow:0 8px 18px -8px rgba(28,27,26,.35)}
-.btn-dark:hover{background:#4A4844}
+.btn-dark{background:#AFADA8;color:#fff;box-shadow:0 8px 18px -8px rgba(28,27,26,.35)}
+.btn-dark:hover{background:#9D9B96}
 .btn-soft:hover{background:#E7E5E1}
 .btn-danger-soft{background:var(--red-soft);color:var(--red)}
 .btn:focus-visible,.chip:focus-visible,.person:focus-visible,.tab:focus-visible{
@@ -1039,10 +1039,12 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
   background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:var(--shadow-card);padding:24px 26px;
 }
+.dash-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px}
+@media(max-width:1000px){.dash-grid{grid-template-columns:1fr}}
 .dash-card.span-2{grid-column:span 2}
 @media(max-width:1000px){.dash-card.span-2{grid-column:span 1}}
 .dash-card-title{
-  font-family:var(--font-display);font-weight:800;font-size:27px;margin-bottom:24px;letter-spacing:-0.5px;
+  font-family:var(--font-display);font-weight:800;font-size:27px;margin-bottom:24px;letter-spacing:-0.9px;
   display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
 }
 .dash-card-title span:first-child{font-weight:800}
@@ -1652,16 +1654,19 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .a-atualizar{background:var(--blue-soft);color:var(--blue)}
 .a-login{background:var(--gray-soft);color:var(--muted)}
 /* ---------- Calendário geral (anual, heatmap) ---------- */
-.cal-year-nav{display:flex;align-items:center;gap:6px;align-self:flex-start;margin-top:10px}
+.cal-year-nav{
+  display:inline-flex;align-items:center;gap:2px;align-self:flex-start;margin-top:18px;
+  background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px;
+}
 .cal-year-nav button{
-  width:36px;height:36px;border-radius:11px;border:1px solid var(--line);background:#fff;
+  width:30px;height:30px;border-radius:10px;border:none;background:none;
   display:grid;place-items:center;color:var(--muted);
 }
-.cal-year-nav button:hover{border-color:var(--red);color:var(--red)}
+.cal-year-nav button:hover{background:var(--gray-soft);color:var(--red)}
 .cal-year-nav svg{width:15px;height:15px}
 .cal-nav-lab{
-  font-family:var(--font-display);font-weight:800;font-size:14px;padding:0 12px;
-  min-width:64px;text-align:center;color:var(--ink);cursor:default;user-select:none;
+  font-family:var(--font-display);font-weight:800;font-size:14px;padding:0 10px;
+  min-width:56px;text-align:center;color:var(--ink);cursor:default;user-select:none;
 }
 .link-hoje{
   background:none;border:none;font-size:12.5px;font-weight:700;color:var(--red);
@@ -1831,11 +1836,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
       <div>
         <h1 class="page-title">Colaboradores</h1>
       </div>
-      <div style="display:flex;gap:10px;align-items:center;align-self:flex-start;margin-top:10px">
-        <button class="btn btn-dark" id="btnExportPdf" onclick="Actions.exportarPdf()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Exportar relatório
-        </button>
+      <div style="display:flex;gap:10px;align-items:center;align-self:flex-start;margin-top:18px">
         <button class="btn btn-primary" id="btnNovoColab" onclick="Modals.novoColab()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
           Novo colaborador
@@ -2056,7 +2057,6 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
         <button id="grafAnoPrev" aria-label="Ano anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></button>
         <span class="cal-nav-lab" id="grafAnoLab"></span>
         <button id="grafAnoNext" aria-label="Próximo ano"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></button>
-        <button id="grafAnoHoje" class="link-hoje">Hoje</button>
       </div>
     </div>
 
@@ -2071,22 +2071,22 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 
     <div id="grafAusencias">
       <div class="dash-grid">
-        <div class="dash-card span-2 chart-card">
+        <div class="dash-card chart-card">
           <h2 class="dash-card-title">Férias por mês</h2>
           <div class="chart-wrap"><canvas id="chartFeriasMes"></canvas></div>
         </div>
 
-        <div class="dash-card span-2 chart-card">
+        <div class="dash-card chart-card">
           <h2 class="dash-card-title">Folgas por mês</h2>
           <div class="chart-wrap"><canvas id="chartFolgasMes"></canvas></div>
         </div>
 
         <div class="dash-card chart-card">
-          <h2 class="dash-card-title">Top 10 — quem mais tirou folga</h2>
+          <h2 class="dash-card-title">Quem Mais Tirou Folga</h2>
           <div id="folgaTop"></div>
         </div>
         <div class="dash-card chart-card">
-          <h2 class="dash-card-title">Top 10 — quem menos tirou folga</h2>
+          <h2 class="dash-card-title">Quem Menos Tirou Folga</h2>
           <div id="folgaBottom"></div>
         </div>
 
@@ -3392,8 +3392,16 @@ const UI = {
     }
 
     if(this.filtro.depto){
-      // um departamento específico já foi escolhido no chip — grade simples, sem repetir o cabeçalho
-      $('#grid').innerHTML = `<div class="grid">${list.map(c=>this.cardHTML(c)).join('')}</div>`;
+      // um departamento específico já foi escolhido no chip — mantém o título do setor
+      $('#grid').innerHTML = `
+        <div class="dept-section">
+          <div class="dept-header">
+            <span class="dept-name">${esc(this.filtro.depto)}</span>
+            <span class="dept-line"></span>
+            <span class="dept-count">${list.length} ${list.length===1?'colaborador':'colaboradores'}</span>
+          </div>
+          <div class="grid">${list.map(c=>this.cardHTML(c)).join('')}</div>
+        </div>`;
     } else {
       // "Todos" — agrupa por departamento, na mesma ordem institucional dos chips
       const porDepto = {};
@@ -3791,6 +3799,17 @@ const Modals = {
     this.open(`
       <h3>Novo colaborador</h3>
       <p class="msub">O período aquisitivo inicial é criado automaticamente a partir da admissão.</p>
+      <div class="edit-foto">
+        <div class="avatar-wrap" style="width:84px;flex:none">
+          <div class="avatar big" id="fotoPreview" style="width:84px;height:84px;font-size:26px;margin:0"></div>
+          <input type="file" id="fotoFile" accept="image/*" style="display:none">
+        </div>
+        <div class="edit-foto-fields">
+          <div class="edit-foto-lab">Foto do colaborador</div>
+          <button type="button" class="btn btn-soft edit-foto-enviar" onclick="document.getElementById('fotoFile').click()">Enviar foto</button>
+          <button type="button" class="edit-foto-remover" id="fotoRemover" style="display:none">Remover foto</button>
+        </div>
+      </div>
       <div class="field"><label>Nome completo</label><input id="nNome" placeholder="Nome do colaborador"></div>
       <div class="field"><label>Função</label><input id="nFuncao" placeholder="ex.: Designer Gráfico"></div>
       <div class="field-row">
@@ -3808,6 +3827,37 @@ const Modals = {
         <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
         <button class="btn btn-primary" onclick="Actions.salvarColab()">Cadastrar</button>
       </div>`, {wide:true});
+    // ---- foto: preview + resize (undefined/null = sem foto, string = nova) ----
+    UI._fotoPendente = undefined;
+    const atualizarPreview = ()=>{
+      if(UI._fotoPendente) return;
+      const nome = $('#nNome').value.trim();
+      $('#fotoPreview').innerHTML = nome ? initials(nome)
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;opacity:.55"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>';
+    };
+    atualizarPreview();
+    $('#nNome').addEventListener('input', atualizarPreview);
+    $('#fotoFile').onchange = e=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const img = new Image();
+      img.onload = ()=>{
+        const TAM=256, cv=document.createElement('canvas');
+        cv.width=TAM; cv.height=TAM;
+        const ctx=cv.getContext('2d');
+        const lado=Math.min(img.width,img.height);
+        ctx.drawImage(img,(img.width-lado)/2,(img.height-lado)/2,lado,lado,0,0,TAM,TAM);
+        UI._fotoPendente = cv.toDataURL('image/jpeg',.85);
+        $('#fotoPreview').innerHTML = `<img src="${UI._fotoPendente}" alt="">`;
+        $('#fotoRemover').style.display='';
+      };
+      img.src = URL.createObjectURL(file);
+    };
+    $('#fotoRemover').onclick = ()=>{
+      UI._fotoPendente = null;
+      atualizarPreview();
+      $('#fotoRemover').style.display='none';
+    };
   },
 
   editarColab(cid){
@@ -4024,11 +4074,13 @@ const Actions = {
     const nome=$('#nNome').value.trim(), funcao=$('#nFuncao').value.trim(), adm=$('#nAdm').value;
     if(!nome||!funcao||!adm){ toast('Preencha nome, função e admissão.'); return; }
     const c=await Store.insert('colaboradores',{nome,funcao,
-      departamento:$('#nDepto').value,unidade:$('#nUni').value,regime:$('#nRegime').value,admissao:adm},
+      departamento:$('#nDepto').value,unidade:$('#nUni').value,regime:$('#nRegime').value,admissao:adm,
+      foto:UI._fotoPendente||null},
       `Cadastro de colaborador — ${nome} (${$('#nDepto').value} · ${$('#nUni').value})`);
     const a=pd(adm);
     await Store.insert('periodos',{colaborador_id:c.id,inicio:adm,fim:iso(addD(addM(a,12),-1)),situacao:'acumulando'},
       `Período aquisitivo inicial — ${nome}`);
+    UI._fotoPendente = undefined;
     Modals.close(); toast('Colaborador cadastrado ✓');
     UI.renderDir(); location.hash='#/colab/'+c.id;
   },
@@ -5068,12 +5120,13 @@ function gradV(ctx, area, top, bottom){
   return g;
 }
 const CHART_FONT = { family:"'DM Sans', sans-serif", size:11.5 };
+const CHART_FONT_X = { family:"'DM Sans', sans-serif", size:10 };
 const CHART_TOOLTIP = {
   backgroundColor:'#1C1B1A', titleFont:{family:"'DM Sans',sans-serif",size:12,weight:'700'},
   bodyFont:{family:"'DM Sans',sans-serif",size:12}, padding:12, cornerRadius:10,
   displayColors:false, boxPadding:4,
 };
-const CHART_AXIS_X = { ticks:{color:'#A8A6A1', font:CHART_FONT}, grid:{display:false}, border:{display:false} };
+const CHART_AXIS_X = { ticks:{color:'#A8A6A1', font:CHART_FONT_X}, grid:{display:false}, border:{display:false} };
 const CHART_AXIS_Y = { ticks:{color:'#A8A6A1', font:CHART_FONT}, grid:{display:false}, border:{display:false} };
 
 UI.grafTab = 'ausencias';
@@ -5081,7 +5134,6 @@ UI.grafTab = 'ausencias';
 UI.renderGraficos = function(){
   const ano = this.anoGraf;
   $('#grafAnoLab').textContent = ano;
-  $('#grafAnoHoje').classList.toggle('atual', ano===hoje().getFullYear());
   const cs = Store.data.colaboradores.filter(c=>c.ativo!==false);
   const {map} = this.diaMap(ano, {depto:''});
 
@@ -5101,7 +5153,7 @@ UI.renderGraficos = function(){
     map[di].fer.forEach(p=>porMes[m].fer.add(p.nome));
     map[di].fol.forEach(p=>porMes[m].fol.add(p.nome));
   });
-  const MESES_CAP = MESES.map(m=>m[0].toUpperCase()+m.slice(1));
+  const MESES_CAP = MESES.map(m=>m.slice(0,3).toUpperCase());
 
   if(this.grafTab==='ausencias'){
     // ---------- férias por mês ----------
@@ -5476,7 +5528,6 @@ function bootApp(){
   $('#agMesPills').addEventListener('click',e=>{const b=e.target.closest('[data-mes]'); if(!b) return; UI.agMes=new Date(UI.agMes.getFullYear(), Number(b.dataset.mes), 1); UI.renderAgenda();});
   $('#grafAnoPrev').addEventListener('click',()=>{UI.anoGraf--; UI.renderGraficos();});
   $('#grafAnoNext').addEventListener('click',()=>{UI.anoGraf++; UI.renderGraficos();});
-  $('#grafAnoHoje').addEventListener('click',()=>{UI.anoGraf=hoje().getFullYear(); UI.renderGraficos();});
   $('#overlay').addEventListener('click',e=>{ if(e.target.id==='overlay') Modals.close(); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape') Modals.close(); });
   window.addEventListener('hashchange',route);
