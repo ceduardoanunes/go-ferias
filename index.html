@@ -5328,7 +5328,7 @@ UI.renderGraficos = function(){
       type:'doughnut', plugins:[legendGap],
       data:{ labels:['Pago','Programado','Em aberto','Acumulando'],
         datasets:[{ data:[sitCount.pago, sitCount.programado, sitCount.aberto, sitCount.acumulando],
-          backgroundColor:['#12836A','#C79A17','#C4193B','#2E93B8'], borderWidth:0, spacing:3 }] },
+          backgroundColor:['#4FA891','#D6B15C','#D65C6E','#6FB1CC'], borderWidth:0, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:{family:"'DM Sans', sans-serif", size:10.5}, boxWidth:8, boxHeight:8, padding:9, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
@@ -5348,7 +5348,7 @@ UI.renderGraficos = function(){
       type:'doughnut', plugins:[legendGap],
       data:{ labels:['Com pendência','Programado','Em dia'],
         datasets:[{ data:[pessoaSit.pendencia, pessoaSit.programado, pessoaSit.emdia],
-          backgroundColor:['#C4193B','#C79A17','#12836A'], borderWidth:0, spacing:3 }] },
+          backgroundColor:['#D65C6E','#D6B15C','#4FA891'], borderWidth:0, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:14, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
@@ -5370,7 +5370,7 @@ UI.renderGraficos = function(){
       type:'doughnut', plugins:[legendGap],
       data:{ labels:['Vencidas','Vencendo (≤120d)','No prazo'],
         datasets:[{ data:[venc.vencidas, venc.vencendo, venc.prazo],
-          backgroundColor:['#C4193B','#E07B39','#12836A'], borderWidth:0, spacing:3 }] },
+          backgroundColor:['#D65C6E','#E39A6B','#4FA891'], borderWidth:0, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:14, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
@@ -5389,7 +5389,7 @@ UI.renderGraficos = function(){
       type:'doughnut', plugins:[legendGap],
       data:{ labels:['Integral (1x)','Fracionada (2x)','Fracionada (3x+)'],
         datasets:[{ data:[dur.um, dur.dois, dur.tres],
-          backgroundColor:['#0E5F4C','#2A9D82','#8FC9BB'], borderWidth:0, spacing:3 }] },
+          backgroundColor:['#3E8C79','#6FB6A3','#A9D4C8'], borderWidth:0, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:14, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
