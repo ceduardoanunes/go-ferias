@@ -1437,21 +1437,52 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .casa-table{display:grid;gap:0}
 /* tempo de casa: mais antigo/mais novo por setor */
 .casa-setor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
-.casa-setor-card{background:var(--gray-soft);border-radius:14px;padding:16px 18px}
-.casa-setor-nome{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.casa-setor-card{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;
+  border-top:3px solid var(--setor,#6E6C68);transition:transform .15s ease,box-shadow .15s ease;
+}
+.casa-setor-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card)}
+.casa-setor-nome{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--setor,var(--muted));margin-bottom:12px}
+.casa-setor-nome::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--setor,#6E6C68)}
 .casa-setor-linha{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .casa-setor-linha:last-child{margin-bottom:0}
 
-/* tempo de casa — top 3 mais antigos */
-.casa-top3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+/* tempo de casa — top 3 (pódio) */
+.casa-top3{display:flex;justify-content:center;align-items:flex-end;gap:18px;flex-wrap:wrap}
 .casa-top3-card{
-  background:var(--gray-soft);border-radius:16px;padding:22px 20px;text-align:center;
-  display:flex;flex-direction:column;align-items:center;gap:6px;
+  --medal:#C9A227;
+  position:relative;flex:1 1 190px;max-width:250px;
+  background:transparent;border:1px solid var(--line);border-radius:20px;
+  padding:26px 20px 22px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  transition:transform .18s ease, border-color .18s ease;
 }
-.casa-top3-medal{font-size:26px;line-height:1}
-.casa-top3-av{margin:4px 0}
+.casa-top3-card:hover{transform:translateY(-3px);border-color:var(--medal)}
+.casa-top3-card::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;border-radius:20px 20px 0 0;background:var(--medal)}
+.casa-top3-medal{font-size:30px;line-height:1;filter:drop-shadow(0 3px 6px rgba(28,27,26,.18))}
+.casa-top3-num{
+  display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;
+  border-radius:50%;background:var(--medal);color:#fff;font-family:var(--font-display);
+  font-weight:800;font-size:14px;
+}
+.casa-top3-rankn{
+  position:absolute;top:12px;right:14px;font-family:var(--font-display);
+  font-weight:800;font-size:13px;color:var(--medal);opacity:.9;
+}
+.casa-top3-av{margin:4px 0;box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--medal)}
 .casa-top3-nome{font-weight:700;font-size:14.5px}
 .casa-top3-tempo{font-size:12.5px;color:var(--muted)}
+@media(max-width:640px){.casa-top3-card.rank1,.casa-top3-card.rank2,.casa-top3-card.rank3,.casa-top3-card.rank4,.casa-top3-card.rank5{order:0}.casa-top3-card{flex-basis:100%;max-width:none}}
+
+/* tempo de casa — aniversários de empresa */
+.casa-aniv-grid{display:flex;flex-wrap:wrap;gap:12px}
+.casa-aniv-card{
+  display:flex;align-items:center;gap:12px;flex:none;text-decoration:none;color:inherit;
+  border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:14px;
+  padding:11px 16px 11px 14px;background:var(--card);transition:transform .15s ease,box-shadow .15s ease;
+}
+.casa-aniv-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card)}
+.casa-aniv-anos{font-size:12.5px;font-weight:700;color:var(--amber)}
 
 /* contratações: timeline por ano/mês */
 .timeline-ano{margin-bottom:28px}
@@ -1462,21 +1493,27 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .timeline-mes-lab{font-size:12.5px;font-weight:700;color:var(--muted);text-transform:capitalize}
 .timeline-avs{display:flex;flex-wrap:wrap;gap:4px}
 .casa-row{
-  display:grid;grid-template-columns:38px 1.5fr 1.4fr 1fr .9fr 1fr 1.3fr;
-  align-items:center;gap:14px;padding:12px 4px;border-bottom:1px solid var(--line-soft);
+  display:grid;grid-template-columns:38px 1.5fr 1.4fr 1fr .9fr 1.4fr 1.3fr;
+  align-items:center;gap:14px;padding:11px 10px;border-radius:12px;
+  border-bottom:1px solid var(--line-soft);transition:background .12s ease;
 }
+.casa-row:not(.casa-head):hover{background:var(--gray-soft)}
 .casa-row:last-child{border-bottom:none}
 .casa-row.casa-head{
   font-size:10.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);
-  padding-bottom:12px;
+  padding-bottom:12px;border-radius:0;
 }
 .casa-nome{font-weight:700;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .casa-cargo{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .casa-data{font-size:12.5px;color:var(--muted)}
+.casa-tempo-cell{display:flex;flex-direction:column;gap:5px}
 .casa-tempo{font-size:13px;font-weight:700}
+.casa-tempo-bar{height:5px;border-radius:99px;background:var(--gray-soft);overflow:hidden}
+.casa-tempo-bar>span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#B8B6B1,var(--graphite))}
 @media(max-width:900px){
-  .casa-row{grid-template-columns:32px 1fr 1fr;grid-template-areas:"av nome nome" "av cargo data" "av tempo badge"}
+  .casa-row{grid-template-columns:32px 1fr 1fr;grid-template-areas:"av nome nome" "av cargo data" "av tempo badge";padding:11px 8px}
   .casa-row.casa-head{display:none}
+  .casa-tempo-bar{display:none}
 }
 
 /* padrões de férias — grade de 12 meses */
@@ -2154,7 +2191,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
     <div id="grafTempoCasa" style="display:none">
       <div class="dash-grid">
         <div class="dash-card span-2">
-          <h2 class="dash-card-title">Top 3 — mais tempo de casa</h2>
+          <h2 class="dash-card-title">Top 5 — mais tempo de casa</h2>
           <div class="casa-top3" id="casaTop3"></div>
         </div>
 
@@ -5407,7 +5444,7 @@ UI.renderGraficos = function(){
     destroyChart('deptos');
     UI.chartInstances.deptos = new Chart($('#chartDeptos'), {
       type:'bar',
-      data:{ labels:depKeys, datasets:[{ data:depKeys.map(d=>porDep[d]), backgroundColor:(c)=>gradV(c.chart.ctx,c.chart.chartArea,'#4FA891','rgba(79,168,145,.5)'), borderRadius:999, borderSkipped:false, barPercentage:.65 }] },
+      data:{ labels:depKeys, datasets:[{ data:depKeys.map(d=>porDep[d]), backgroundColor:'#6FB1CC', borderRadius:999, borderSkipped:false, barPercentage:.65 }] },
       options:{
         indexAxis:'y', responsive:true, maintainAspectRatio:false,
         scales:{ x:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}}, y:{ticks:{color:'#6E6C68',font:CHART_FONT}, grid:{display:false}, border:{display:false}} },
@@ -5421,7 +5458,7 @@ UI.renderGraficos = function(){
     destroyChart('unidades');
     UI.chartInstances.unidades = new Chart($('#chartUnidades'), {
       type:'doughnut',
-      data:{ labels:['Granbery','Quintas da Avenida'], datasets:[{ data:[nGran,nQuin], backgroundColor:['#4FA891','#D65C6E'], hoverBackgroundColor:['#4FA891','#D65C6E'], borderWidth:0, hoverBorderWidth:0, hoverOffset:0, spacing:3 }] },
+      data:{ labels:['Granbery','Quintas da Avenida'], datasets:[{ data:[nGran,nQuin], backgroundColor:['#CBCBCB','#E58A94'], hoverBackgroundColor:['#CBCBCB','#E58A94'], borderWidth:0, hoverBorderWidth:0, hoverOffset:0, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:16, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
@@ -5434,7 +5471,7 @@ UI.renderGraficos = function(){
     destroyChart('admissoes');
     UI.chartInstances.admissoes = new Chart($('#chartAdmissoes'), {
       type:'bar',
-      data:{ labels:MESES_CAP, datasets:[{ data:admPorMes, backgroundColor:(c)=>gradV(c.chart.ctx,c.chart.chartArea,'#D65C6E','rgba(214,92,110,.5)'), borderRadius:999, borderSkipped:false, barPercentage:.6 }] },
+      data:{ labels:MESES_CAP, datasets:[{ data:admPorMes, backgroundColor:'#D6B15C', borderRadius:999, borderSkipped:false, barPercentage:.6 }] },
       options:{
         responsive:true, maintainAspectRatio:false,
         scales:{ x:CHART_AXIS_X, y:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}} },
@@ -5450,14 +5487,19 @@ UI.renderGraficos = function(){
       const setorReal = m ? m[1].trim() : 'Não especificado';
       porSetorEst[setorReal] = (porSetorEst[setorReal]||0)+1;
     });
-    const setEstKeys = Object.keys(porSetorEst).sort((a,b)=>porSetorEst[b]-porSetorEst[a]);
+    // eixo unificado: mesmos setores de colaboradores, na mesma ordem, com estagiários sobrepostos
+    const setLabels = Array.from(new Set([...depKeys, ...Object.keys(porSetorEst)]))
+      .sort((a,b)=>(porDep[b]||0)-(porDep[a]||0));
     destroyChart('estagiarios');
     UI.chartInstances.estagiarios = new Chart($('#chartEstagiarios'), {
       type:'bar',
-      data:{ labels: setEstKeys.length?setEstKeys:['Sem estagiários'], datasets:[{ data:setEstKeys.length?setEstKeys.map(s=>porSetorEst[s]):[0], backgroundColor:(c)=>gradV(c.chart.ctx,c.chart.chartArea,'#6FB1CC','rgba(111,177,204,.5)'), borderRadius:999, borderSkipped:false, barPercentage:.5 }] },
+      data:{ labels:setLabels, datasets:[
+        { label:'Colaboradores', data:setLabels.map(s=>porDep[s]||0), grouped:false, order:2, backgroundColor:'#DAD8D3', borderRadius:999, borderSkipped:false, barPercentage:.65 },
+        { label:'Estagiários', data:setLabels.map(s=>porSetorEst[s]||0), grouped:false, order:1, backgroundColor:'#C86FA6', borderRadius:999, borderSkipped:false, barPercentage:.65 }
+      ] },
       options:{
-        responsive:true, maintainAspectRatio:false,
-        scales:{ x:CHART_AXIS_X, y:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}} },
+        indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        scales:{ x:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}}, y:{ticks:{color:'#6E6C68',font:CHART_FONT}, grid:{display:false}, border:{display:false}} },
         plugins:{ legend:{display:false}, tooltip:CHART_TOOLTIP }
       }
     });
@@ -5470,11 +5512,13 @@ UI.renderGraficos = function(){
     const ORDEM_DEP2 = ['Direção','Coordenação','Administrativo','Corporativo','Digital','Inbound','Criação','Vídeo','TI','Estagiários'];
 
     // top 3 — colaboradores com mais tempo de casa
-    const top3 = cs.slice().sort((a,b)=>a.admissao.localeCompare(b.admissao)).slice(0,3);
+    const top3 = cs.slice().sort((a,b)=>a.admissao.localeCompare(b.admissao)).slice(0,5);
     const medalhas = ['🥇','🥈','🥉'];
+    const medalCor = ['#C9A227','#A3A7AD','#B87333','#9B9893','#B8B5AF'];
     $('#casaTop3').innerHTML = top3.map((c,i)=>`
-      <a href="#/colab/${c.id}" class="casa-top3-card" style="text-decoration:none;color:inherit">
-        <div class="casa-top3-medal">${medalhas[i]}</div>
+      <a href="#/colab/${c.id}" class="casa-top3-card rank${i+1}" style="text-decoration:none;color:inherit;--medal:${medalCor[i]}">
+        <span class="casa-top3-rankn">${i+1}º</span>
+        <div class="casa-top3-medal">${i<3?medalhas[i]:`<span class="casa-top3-num">${i+1}</span>`}</div>
         <div class="mini-av casa-top3-av" style="width:56px;height:56px;font-size:16px">${avatarInner({nome:c.nome, foto:c.foto})}</div>
         <div class="casa-top3-nome">${esc(c.nome)}</div>
         <div class="casa-top3-tempo">${tempoDeCasa(c.admissao)} · desde ${fmt(c.admissao)}</div>
@@ -5487,12 +5531,12 @@ UI.renderGraficos = function(){
       return {c, adm, anos};
     }).filter(x=>x.anos>0 && x.anos%5===0).sort((a,b)=>b.anos-a.anos);
     $('#casaRedondos').innerHTML = redondos.length
-      ? `<div style="display:flex;flex-wrap:wrap;gap:12px">${redondos.map(({c,adm,anos})=>`
-          <a href="#/colab/${c.id}" class="ag-item" style="text-decoration:none;color:inherit;border:1.5px solid var(--line);border-radius:14px;padding:10px 16px;flex:none">
+      ? `<div class="casa-aniv-grid">${redondos.map(({c,adm,anos})=>`
+          <a href="#/colab/${c.id}" class="casa-aniv-card">
             <div class="mini-av">${avatarInner({nome:c.nome, foto:c.foto})}</div>
             <div class="ag-item-info">
               <div class="ag-item-nome">${esc(c.nome)}</div>
-              <div class="ag-item-per">🏆 ${anos} anos · ${MESES[adm.getMonth()]}</div>
+              <div class="casa-aniv-anos">🏆 ${anos} anos · ${MESES[adm.getMonth()]}</div>
             </div>
           </a>`).join('')}</div>`
       : `<div class="ag-vazio">Nenhum colaborador completa 5, 10, 15 ou 20 anos de casa neste ano.</div>`;
@@ -5508,8 +5552,9 @@ UI.renderGraficos = function(){
     $('#casaPorSetor').innerHTML = setoresCasa.map(dep=>{
       const lista = porSetorCasa[dep].slice().sort((a,b)=>a.admissao.localeCompare(b.admissao));
       const antigo = lista[0];
+      const cor = (SETORES_BRAND.find(s=>s.nome===dep)||{}).cor || '#6E6C68';
       return `
-      <div class="casa-setor-card">
+      <div class="casa-setor-card" style="--setor:${cor}">
         <div class="casa-setor-nome">${esc(dep)}</div>
         <div class="casa-setor-linha">
           <div class="mini-av">${avatarInner({nome:antigo.nome, foto:antigo.foto})}</div>
@@ -5584,6 +5629,7 @@ UI.renderRankCasa = function(){
     ? b.admissao.localeCompare(a.admissao)   // mais novos primeiro
     : a.admissao.localeCompare(b.admissao)); // mais antigos primeiro
   $('#btnSortCasa').textContent = this.sortCasaAsc ? 'mais novos primeiro' : 'mais antigos primeiro';
+  const maxDias = cs.reduce((m,c)=>Math.max(m, hj - pd(c.admissao)), 1);
 
   $('#rankCasa').innerHTML = `
     <div class="casa-row casa-head">
@@ -5593,6 +5639,7 @@ UI.renderRankCasa = function(){
       const adm = pd(c.admissao);
       const anosCompletos = anoAtual - adm.getFullYear();
       const redondo = anosCompletos > 0 && anosCompletos % 5 === 0;
+      const pct = Math.max(6, Math.round((hj - adm) / maxDias * 100));
       return `
       <div class="casa-row">
         <div class="mini-av">${avatarInner({nome:c.nome, foto:c.foto})}</div>
@@ -5600,7 +5647,10 @@ UI.renderRankCasa = function(){
         <span class="casa-cargo">${esc(c.funcao)}</span>
         <span class="casa-cargo">${esc(c.departamento)}</span>
         <span class="casa-data">${fmt(c.admissao)}</span>
-        <span class="casa-tempo">${tempoDeCasa(c.admissao)}</span>
+        <span class="casa-tempo-cell">
+          <span class="casa-tempo">${tempoDeCasa(c.admissao)}</span>
+          <span class="casa-tempo-bar"><span style="width:${pct}%"></span></span>
+        </span>
         <span>${redondo ? `<span class="rank-badge">🏆 ${anosCompletos} anos em ${MESES[adm.getMonth()]}</span>` : ''}</span>
       </div>`;
     }).join('');
