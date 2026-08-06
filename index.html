@@ -5421,7 +5421,7 @@ UI.renderGraficos = function(){
     destroyChart('unidades');
     UI.chartInstances.unidades = new Chart($('#chartUnidades'), {
       type:'doughnut',
-      data:{ labels:['Granbery','Quintas da Avenida'], datasets:[{ data:[nGran,nQuin], backgroundColor:['#4FA891','#D65C6E'], borderWidth:0, spacing:3 }] },
+      data:{ labels:['Granbery','Quintas da Avenida'], datasets:[{ data:[nGran,nQuin], backgroundColor:['#4FA891','#D65C6E'], hoverBackgroundColor:['#4FA891','#D65C6E'], borderWidth:0, hoverBorderWidth:0, hoverOffset:0, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:16, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
