@@ -1436,10 +1436,13 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 /* tempo de casa — tabela em colunas */
 .casa-table{display:grid;gap:0}
 /* tempo de casa: mais antigo/mais novo por setor */
-.casa-setor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.casa-secoes .dept-section:first-child{margin-top:0}
+.casa-setor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:900px){.casa-setor-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.casa-setor-grid{grid-template-columns:1fr}}
 .casa-setor-card{
   background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;
-  border-top:3px solid var(--setor,#6E6C68);transition:transform .15s ease,box-shadow .15s ease;
+  transition:transform .15s ease,box-shadow .15s ease;
 }
 .casa-setor-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card)}
 .casa-setor-nome{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--setor,var(--muted));margin-bottom:12px}
@@ -1452,18 +1455,18 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .casa-top3-card{
   --medal:#C9A227;
   position:relative;flex:1 1 190px;max-width:250px;
-  background:transparent;border:1px solid var(--line);border-radius:20px;
+  background:var(--card);border:1px solid var(--line);border-radius:20px;
   padding:26px 20px 22px;text-align:center;
   display:flex;flex-direction:column;align-items:center;gap:7px;
-  transition:transform .18s ease, border-color .18s ease;
+  transition:transform .18s ease, box-shadow .18s ease;
 }
-.casa-top3-card:hover{transform:translateY(-3px);border-color:var(--medal)}
+.casa-top3-card:hover{transform:translateY(-3px);box-shadow:0 8px 22px -12px rgba(28,27,26,.20)}
 .casa-top3-card::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;border-radius:20px 20px 0 0;background:var(--medal)}
-.casa-top3-medal{font-size:30px;line-height:1;filter:drop-shadow(0 3px 6px rgba(28,27,26,.18))}
+.casa-top3-medal{height:34px;display:flex;align-items:center;justify-content:center;font-size:30px;line-height:1;filter:drop-shadow(0 3px 6px rgba(28,27,26,.18))}
 .casa-top3-num{
-  display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;
+  display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;
   border-radius:50%;background:var(--medal);color:#fff;font-family:var(--font-display);
-  font-weight:800;font-size:14px;
+  font-weight:800;font-size:12px;
 }
 .casa-top3-rankn{
   position:absolute;top:12px;right:14px;font-family:var(--font-display);
@@ -1472,6 +1475,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .casa-top3-av{margin:4px 0;box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--medal)}
 .casa-top3-nome{font-weight:700;font-size:14.5px}
 .casa-top3-tempo{font-size:12.5px;color:var(--muted)}
+.casa-top3-desde{font-size:11.5px;color:var(--faint);margin-top:-3px}
 @media(max-width:640px){.casa-top3-card.rank1,.casa-top3-card.rank2,.casa-top3-card.rank3,.casa-top3-card.rank4,.casa-top3-card.rank5{order:0}.casa-top3-card{flex-basis:100%;max-width:none}}
 
 /* tempo de casa — aniversários de empresa */
@@ -2189,31 +2193,31 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
     </div>
 
     <div id="grafTempoCasa" style="display:none">
-      <div class="dash-grid">
-        <div class="dash-card span-2">
-          <h2 class="dash-card-title">Top 5 — mais tempo de casa</h2>
+      <div class="casa-secoes">
+        <section class="dept-section">
+          <div class="dept-header"><span class="dept-name">Mais Tempo de Casa</span><span class="dept-line"></span></div>
           <div class="casa-top3" id="casaTop3"></div>
-        </div>
+        </section>
 
-        <div class="dash-card span-2">
-          <h2 class="dash-card-title">Aniversários de empresa</h2>
+        <section class="dept-section">
+          <div class="dept-header"><span class="dept-name">Aniversários de Empresa em <span id="casaAnivAno"></span></span><span class="dept-line"></span></div>
           <div id="casaRedondos"></div>
-        </div>
+        </section>
 
-        <div class="dash-card span-2">
-          <h2 class="dash-card-title">Mais antigo e mais novo por setor</h2>
+        <section class="dept-section">
+          <div class="dept-header"><span class="dept-name">Mais Antigo por Setor</span><span class="dept-line"></span></div>
           <div class="casa-setor-grid" id="casaPorSetor"></div>
-        </div>
+        </section>
 
-        <div class="dash-card span-2">
-          <h2 class="dash-card-title">Tempo de casa
-            <span style="display:flex;gap:10px;align-items:center">
-              <div id="casaFiltroSetor" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-              <button class="chip dash-sort" id="btnSortCasa">mais antigos primeiro</button>
-            </span>
-          </h2>
+        <section class="dept-section">
+          <div class="dept-header">
+            <span class="dept-name">Tempo de Casa</span>
+            <span class="dept-line"></span>
+            <button class="chip dash-sort" id="btnSortCasa">mais antigos primeiro</button>
+          </div>
+          <div id="casaFiltroSetor" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px"></div>
           <div class="casa-table" id="rankCasa"></div>
-        </div>
+        </section>
       </div>
     </div>
 
@@ -5521,7 +5525,8 @@ UI.renderGraficos = function(){
         <div class="casa-top3-medal">${i<3?medalhas[i]:`<span class="casa-top3-num">${i+1}</span>`}</div>
         <div class="mini-av casa-top3-av" style="width:56px;height:56px;font-size:16px">${avatarInner({nome:c.nome, foto:c.foto})}</div>
         <div class="casa-top3-nome">${esc(c.nome)}</div>
-        <div class="casa-top3-tempo">${tempoDeCasa(c.admissao)} · desde ${fmt(c.admissao)}</div>
+        <div class="casa-top3-tempo">${tempoDeCasa(c.admissao)}</div>
+        <div class="casa-top3-desde">desde ${fmt(c.admissao)}</div>
       </a>`).join('');
 
     // aniversários redondos (todo o ano, não só o mês atual)
@@ -5540,6 +5545,7 @@ UI.renderGraficos = function(){
             </div>
           </a>`).join('')}</div>`
       : `<div class="ag-vazio">Nenhum colaborador completa 5, 10, 15 ou 20 anos de casa neste ano.</div>`;
+    $('#casaAnivAno').textContent = anoAtual;
 
     // mais antigo por setor
     const porSetorCasa = {};
@@ -5549,7 +5555,7 @@ UI.renderGraficos = function(){
       if(ia===-1&&ib===-1) return a.localeCompare(b,'pt-BR');
       if(ia===-1) return 1; if(ib===-1) return -1; return ia-ib;
     });
-    $('#casaPorSetor').innerHTML = setoresCasa.map(dep=>{
+    $('#casaPorSetor').innerHTML = setoresCasa.filter(dep=>dep!=='Estagiários').map(dep=>{
       const lista = porSetorCasa[dep].slice().sort((a,b)=>a.admissao.localeCompare(b.admissao));
       const antigo = lista[0];
       const cor = (SETORES_BRAND.find(s=>s.nome===dep)||{}).cor || '#6E6C68';
