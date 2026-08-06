@@ -2129,24 +2129,24 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 
     <div id="grafHistoricos" style="display:none">
       <div class="dash-grid">
-        <div class="dash-card chart-card span-2">
+        <div class="dash-card chart-card">
           <h2 class="dash-card-title">Colaboradores por Setor</h2>
           <div class="chart-wrap chart-wrap-sm"><canvas id="chartDeptos"></canvas></div>
         </div>
 
-        <div class="dash-card chart-card span-2">
+        <div class="dash-card chart-card">
           <h2 class="dash-card-title">Estagiários por Setor</h2>
           <div class="chart-wrap chart-wrap-sm"><canvas id="chartEstagiarios"></canvas></div>
         </div>
 
         <div class="dash-card chart-card">
-          <h2 class="dash-card-title">Colaboradores por Unidade</h2>
-          <div class="chart-wrap chart-wrap-donut"><canvas id="chartUnidades"></canvas></div>
-        </div>
-
-        <div class="dash-card span-2 chart-card">
           <h2 class="dash-card-title">Admissões por Mês</h2>
           <div class="chart-wrap"><canvas id="chartAdmissoes"></canvas></div>
+        </div>
+
+        <div class="dash-card chart-card">
+          <h2 class="dash-card-title">Colaboradores por Unidade</h2>
+          <div class="chart-wrap chart-wrap-donut"><canvas id="chartUnidades"></canvas></div>
         </div>
       </div>
     </div>
@@ -5407,7 +5407,7 @@ UI.renderGraficos = function(){
     destroyChart('deptos');
     UI.chartInstances.deptos = new Chart($('#chartDeptos'), {
       type:'bar',
-      data:{ labels:depKeys, datasets:[{ data:depKeys.map(d=>porDep[d]), backgroundColor:(c)=>gradV(c.chart.ctx,c.chart.chartArea,'#1C1B1A','rgba(28,27,26,.55)'), borderRadius:999, borderSkipped:false, barPercentage:.65 }] },
+      data:{ labels:depKeys, datasets:[{ data:depKeys.map(d=>porDep[d]), backgroundColor:(c)=>gradV(c.chart.ctx,c.chart.chartArea,'#4FA891','rgba(79,168,145,.5)'), borderRadius:999, borderSkipped:false, barPercentage:.65 }] },
       options:{
         indexAxis:'y', responsive:true, maintainAspectRatio:false,
         scales:{ x:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}}, y:{ticks:{color:'#6E6C68',font:CHART_FONT}, grid:{display:false}, border:{display:false}} },
@@ -5421,7 +5421,7 @@ UI.renderGraficos = function(){
     destroyChart('unidades');
     UI.chartInstances.unidades = new Chart($('#chartUnidades'), {
       type:'doughnut',
-      data:{ labels:['Granbery','Quintas da Avenida'], datasets:[{ data:[nGran,nQuin], backgroundColor:['#1C1B1A','#C4193B'], borderWidth:0, spacing:3 }] },
+      data:{ labels:['Granbery','Quintas da Avenida'], datasets:[{ data:[nGran,nQuin], backgroundColor:['#4FA891','#D65C6E'], borderWidth:0, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:16, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
@@ -5434,7 +5434,7 @@ UI.renderGraficos = function(){
     destroyChart('admissoes');
     UI.chartInstances.admissoes = new Chart($('#chartAdmissoes'), {
       type:'bar',
-      data:{ labels:MESES_CAP, datasets:[{ data:admPorMes, backgroundColor:(c)=>gradV(c.chart.ctx,c.chart.chartArea,'#C4193B','rgba(196,25,59,.5)'), borderRadius:999, borderSkipped:false, barPercentage:.6 }] },
+      data:{ labels:MESES_CAP, datasets:[{ data:admPorMes, backgroundColor:(c)=>gradV(c.chart.ctx,c.chart.chartArea,'#D65C6E','rgba(214,92,110,.5)'), borderRadius:999, borderSkipped:false, barPercentage:.6 }] },
       options:{
         responsive:true, maintainAspectRatio:false,
         scales:{ x:CHART_AXIS_X, y:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}} },
@@ -5454,7 +5454,7 @@ UI.renderGraficos = function(){
     destroyChart('estagiarios');
     UI.chartInstances.estagiarios = new Chart($('#chartEstagiarios'), {
       type:'bar',
-      data:{ labels: setEstKeys.length?setEstKeys:['Sem estagiários'], datasets:[{ data:setEstKeys.length?setEstKeys.map(s=>porSetorEst[s]):[0], backgroundColor:(c)=>gradV(c.chart.ctx,c.chart.chartArea,'#1C1B1A','rgba(28,27,26,.55)'), borderRadius:999, borderSkipped:false, barPercentage:.5 }] },
+      data:{ labels: setEstKeys.length?setEstKeys:['Sem estagiários'], datasets:[{ data:setEstKeys.length?setEstKeys.map(s=>porSetorEst[s]):[0], backgroundColor:(c)=>gradV(c.chart.ctx,c.chart.chartArea,'#6FB1CC','rgba(111,177,204,.5)'), borderRadius:999, borderSkipped:false, barPercentage:.5 }] },
       options:{
         responsive:true, maintainAspectRatio:false,
         scales:{ x:CHART_AXIS_X, y:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}} },
