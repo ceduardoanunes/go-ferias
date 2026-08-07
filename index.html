@@ -50,11 +50,16 @@
          teal #12836A (folga), âmbar #B4720A, azul #2F5FA8, violeta #7C5AD8.
          Fonte DM Sans.
 
-  Rotas da sidebar, nesta ordem:
-    #/dashboard → #/agenda → #/calendario → #/colaboradores →
-    #/graficos (Relatórios) → #/pessoas (Pessoas) →
-    #/solicitacoes (com badge de pendentes)
-    ATENÇÃO: Relatórios é #/graficos, NÃO #/relatorios.
+  Rotas da sidebar, nesta ordem (reordenada em 07/08/2026):
+    #/dashboard → #/agenda → #/colaboradores → #/calendario →
+    #/graficos (Relatórios) → #/pessoas (rótulo no menu: "Gestão de Pessoas")
+    ATENÇÃO: Relatórios é #/graficos, NÃO #/relatorios. A rota #/pessoas
+    continua #/pessoas por baixo (id="viewPessoas"/"navPessoas" no HTML,
+    UI.renderPessoas no JS) — só o texto visível virou "Gestão de Pessoas"
+    (passou por "Organização" antes, mas ficou sério demais).
+    #/solicitacoes NÃO existe mais como rota (removida em 07/08/2026):
+    Solicitações agora é um modal (Modals.solicitacoes), aberto pelo card
+    "Solicitações" nos KPIs da Agenda (#agKpis) — sem sidebar/nav própria.
     Fora da sidebar: Perfil e Minha Conta. Abre em #/dashboard.
 
   O QUE JÁ EXISTE:
@@ -62,11 +67,15 @@
                       alterna cena de dia e de noite; 5 cards .dx-stat;
                       faixa da semana; seção do mês.
     Solicitações .... formulário PÚBLICO na tela de login (colaborador pede
-                      sem logar, com autocomplete e navegação por teclado) e
-                      caixa de entrada para o RH aprovar ou recusar.
+                      sem logar, com autocomplete e navegação por teclado);
+                      a caixa de entrada do RH para aprovar/recusar é um
+                      MODAL (Modals.solicitacoes, #solicLista dentro dele),
+                      aberto pelo card "Solicitações" nos KPIs da Agenda —
+                      não é mais página/rota própria (era #/solicitacoes).
                       Dados em Store.data.solicitacoes.
-    Agenda .......... Só 4 cards .dx-stat + a lista por setor (a "agenda"
-                      propriamente dita). NÃO há mais visão temporal/calendário
+    Agenda .......... 5 cards .dx-stat (o 5º, "Solicitações", abre o modal
+                      acima) + a lista por setor (a "agenda" propriamente
+                      dita). NÃO há mais visão temporal/calendário
                       embaixo: em 27/07/2026 o autor decidiu tirar tudo e deixar
                       só a lista com os cards. Antes existiu, na sequência do dia,
                       um calendário-escala (.ag-cal2-*), tentativas de timeline
@@ -80,11 +89,15 @@
     Relatórios ...... abas Folgas, Férias Contábeis (separadas por tipo em
                       07/08/2026 — antes "Ausências" misturava os dois e
                       "Controle" só falava de férias, apesar do nome vago).
-                      Botão "Exportar Relatório" só na aba Folgas.
-    Pessoas ......... abas Visão Geral, Tempo de Casa, Admissões. Analytics
-                      de RH sem relação com férias (separado dos Relatórios
-                      em 07/08/2026, a pedido do autor: eram 3 de 5 abas sem
-                      nenhum dado de férias, então saíram de Relatórios).
+                      Botão "Exportar Relatório" funciona nas duas abas
+                      (PDF em tabelas, sem gráfico-imagem — ver Actions).
+    Gestão de Pessoas
+                      Rota #/pessoas; rótulo "Gestão de Pessoas" desde 07/08/2026
+                      (era só "Pessoas" — nome parecido demais com a página
+                      Colaboradores). Abas Visão Geral, Tempo de Casa, Admissões.
+                      Analytics de RH sem relação com férias (separado dos
+                      Relatórios em 07/08/2026, a pedido do autor: eram 3 de 5
+                      abas sem nenhum dado de férias).
     Minha Conta ..... usuários e auditoria.
 
 ================================================================================
@@ -101,8 +114,9 @@
   negativo), número com padStart(2,'0').
   Cores: c-teal, c-blue, c-amber, c-red, c-violet, c-indigo.
 
-  Semântica de cor: férias = teal (ícone praia) | folga = azul (ícone xícara)
-  alertas = vermelho | solicitações = violeta | aniversários = âmbar.
+  Semântica de cor: férias = vermelho (ícone sol, padronizado em 07/08/2026 —
+  antes cada tela usava um ícone de praia diferente) | folga = teal (ícone
+  mala) | alertas = âmbar | solicitações = azul | aniversários = laranja.
 
   Mini avatares: .mini-av.tipo-ferias = anel vermelho, .tipo-folga = verde.
 
@@ -500,7 +514,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 
 /* ---------- Directory grid ---------- */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px}
-.dept-section{margin-bottom:56px}
+.dept-section{margin-bottom:65px}
 .dept-section:first-child{margin-top:56px}
 .dept-section:last-child{margin-bottom:0}
 .dept-header{display:flex;align-items:center;gap:16px;margin-bottom:25px}
@@ -837,6 +851,8 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .modal .msub{color:var(--muted);font-size:13px;margin-bottom:26px}
 .field{margin-bottom:18px}
 .field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:7px;letter-spacing:.2px}
+.check-field .check-lab{display:flex;align-items:flex-start;gap:9px;font-size:13px;font-weight:600;color:var(--ink);letter-spacing:0;text-transform:none;cursor:pointer}
+.check-field input[type="checkbox"]{width:17px;height:17px;flex:none;margin-top:1px;accent-color:var(--accent);cursor:pointer}
 .field input,.field select,.field textarea{
   width:100%;height:46px;border:1.5px solid var(--line);border-radius:13px;padding:0 15px;
   background:#fff;outline:none;font-size:14px;transition:border .15s;
@@ -927,7 +943,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .mini-av.mini-mais{background:var(--gray-soft);color:var(--muted)}
 
 /* stats da agenda: mesmo componente .dx-stat do dashboard */
-.ag-stats{display:flex;gap:18px;align-items:stretch;margin:62px 0 44px}
+.ag-stats{display:flex;gap:18px;align-items:stretch;margin:62px 0 68px}
 @media(max-width:820px){.ag-stats{flex-wrap:wrap;margin-top:64px}}
 .ag-mes-card{padding:28px 30px}
 .ag-week-panel{padding:26px 28px 22px}
@@ -1135,17 +1151,11 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .dx-setor-lab{font-size:11.5px;font-weight:700;color:var(--muted);line-height:1.2}
 @media(max-width:1080px){.dx-setores-grid{grid-template-columns:repeat(5,1fr);gap:14px}}
 @media(max-width:640px){.dx-setores-grid{grid-template-columns:repeat(3,1fr)}}
-.dx-colab-tile{
-  padding:32px 28px;display:flex;align-items:center;gap:20px;
-  background:var(--card);border:1px solid var(--line-soft);border-radius:22px;box-shadow:var(--shadow-card);
-}
 .dx-colab-ico{
   width:62px;height:62px;border-radius:18px;flex:none;display:grid;place-items:center;
   background:var(--red-soft);color:var(--red);
 }
 .dx-colab-ico svg{width:31px;height:31px}
-.dx-colab-num{font-family:var(--font-display);font-weight:800;font-size:42px;line-height:1;letter-spacing:-1.5px;color:var(--graphite)}
-.dx-colab-lab{font-size:14px;font-weight:700;color:var(--muted);margin-top:6px}
 @media(max-width:980px){.dx-colab-footer{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:540px){.dx-colab-footer{grid-template-columns:1fr}}
 
@@ -1232,12 +1242,15 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .sb-btn{position:relative}
 .sb-badge{position:absolute;top:5px;right:7px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;box-sizing:border-box;line-height:1}
 .sb-badge.on{display:flex}
-.sol-row{display:flex;align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line-soft)}
+.sol-label{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:12px}
+.sol-title-badge{display:none;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 8px;border-radius:99px;background:var(--red);color:#fff;font-size:14px;font-weight:800;vertical-align:middle;margin-left:6px}
+.sol-row{display:flex;align-items:flex-start;gap:14px;padding:19px 0;border-bottom:1px solid var(--line-soft)}
 .sol-row:last-child{border-bottom:none}
 .sol-row .mini-av{width:42px;height:42px;font-size:13px;flex:none}
 .sol-info{flex:1;min-width:0}
 .sol-nome{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.sol-det{font-size:13px;color:var(--muted);margin-top:2px}
+.sol-fields{font-size:13px;color:var(--muted);margin-top:5px;display:flex;flex-direction:column;gap:3px}
+.sol-fields b{color:var(--ink);font-weight:700}
 .sol-actions{display:flex;gap:8px;flex:none}
 .sol-actions .btn{height:38px;padding:0 18px;font-size:13px}
 .sol-badge{font-size:11px;font-weight:800;padding:2px 9px;border-radius:99px;letter-spacing:.3px}
@@ -1259,8 +1272,11 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 }
 a.dx-stat{text-decoration:none;color:inherit;cursor:pointer}
 a.dx-stat:hover{transform:translateY(-3px);box-shadow:var(--shadow-pop)}
+.dx-stat.dx-stat-click{background:#fff;box-shadow:0 16px 36px -16px rgba(28,27,26,.28);cursor:pointer}
+.dx-stat.dx-stat-click:hover{transform:translateY(-3px);box-shadow:var(--shadow-pop)}
 .dx-stat-go{position:absolute;top:11px;right:13px;font-size:14px;font-weight:800;line-height:1;color:var(--faint);opacity:0;transform:translateY(2px);transition:opacity .15s,transform .15s}
 a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
+#dxColabCard .dx-stat{padding:28px 12px 18px}
 .dx-stat-ico{
   width:48px;height:48px;border-radius:50%;background:var(--graphite);color:#fff;
   display:grid;place-items:center;margin-top:-50px;margin-bottom:14px;flex:none;
@@ -1271,6 +1287,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .dx-stat-ico.c-blue{background:linear-gradient(150deg,#3B78D0,#28518F);box-shadow:0 10px 20px -6px rgba(43,92,168,.5)}
 .dx-stat-ico.c-amber{background:linear-gradient(150deg,#F0A93A,#D2860F);box-shadow:0 10px 20px -6px rgba(210,134,15,.5)}
 .dx-stat-ico.c-red{background:linear-gradient(150deg,#D6304F,#A11332);box-shadow:0 10px 20px -6px rgba(161,19,50,.5)}
+.dx-stat-ico.c-gray{background:linear-gradient(150deg,#C4C4C4,#9C9C9C);box-shadow:0 10px 20px -6px rgba(120,120,120,.4)}
 .dx-stat-ico.c-violet{background:linear-gradient(150deg,#7C5AD8,#5738AE);box-shadow:0 10px 20px -6px rgba(87,56,174,.5)}
 .dx-stat-ico.c-yellow{background:linear-gradient(150deg,#F7CE3A,#E7AF08);box-shadow:0 10px 20px -6px rgba(217,164,8,.5)}
 .dx-stat-ico.c-orange{background:linear-gradient(150deg,#F5822E,#D25A0C);box-shadow:0 10px 20px -6px rgba(210,90,12,.5)}
@@ -1457,52 +1474,60 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 @media(max-width:900px){.casa-setor-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.casa-setor-grid{grid-template-columns:1fr}}
 .casa-setor-card{
-  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;
-  transition:transform .15s ease,box-shadow .15s ease;
+  position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:18px 18px 16px;overflow:hidden;transition:transform .15s ease,box-shadow .15s ease;
 }
+.casa-setor-card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--setor,#6E6C68)}
 .casa-setor-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card)}
-.casa-setor-nome{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--setor,var(--muted));margin-bottom:12px}
-.casa-setor-nome::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--setor,#6E6C68)}
-.casa-setor-linha{display:flex;align-items:center;gap:12px;margin-bottom:10px}
-.casa-setor-linha:last-child{margin-bottom:0}
+.casa-setor-nome{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--setor,var(--muted));margin-bottom:14px}
+.casa-setor-linha{display:flex;align-items:center;gap:12px}
+.casa-setor-av{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--setor,#6E6C68)}
+.casa-setor-info{min-width:0}
+.casa-setor-pessoa{font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.casa-setor-tempo{font-size:12px;color:var(--muted);margin-top:1px}
 
 /* tempo de casa — top 3 (pódio) */
 .casa-top3{display:flex;justify-content:center;align-items:flex-end;gap:18px;flex-wrap:wrap}
 .casa-top3-card{
   --medal:#C9A227;
-  position:relative;flex:1 1 190px;max-width:250px;
+  position:relative;flex:1 1 190px;max-width:250px;overflow:hidden;
   background:var(--card);border:1px solid var(--line);border-radius:20px;
   padding:26px 20px 22px;text-align:center;
   display:flex;flex-direction:column;align-items:center;gap:7px;
   transition:transform .18s ease, box-shadow .18s ease;
 }
 .casa-top3-card:hover{transform:translateY(-3px);box-shadow:0 8px 22px -12px rgba(28,27,26,.20)}
-.casa-top3-card::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;border-radius:20px 20px 0 0;background:var(--medal)}
+.casa-top3-card::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;border-radius:0;background:var(--medal)}
+.casa-top3-card.rank4::before,.casa-top3-card.rank5::before{display:none}
 .casa-top3-medal{height:34px;display:flex;align-items:center;justify-content:center;font-size:30px;line-height:1;filter:drop-shadow(0 3px 6px rgba(28,27,26,.18))}
 .casa-top3-num{
   display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;
   border-radius:50%;background:var(--medal);color:#fff;font-family:var(--font-display);
   font-weight:800;font-size:12px;
 }
-.casa-top3-rankn{
-  position:absolute;top:12px;right:14px;font-family:var(--font-display);
-  font-weight:800;font-size:13px;color:var(--medal);opacity:.9;
-}
 .casa-top3-av{margin:4px 0;box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--medal)}
+.casa-top3-card.rank4 .casa-top3-av,.casa-top3-card.rank5 .casa-top3-av{box-shadow:none}
 .casa-top3-nome{font-weight:700;font-size:14.5px}
 .casa-top3-tempo{font-size:12.5px;color:var(--muted)}
 .casa-top3-desde{font-size:11.5px;color:var(--faint);margin-top:-3px}
 @media(max-width:640px){.casa-top3-card.rank1,.casa-top3-card.rank2,.casa-top3-card.rank3,.casa-top3-card.rank4,.casa-top3-card.rank5{order:0}.casa-top3-card{flex-basis:100%;max-width:none}}
 
 /* tempo de casa — aniversários de empresa */
-.casa-aniv-grid{display:flex;flex-wrap:wrap;gap:12px}
+.casa-aniv-grid{display:flex;flex-wrap:wrap;gap:18px}
 .casa-aniv-card{
-  display:flex;align-items:center;gap:12px;flex:none;text-decoration:none;color:inherit;
-  border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:14px;
-  padding:11px 16px 11px 14px;background:var(--card);transition:transform .15s ease,box-shadow .15s ease;
+  position:relative;flex:1 1 170px;max-width:210px;
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:20px 16px 22px;text-align:center;text-decoration:none;color:inherit;
+  display:flex;flex-direction:column;align-items:center;gap:15px;
+  transition:transform .18s ease,box-shadow .18s ease;
 }
-.casa-aniv-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card)}
-.casa-aniv-anos{font-size:12.5px;font-weight:700;color:var(--amber)}
+.casa-aniv-card:hover{transform:translateY(-3px);box-shadow:0 8px 22px -12px rgba(28,27,26,.20)}
+.casa-aniv-av{margin-top:-32px;box-shadow:0 0 0 3px var(--card),0 0 0 5px #C9A227}
+.casa-aniv-nome{font-size:13px;font-weight:700;color:var(--ink)}
+.casa-aniv-num{font-family:var(--font-display);font-weight:800;font-size:24px;line-height:1;color:var(--graphite)}
+.casa-aniv-num small{font-size:11px;font-weight:700;color:var(--muted);margin-left:3px}
+.casa-aniv-mes{font-size:11.5px;color:var(--faint);margin-top:-10px}
+@media(max-width:640px){.casa-aniv-card{flex-basis:100%;max-width:none}}
 
 /* contratações: timeline por ano/mês */
 .timeline-ano{margin-bottom:28px}
@@ -1755,18 +1780,18 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 @media(max-width:640px){.year-grid{grid-template-columns:1fr}}
 /* Calendário geral reaproveita o .ymonth/.ygrid/.yday já comprovado (mesmo da ficha),
    só acrescentando o cabeçalho com pill de resumo por cima */
-#viewCal .ymonth{padding:0}
+#viewCal .ymonth{padding:0;overflow:hidden}
 #viewCal .ymonth-header{
-  padding:22px 22px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:13px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:rgba(28,27,26,.035);border-bottom:1px solid var(--line);
 }
-#viewCal .ymonth-header .ymonth-title{font-size:19px;font-weight:700;margin:0;padding:0;border:none}
+#viewCal .ymonth-header .ymonth-title{font-size:18px;font-weight:800;letter-spacing:-.4px;margin:0;padding:0;border:none}
 #viewCal .ymonth-pill{
   font-size:11px;font-weight:700;border-radius:99px;min-width:28px;height:20px;padding:0 8px;
   box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:none;
 }
 #viewCal .ymonth-pill.fer{background:rgba(196,25,59,.14);color:var(--red-deep)}
 #viewCal .ymonth-pill.fol{background:rgba(18,131,106,.14);color:var(--teal)}
-#viewCal .ymonth-divider{height:1px;background:var(--line);margin:0 22px 14px}
 #viewCal .ygrid-wrap{padding:0 18px 18px}
 #viewCal .ygrid{grid-auto-rows:34px;gap:3px}
 #viewCal .ygrid .ydow{font-size:9px;text-transform:uppercase;letter-spacing:.04em}
@@ -1774,7 +1799,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 #viewCal .ygrid .yday.weekend{background:rgba(28,27,26,.04);color:var(--muted);font-weight:400}
 #viewCal .ygrid .yday.util{background:rgba(28,27,26,.04);color:var(--muted)}
 #viewCal .ygrid .yday.i4{background:rgba(196,25,59,.16);color:var(--red-deep);font-weight:600;cursor:pointer}
-#viewCal .ygrid .yday.f3{background:rgba(18,131,106,.16);color:var(--teal);font-weight:600;cursor:pointer}
+#viewCal .ygrid .yday.f3{background:rgba(18,131,106,.32);color:#0B5C4A;font-weight:700;cursor:pointer}
 #viewCal .ygrid .yday.feriado{background:rgba(28,27,26,.2);color:var(--ink);font-weight:600}
 #viewCal .ygrid .yday.today{box-shadow:0 0 0 2px currentColor}
 #viewCal .ygrid .yday.i4:hover,#viewCal .ygrid .yday.f3:hover{transform:scale(1.16);z-index:2;box-shadow:0 4px 12px rgba(28,27,26,.2)}
@@ -1847,33 +1872,28 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
     <img src="data:image/png;base64,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" alt="Go &amp; Grow" class="sb-logo">
     <div class="sb-links">
       <a class="sb-btn" href="#/dashboard" id="navDash" title="Dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="5" height="9" rx="1"/><rect x="9.5" y="7" width="5" height="14" rx="1"/><rect x="16" y="3" width="5" height="18" rx="1"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
         <span class="sb-tip">Dashboard</span>
       </a>
       <a class="sb-btn" href="#/agenda" id="navAgenda" title="Agenda">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12a10.06 10.06 0 0 0-20 0Z"/><path d="M12 12v8a2 2 0 0 0 4 0"/><path d="M12 2v1"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9.5 8h5"/><path d="M9.5 12h5"/><path d="M9.5 16h5"/></svg>
         <span class="sb-tip">Agenda</span>
-      </a>
-      <a class="sb-btn" href="#/calendario" id="navCal" title="Calendário geral">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        <span class="sb-tip">Calendário geral</span>
       </a>
       <a class="sb-btn" href="#/colaboradores" id="navColab" title="Colaboradores">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span class="sb-tip">Colaboradores</span>
       </a>
+      <a class="sb-btn" href="#/calendario" id="navCal" title="Calendário">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span class="sb-tip">Calendário</span>
+      </a>
       <a class="sb-btn" href="#/graficos" id="navGraf" title="Relatórios">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8 13 13.7l-3-3L4 17"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="5" height="9" rx="1"/><rect x="9.5" y="7" width="5" height="14" rx="1"/><rect x="16" y="3" width="5" height="18" rx="1"/></svg>
         <span class="sb-tip">Relatórios</span>
       </a>
-      <a class="sb-btn" href="#/pessoas" id="navPessoas" title="Pessoas">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        <span class="sb-tip">Pessoas</span>
-      </a>
-      <a class="sb-btn" href="#/solicitacoes" id="navSolic" title="Solicitações">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
-        <span class="sb-tip">Solicitações</span>
-        <span class="sb-badge" id="navSolicBadge"></span>
+      <a class="sb-btn" href="#/pessoas" id="navPessoas" title="Gestão de Pessoas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6.17 15a3 3 0 0 1 5.66 0"/><path d="M16 10h2"/><path d="M16 14h2"/></svg>
+        <span class="sb-tip">Gestão de Pessoas</span>
       </a>
     </div>
     <div class="sb-foot">
@@ -2197,7 +2217,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
   <section class="view" id="viewPessoas">
     <div class="page-head">
       <div>
-        <h1 class="page-title">Pessoas</h1>
+        <h1 class="page-title">Gestão de Pessoas</h1>
       </div>
     </div>
 
@@ -2210,31 +2230,31 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
     </div>
 
     <div id="grafHistoricos">
-      <div class="dx-eyebrow dx-eyebrow-sec"><span>Pessoas</span><i></i></div>
-      <div class="dx-colab-footer" id="dxColabCard"></div>
+      <div class="dx-eyebrow dx-eyebrow-sec" style="margin-bottom:0"><span>Colaboradores</span><i></i></div>
+      <div class="ag-stats" style="margin:45px 0 0" id="dxColabCard"></div>
 
       <div class="dx-eyebrow dx-eyebrow-sec"><span>Setores</span><i></i></div>
       <div class="dx-setores-grid" id="dxSetoresGrid"></div>
 
-      <div class="dash-grid" style="margin-top:40px">
-        <div class="dash-card chart-card">
-          <h2 class="dash-card-title">Colaboradores por Setor</h2>
-          <div class="chart-wrap chart-wrap-sm"><canvas id="chartDeptos"></canvas></div>
+      <div class="dash-grid" style="margin-top:65px">
+        <div>
+          <div class="dept-header"><span class="dept-name">Colaboradores por Setor</span><span class="dept-line"></span></div>
+          <div class="dash-card chart-card"><div class="chart-wrap chart-wrap-sm"><canvas id="chartDeptos"></canvas></div></div>
         </div>
 
-        <div class="dash-card chart-card">
-          <h2 class="dash-card-title">Estagiários por Setor</h2>
-          <div class="chart-wrap chart-wrap-sm"><canvas id="chartEstagiarios"></canvas></div>
+        <div>
+          <div class="dept-header"><span class="dept-name">Estagiários por Setor</span><span class="dept-line"></span></div>
+          <div class="dash-card chart-card"><div class="chart-wrap chart-wrap-sm"><canvas id="chartEstagiarios"></canvas></div></div>
         </div>
 
-        <div class="dash-card chart-card">
-          <h2 class="dash-card-title">Admissões por Mês</h2>
-          <div class="chart-wrap"><canvas id="chartAdmissoes"></canvas></div>
+        <div>
+          <div class="dept-header"><span class="dept-name">Unidade</span><span class="dept-line"></span></div>
+          <div class="dash-card chart-card"><div class="chart-wrap chart-wrap-donut"><canvas id="chartUnidades"></canvas></div></div>
         </div>
 
-        <div class="dash-card chart-card">
-          <h2 class="dash-card-title">Colaboradores por Unidade</h2>
-          <div class="chart-wrap chart-wrap-donut"><canvas id="chartUnidades"></canvas></div>
+        <div>
+          <div class="dept-header"><span class="dept-name">Regime de Contratação</span><span class="dept-line"></span></div>
+          <div class="dash-card chart-card"><div class="chart-wrap chart-wrap-donut"><canvas id="chartRegime"></canvas></div></div>
         </div>
       </div>
     </div>
@@ -2270,13 +2290,17 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 
     <div id="grafContratacoes" style="display:none">
       <div class="dash-grid">
-        <div class="dash-card span-2 chart-card">
-          <h2 class="dash-card-title">Contratações por ano</h2>
-          <div class="chart-wrap"><canvas id="chartContratacoes"></canvas></div>
+        <div class="span-2">
+          <div class="dept-header"><span class="dept-name">Contratações por Ano</span><span class="dept-line"></span></div>
+          <div class="dash-card chart-card"><div class="chart-wrap"><canvas id="chartContratacoes"></canvas></div></div>
         </div>
-        <div class="dash-card span-2">
-          <h2 class="dash-card-title">Linha do tempo de contratações</h2>
-          <div id="contratacoesTimeline"></div>
+        <div class="span-2">
+          <div class="dept-header"><span class="dept-name">Admissões por Mês</span><span class="dept-line"></span></div>
+          <div class="dash-card chart-card"><div class="chart-wrap"><canvas id="chartAdmissoes"></canvas></div></div>
+        </div>
+        <div class="span-2">
+          <div class="dept-header"><span class="dept-name">Linha do Tempo de Contratações</span><span class="dept-line"></span></div>
+          <div class="dash-card"><div id="contratacoesTimeline"></div></div>
         </div>
       </div>
     </div>
@@ -2347,14 +2371,6 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
     </div>
   </section>
 
-  <!-- ============ SOLICITAÇÕES DE FOLGA ============ -->
-  <section class="view" id="viewSolic">
-    <div class="page-head">
-      <div><h1 class="page-title">Solicitações de folga</h1></div>
-    </div>
-    <div id="solicLista"></div>
-  </section>
-
     </main>
   </div>
 </div>
@@ -2407,6 +2423,9 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
     <div class="field">
       <label>Motivo (opcional)</label>
       <textarea id="solMotivo" rows="2" placeholder="Ex.: consulta médica, assunto pessoal…"></textarea>
+    </div>
+    <div class="field check-field">
+      <label class="check-lab"><input type="checkbox" id="solAval"> Meu coordenador está ciente e avalizou este pedido</label>
     </div>
     <button class="btn btn-primary" type="submit" style="width:100%;height:46px;font-size:14px">Enviar solicitação</button>
     <div class="login-foot" style="margin-top:14px"><a href="#" id="solVoltar" class="sol-link">← Voltar ao login</a></div>
@@ -2879,6 +2898,9 @@ const fmtCurto = s => { const d=pd(s); return String(d.getDate()).padStart(2,'0'
 const addM = (d,n) => { const x=new Date(d); x.setMonth(x.getMonth()+n); return x; };
 const addD = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
 const diffD = (a,b) => Math.round((b-a)/864e5);
+// dias úteis entre duas datas ISO (inclusive), pulando sábado/domingo — folgas não contam fim de semana
+const diasUteis = (a,b) => { let d=pd(a); const end=pd(b); let n=0; while(d<=end){ const wd=d.getDay(); if(wd!==0 && wd!==6) n++; d=addD(d,1); } return n; };
+const ehFimDeSemana = d => { const wd=d.getDay(); return wd===0 || wd===6; };
 const initials = n => n.split(' ').filter(Boolean).map(w=>w[0]).filter((_,i,a)=>i===0||i===a.length-1).join('').toUpperCase();
 const avatarInner = p => p.foto ? `<img src="${esc(p.foto)}" alt="${esc(p.nome)}" loading="lazy">` : initials(p.nome);
 const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
@@ -3030,9 +3052,33 @@ const Store = {
     if(raw){ try{ this.data = JSON.parse(raw); }catch(e){ this.data=null; } }
     if(!this.data || !this.data.auditoria){ this.data = Seed.build(); this.save(); }
     if(!this.data.usuarios){ this.data.usuarios = Seed.build().usuarios; this.save(); }
+    this.migrarNovosSetores();
   },
   save(){ if(this.driver==='local') LS.setItem(this.key, JSON.stringify(this.data)); },
   reset(){ LS.removeItem(this.key); this.data = Seed.build(); this.save(); },
+
+  // garante ao menos 1 colaborador em Redação/Revisão/Inbound pra quem já tinha dados
+  // salvos antes desses setores terem alguém no roster fictício (07/08/2026) — não mexe em mais nada
+  migrarNovosSetores(){
+    if(this.driver!=='local') return;
+    const novos = [
+      {nome:'Camila Ferreira', funcao:'Redatora Publicitária', departamento:'Redação', unidade:'Granbery', regime:'CLT', admissao:'2021-03-09'},
+      {nome:'Eduardo Lima', funcao:'Revisor de Texto', departamento:'Revisão', unidade:'Quintas da Avenida', regime:'CLT', admissao:'2020-06-22'},
+      {nome:'Larissa Freitas', funcao:'Analista de Inbound Marketing', departamento:'Inbound', unidade:'Granbery', regime:'CLT', admissao:'2022-05-17'},
+    ];
+    let mudou = false;
+    novos.forEach(n=>{
+      if(this.data.colaboradores.some(c=>c.departamento===n.departamento)) return;
+      const cid = uid();
+      this.data.colaboradores.push({...n, id:cid});
+      const hj = hoje();
+      let anivIni = new Date(pd(n.admissao));
+      while(addM(anivIni,12) <= hj) anivIni = addM(anivIni,12);
+      this.data.periodos.push({id:uid(), colaborador_id:cid, inicio:iso(anivIni), fim:iso(addD(addM(anivIni,12),-1)), situacao:'acumulando'});
+      mudou = true;
+    });
+    if(mudou) this.save();
+  },
 
   /* Nomes de tabela na API real (PostgREST) */
   pgTable: t => ({periodos:'periodos_aquisitivos', ferias:'ferias_oficiais'}[t] || t),
@@ -3248,11 +3294,14 @@ const Seed = {
       ['José Almeida','Coordenador de Produção','Coordenação','Granbery','2021-06-14'],
       ['Mariana Ribeiro','Atendimento ON','Corporativo','Granbery','2022-03-07'],
       ['Rafael Teixeira','Atendimento Digital','Digital','Quintas da Avenida','2021-11-08'],
+      ['Larissa Freitas','Analista de Inbound Marketing','Inbound','Granbery','2022-05-17'],
       ['Camila Duarte','Atendimento OFF','Corporativo','Granbery','2023-02-13'],
       ['Thiago Moreira','Designer Gráfico','Criação','Granbery','2020-07-27'],
       ['Juliana Castro','Diretora de Arte','Criação','Quintas da Avenida','2019-10-21'],
       ['Pedro Sampaio','Designer de Produto','Criação','Quintas da Avenida','2015-09-01'],
       ['Beatriz Nogueira','Redatora','Criação','Granbery','2022-08-15'],
+      ['Camila Ferreira','Redatora Publicitária','Redação','Granbery','2021-03-09'],
+      ['Eduardo Lima','Revisor de Texto','Revisão','Quintas da Avenida','2020-06-22'],
       ['Gustavo Pires','Motion Designer','Vídeo','Granbery','2021-04-05'],
       ['Larissa Campos','Editora de Vídeo','Vídeo','Quintas da Avenida','2022-10-03'],
       ['André Martins','Videomaker','Vídeo','Granbery','2023-05-22'],
@@ -3462,7 +3511,7 @@ const UI = {
     const baseParaPend = cs.filter(c => matchQ(c) && (!this.filtro.depto || c.departamento===this.filtro.depto) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
 
     // chips de departamento — ordem fixa institucional; desconhecidos vão pro fim, em ordem alfabética
-    const ORDEM_DEPTO = ['Direção','Coordenação','Administrativo','Corporativo','Digital','Inbound','Criação','Vídeo','TI','Estagiários'];
+    const ORDEM_DEPTO = ['Direção','Coordenação','Administrativo','Corporativo','Digital','Inbound','Criação','Redação','Revisão','Vídeo','TI','Estagiários'];
     const deps = {};
     ORDEM_DEPTO.forEach(d=>deps[d]=0); // setores da marca sempre aparecem como pill, mesmo vazios
     baseParaDepto.forEach(c=>deps[c.departamento]=(deps[c.departamento]||0)+1);
@@ -3477,7 +3526,7 @@ const UI = {
       .concat(depKeys.map(d=>
         `<button class="chip ${this.filtro.depto===d?'on':''}" data-dep="${esc(d)}">${esc(d)}<b>${deps[d]}</b></button>`));
     $('#deptChips').innerHTML = chips.join('');
-    $$('#deptChips .chip').forEach(ch=>ch.onclick=()=>{ this.filtro.depto=ch.dataset.dep; this.renderDir(); });
+    $$('#deptChips .chip').forEach(ch=>ch.onclick=()=>{ this.filtro.depto = (this.filtro.depto===ch.dataset.dep && ch.dataset.dep) ? '' : ch.dataset.dep; this.renderDir(); });
 
     // unidades como segmented control + toggle de pendências ao lado
     const unis=[...new Set(cs.map(c=>c.unidade))].sort();
@@ -3789,7 +3838,7 @@ const UI = {
     const dias={}; // iso -> 'ferias'|'folga'
     pers.forEach(p=>{
       Dom.feriasDe(p.id).forEach(f=>{ let d=pd(f.inicio); while(d<=pd(f.fim)){ dias[iso(d)]='ferias'; d=addD(d,1);} });
-      Dom.folgasDe(p.id).forEach(f=>{ let d=pd(f.inicio); while(d<=pd(f.fim)){ if(!dias[iso(d)]) dias[iso(d)]='folga'; d=addD(d,1);} });
+      Dom.folgasDe(p.id).forEach(f=>{ let d=pd(f.inicio); while(d<=pd(f.fim)){ if(!dias[iso(d)] && !ehFimDeSemana(d)) dias[iso(d)]='folga'; d=addD(d,1);} });
     });
     const feriados = feriadosDoAno(ano);
     const hj=iso(hoje());
@@ -3915,10 +3964,19 @@ const Modals = {
         <button class="btn btn-primary" onclick="Actions.salvarLanc('${cid}','${tipo}')">Salvar agendamento</button>
       </div>`);
     const ini=$('#mIni'), fim=$('#mFim'), dias=$('#mDias');
-    const sync=()=>{ if(ini.value&&fim.value){ const n=diffD(pd(ini.value),pd(fim.value))+1; if(n>0) dias.value=n; } };
+    const sync=()=>{ if(ini.value&&fim.value){ const n=isFer?diffD(pd(ini.value),pd(fim.value))+1:diasUteis(ini.value,fim.value); if(n>0) dias.value=n; } };
     ini.onchange=()=>{ if(!fim.value||fim.value<ini.value) fim.value=ini.value; sync(); };
     fim.onchange=sync;
     ini.value=iso(hoje()); fim.value=iso(hoje()); dias.value=1;
+  },
+
+  solicitacoes(){
+    this.open(`
+      <h3 style="font-size:26px;margin-bottom:22px">Solicitações de Folga <span id="solTituloBadge" class="sol-title-badge"></span></h3>
+      <div id="solicLista"></div>
+      <div class="modal-actions"><button class="btn btn-soft" onclick="Modals.close()">Fechar</button></div>`,
+      {wide:true});
+    UI.renderSolic();
   },
 
   novoColab(){
@@ -4080,7 +4138,7 @@ const Modals = {
         <button class="btn btn-primary" onclick="Actions.salvarEdicaoLanc('${table}','${id}','${cid}')">Salvar alterações</button>
       </div>`);
     const ini=$('#eIni'), fim=$('#eFim'), dias=$('#eDias');
-    const sync=()=>{ if(ini.value&&fim.value){ const n=diffD(pd(ini.value),pd(fim.value))+1; if(n>0) dias.value=n; } };
+    const sync=()=>{ if(ini.value&&fim.value){ const n=isFer?diffD(pd(ini.value),pd(fim.value))+1:diasUteis(ini.value,fim.value); if(n>0) dias.value=n; } };
     ini.onchange=()=>{ if(!fim.value||fim.value<ini.value) fim.value=ini.value; sync(); };
     fim.onchange=sync;
   },
@@ -4513,31 +4571,31 @@ const Actions = {
     const feriasLinhas = [];
     Dom.periodosDe(c.id).forEach(p=>Dom.feriasDe(p.id).forEach(f=>
       feriasLinhas.push([fmt(f.inicio), fmt(f.fim), `${f.dias} dias`, f.obs||'—'])));
-    pdfTitulo(doc); doc.setFontSize(15); doc.setTextColor(28,27,26);
-    doc.text('Férias contábeis', 14, cy + 36);
+    this.pdfTituloKerned(doc, 'Férias contábeis', 14, cy + 36, 15, [28,27,26], -0.2);
     doc.autoTable({
       ...base,
       startY: cy + 43,
-      head: [['Início','Fim','Dias','Observação']],
+      head: [['Início','Fim',{content:'Dias', styles:{halign:'center'}},{content:'Observação', styles:{halign:'center'}}]],
       body: feriasLinhas.length ? feriasLinhas : [['—','—','—','Nenhum lançamento']],
       styles: {font: pdfFont(doc), fontSize:9, cellPadding:2.5},
       headStyles: {fillColor:[196,25,59], textColor:255, fontStyle:'bold'},
       alternateRowStyles: {fillColor:[250,240,242]},
+      columnStyles: {2:{halign:'center'}, 3:{halign:'center'}},
     });
 
     const folgasLinhas = [];
     Dom.periodosDe(c.id).forEach(p=>Dom.folgasDe(p.id).forEach(f=>
       folgasLinhas.push([fmt(f.inicio), fmt(f.fim), `${f.dias} dias`, f.obs||'—'])));
     doc.addPage(); // folgas sempre começam em página nova
-    pdfTitulo(doc); doc.setFontSize(15); doc.setTextColor(28,27,26);
-    doc.text('Folgas', 14, 34);
+    this.pdfTituloKerned(doc, 'Folgas', 14, 34, 15, [28,27,26], -0.2);
     doc.autoTable({
       ...base,
       startY: 42,
-      head: [['Início','Fim','Dias','Observação']],
+      head: [['Início','Fim',{content:'Dias', styles:{halign:'center'}},{content:'Observação', styles:{halign:'center'}}]],
       body: folgasLinhas.length ? folgasLinhas : [['—','—','—','Nenhum lançamento']],
       styles: {font: pdfFont(doc), fontSize:9, cellPadding:2.5},
       headStyles: {fillColor:[18,131,106], textColor:255, fontStyle:'bold'},
+      columnStyles: {2:{halign:'center'}, 3:{halign:'center'}},
       alternateRowStyles: {fillColor:[238,247,244]},
     });
 
@@ -4889,7 +4947,7 @@ UI.diaMap = function(ano, filtro){
       });
       Dom.folgasDe(p.id).forEach(f=>{
         let d=pd(f.inicio); const fim=pd(f.fim);
-        while(d<=fim){ if(d.getFullYear()===ano) bump(iso(d),'fol',pessoa); d=addD(d,1); }
+        while(d<=fim){ if(d.getFullYear()===ano && !ehFimDeSemana(d)) bump(iso(d),'fol',pessoa); d=addD(d,1); }
       });
     });
   });
@@ -4978,7 +5036,7 @@ UI.renderCal = function(){
 
   $('#calDeptChips').innerHTML = [`<button class="chip ${!this.calFiltro.depto?'on':''}" data-dep="">Todos os Setores</button>`]
     .concat(deps.map(d=>`<button class="chip ${this.calFiltro.depto===d?'on':''}" data-dep="${esc(d)}">${esc(d)}</button>`)).join('');
-  $$('#calDeptChips .chip').forEach(ch=>ch.onclick=()=>{ this.calFiltro.depto=ch.dataset.dep; this.renderCal(); });
+  $$('#calDeptChips .chip').forEach(ch=>ch.onclick=()=>{ this.calFiltro.depto = (this.calFiltro.depto===ch.dataset.dep && ch.dataset.dep) ? '' : ch.dataset.dep; this.renderCal(); });
 
   const {map} = this.diaMap(ano);
   const feriados = feriadosDoAno(ano);
@@ -5086,6 +5144,8 @@ const SETORES_BRAND = [
   { nome:'Digital',       cor:'#12836A', ico:'<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>' },
   { nome:'Inbound',       cor:'#2E93B8', ico:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>' },
   { nome:'Criação',       cor:'#2F5FA8', ico:'<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.83-.44-1.12-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h1.99c3.05 0 5.56-2.5 5.56-5.56C21.97 6.01 17.46 2 12 2Z"/><circle cx="6.5" cy="12.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="8.5" cy="7.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="13.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="17.5" cy="10.5" r="1.1" fill="currentColor" stroke="none"/>' },
+  { nome:'Redação',       cor:'#A15C3C', ico:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>' },
+  { nome:'Revisão',       cor:'#4A7C8C', ico:'<path d="m8 11 2 2 4-4"/><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>' },
   { nome:'Vídeo',         cor:'#4B4FC4', ico:'<path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/>' },
   { nome:'TI',            cor:'#7E44B0', ico:'<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>' },
   { nome:'Estagiários',   cor:'#C13E8A', ico:'<path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1 2.5 3 6 3s6-2 6-3v-5"/>' },
@@ -5132,10 +5192,11 @@ UI.renderAgenda = function(){
 
   // ---------- stats do mês (mesmo componente .dx-stat do dashboard) ----------
   const ICOag = {
-    praia:'<path d="M2 18h20"/><path d="M4 21h4M11 21h2M16 21h4"/><path d="M6.5 14a5.5 5.5 0 0 1 11 0"/><path d="M12 4.5V3M5.8 6.3 4.7 5.2M18.2 6.3l1.1-1.1M3.5 12H2M22 12h-1.5"/>',
+    sol:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
     folga:'<path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 1v3M10 1v3M14 1v3"/>',
-    setores:'<path d="M4 21h16M6 21V8l6-4 6 4v13M10 21v-6h4v6"/><path d="M9 11h.01M15 11h.01M9 14h.01M15 14h.01"/>',
-    ausentes:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>'
+    setores:'<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+    ausentes:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+    solic:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'
   };
   const nomesCurtosAg = (lista, max=2) => {
     const nomes = lista.map(p=>(p.nome||'').split(' ')[0]);
@@ -5143,8 +5204,8 @@ UI.renderAgenda = function(){
     if(nomes.length<=max) return nomes.join(', ');
     return `${nomes.slice(0,max).join(', ')} +${nomes.length-max}`;
   };
-  const statAg = (col, ico, tit, sub, num) => `
-    <div class="dx-stat">
+  const statAg = (col, ico, tit, sub, num, onclick) => `
+    <div class="dx-stat${onclick?' dx-stat-click':''}"${onclick?` onclick="${onclick}"`:''}>
       <span class="dx-stat-ico c-${col}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></span>
       <div class="dx-stat-tit">${tit}</div>
       <div class="dx-stat-sub">${sub||'&nbsp;'}</div>
@@ -5154,9 +5215,11 @@ UI.renderAgenda = function(){
   const emFolga = ausMes.filter(p=>p.tipo==='folga');
   const setoresAfetados = new Set(ausMes.map(p=>{ const c=Store.data.colaboradores.find(x=>x.nome===p.nome); return c?c.departamento:null; }).filter(Boolean));
   const totalSetores = new Set(Store.data.colaboradores.map(c=>c.departamento)).size;
+  const nSolic = (Store.data.solicitacoes||[]).filter(s=>s.status==='pendente').length;
   $('#agKpis').innerHTML =
+    statAg('blue',   ICOag.solic,   'Solicitações',     nSolic?'aguardando RH':'nada pendente', nSolic, 'Modals.solicitacoes()') +
     statAg('amber',  ICOag.ausentes,'Ausentes no Mês',  ausMes.length?'férias + folgas':'ninguém no mês', ausMes.length) +
-    statAg('red',    ICOag.praia,   'Férias Contábeis', emFerias.length?`${MESES[mes]} ${ano}`:'ninguém no mês', emFerias.length) +
+    statAg('red',    ICOag.sol,     'Férias Contábeis', emFerias.length?`${MESES[mes]} ${ano}`:'ninguém no mês', emFerias.length) +
     statAg('teal',   ICOag.folga,   'Folgas',           emFolga.length?`${MESES[mes]} ${ano}`:'ninguém no mês', emFolga.length) +
     statAg('indigo', ICOag.setores, 'Setores',          setoresAfetados.size?`${MESES[mes]} ${ano}`:'nenhum setor', setoresAfetados.size);
 
@@ -5323,14 +5386,12 @@ UI.renderDash = function(){
     return `${nomes.slice(0,max).join(', ')} +${nomes.length-max}`;
   };
   const ICO = {
-    ferias:'<path d="M12 2v3M4.2 8.2 2.8 6.8M19.8 8.2l1.4-1.4M3 14a9 9 0 0 1 18 0Z"/><path d="M12 14v6a2 2 0 0 0 4 0"/>',
     folga:'<path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 1v3M10 1v3M14 1v3"/>',
     bolo:'<path d="M4 21h16M4 21v-6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6M12 7v6M8 9v4M16 9v4M12 3v2M8 5v2M16 5v2"/>',
     sino:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
     aviao:'<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3.5s-2.5 0-3.5 1.5L14 8.5 5.8 6.7c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 4.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>',
     inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
-    sol:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
-    praia:'<path d="M2 18h20"/><path d="M4 21h4M11 21h2M16 21h4"/><path d="M6.5 14a5.5 5.5 0 0 1 11 0"/><path d="M12 4.5V3M5.8 6.3 4.7 5.2M18.2 6.3l1.1-1.1M3.5 12H2M22 12h-1.5"/>',
+    sol:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
     trofeu:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0Z"/><path d="M17 5h3v1.5a3.5 3.5 0 0 1-3.5 3.5M7 5H4v1.5A3.5 3.5 0 0 0 7.5 10"/>'
   };
   const nSolic = (Store.data.solicitacoes||[]).filter(s=>s.status==='pendente').length;
@@ -5347,8 +5408,8 @@ UI.renderDash = function(){
     </a>`;
   $('#dxHojeStats').innerHTML =
     statCard('amber', ICO.sino, 'Alertas', nAlertas?'férias a vencer':'tudo em dia', nAlertas, '#/colaboradores?pend') +
-    statCard('violet', ICO.inbox, 'Solicitações', nSolic?'aguardando RH':'nada pendente', nSolic, '#/solicitacoes') +
-    statCard('red', ICO.praia, 'Férias Contábeis', feriasHoje.length?'hoje':'ninguém hoje', feriasHoje.length, '#/agenda') +
+    statCard('violet', ICO.inbox, 'Solicitações', nSolic?'aguardando RH':'nada pendente', nSolic, '#/agenda') +
+    statCard('red', ICO.sol, 'Férias Contábeis', feriasHoje.length?'hoje':'ninguém hoje', feriasHoje.length, '#/agenda') +
     statCard('teal', ICO.folga, 'Folgas', folgasHoje.length?'hoje':'ninguém hoje', folgasHoje.length, '#/agenda') +
     statCard('orange', ICO.trofeu, 'Aniversários', aniversHoje.length?nomesCurtos(aniversHoje):'ninguém hoje', aniversHoje.length, '#/pessoas?tab=tempocasa');
 
@@ -5504,15 +5565,20 @@ UI.renderSolic = function(){
   const podeAgir = Auth.podeEditar();
   const badge = s => s.status==='aprovada'?'<span class="sol-badge aprov">Aprovada</span>'
     : s.status==='recusada'?'<span class="sol-badge recus">Recusada</span>'
-    : '<span class="sol-badge pend">Pendente</span>';
+    : '';
   const row = s => {
     const c = Store.data.colaboradores.find(x=>x.id===s.colaborador_id);
     const per = s.inicio===s.fim ? fmt(s.inicio) : `${fmt(s.inicio)} – ${fmt(s.fim)}`;
     return `<div class="sol-row">
-      <div class="mini-av tipo-folga">${avatarInner({nome:s.nome, foto:c?c.foto:null})}</div>
+      <div class="mini-av">${avatarInner({nome:s.nome, foto:c?c.foto:null})}</div>
       <div class="sol-info">
         <div class="sol-nome">${esc(s.nome)} ${badge(s)}</div>
-        <div class="sol-det">${per} · ${s.dias} ${s.dias===1?'dia':'dias'}${s.motivo?` · ${esc(s.motivo)}`:''}</div>
+        <div class="sol-fields">
+          <div><b>Período:</b> ${per}</div>
+          <div><b>Dias Úteis:</b> ${s.dias}</div>
+          <div><b>Motivo:</b> ${s.motivo ? esc(s.motivo) : '—'}</div>
+          <div><b>Aval do Coordenador:</b> ${s.aval_coordenador ? 'Sim' : 'Não'}</div>
+        </div>
       </div>
       ${s.status==='pendente' && podeAgir ? `<div class="sol-actions">
         <button class="btn btn-primary sol-aprovar" data-id="${s.id}">Aprovar</button>
@@ -5520,15 +5586,11 @@ UI.renderSolic = function(){
       </div>` : ''}
     </div>`;
   };
+  const tituloBadge = $('#solTituloBadge');
+  if(tituloBadge){ tituloBadge.textContent = pend.length; tituloBadge.style.display = pend.length ? 'inline-flex' : 'none'; }
   $('#solicLista').innerHTML =
-    `<div class="dash-card">
-       <h2 class="dash-card-title" style="font-size:20px;margin-bottom:8px">Pendentes <span style="color:var(--faint);font-weight:700">${pend.length}</span></h2>
-       ${pend.length ? pend.map(row).join('') : '<div class="dx-empty">Nenhuma solicitação pendente. ✨</div>'}
-     </div>
-     ${hist.length ? `<div class="dash-card" style="margin-top:20px">
-       <h2 class="dash-card-title" style="font-size:20px;margin-bottom:8px">Histórico</h2>
-       ${hist.map(row).join('')}
-     </div>` : ''}`;
+    `${pend.length ? pend.map(row).join('') : '<div class="dx-empty">Nenhuma solicitação pendente. ✨</div>'}
+     ${hist.length ? `<div class="sol-label" style="margin-top:34px">Histórico</div>${hist.map(row).join('')}` : ''}`;
   if(podeAgir){
     $$('#solicLista .sol-aprovar').forEach(b=>b.onclick=()=>UI.decidirSolic(b.dataset.id, true));
     $$('#solicLista .sol-recusar').forEach(b=>b.onclick=()=>UI.decidirSolic(b.dataset.id, false));
@@ -5555,8 +5617,8 @@ UI.decidirSolic = async function(id, aprovar){
   s.decidido_por = Auth.user?.nome || '';
   Store.save();
   toast(aprovar ? 'Solicitação aprovada ✓ — folga lançada' : 'Solicitação recusada');
-  atualizarBadgeSolic();
   UI.renderSolic();
+  UI.renderAgenda();
 };
 
 /* ================================================================
@@ -5756,7 +5818,7 @@ UI.renderGraficos = function(){
       data:{ labels:['Pago','Programado','Em aberto','Acumulando'],
         datasets:[{ data:[sitCount.pago, sitCount.programado, sitCount.aberto, sitCount.acumulando],
           backgroundColor:['#4FA891','#D6B15C','#D65C6E','#6FB1CC'],
-          hoverBackgroundColor:['#408976','#AF914B','#AF4B5A','#5B91A7'], borderWidth:0, spacing:3 }] },
+          hoverBackgroundColor:['#408976','#AF914B','#AF4B5A','#5B91A7'], borderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:{family:"'DM Sans', sans-serif", size:10.5}, boxWidth:8, boxHeight:8, padding:9, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
@@ -5777,7 +5839,7 @@ UI.renderGraficos = function(){
       data:{ labels:['Com pendência','Programado','Em dia'],
         datasets:[{ data:[pessoaSit.pendencia, pessoaSit.programado, pessoaSit.emdia],
           backgroundColor:['#D65C6E','#D6B15C','#4FA891'],
-          hoverBackgroundColor:['#AF4B5A','#AF914B','#408976'], borderWidth:0, spacing:3 }] },
+          hoverBackgroundColor:['#AF4B5A','#AF914B','#408976'], borderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:14, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
@@ -5800,7 +5862,7 @@ UI.renderGraficos = function(){
       data:{ labels:['Vencidas','Vencendo (≤120d)','No prazo'],
         datasets:[{ data:[venc.vencidas, venc.vencendo, venc.prazo],
           backgroundColor:['#D65C6E','#E39A6B','#4FA891'],
-          hoverBackgroundColor:['#AF4B5A','#BA7E57','#408976'], borderWidth:0, spacing:3 }] },
+          hoverBackgroundColor:['#AF4B5A','#BA7E57','#408976'], borderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:14, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
@@ -5820,7 +5882,7 @@ UI.renderGraficos = function(){
       data:{ labels:['Integral (1x)','Fracionada (2x)','Fracionada (3x+)'],
         datasets:[{ data:[dur.um, dur.dois, dur.tres],
           backgroundColor:['#3E8C79','#6FB6A3','#A9D4C8'],
-          hoverBackgroundColor:['#327263','#5B9585','#8AADA4'], borderWidth:0, spacing:3 }] },
+          hoverBackgroundColor:['#327263','#5B9585','#8AADA4'], borderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:14, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
@@ -5853,7 +5915,7 @@ UI.renderPessoas = function(){
     destroyChart('deptos');
     UI.chartInstances.deptos = new Chart($('#chartDeptos'), {
       type:'bar',
-      data:{ labels:depKeys, datasets:[{ data:depKeys.map(d=>porDep[d]), backgroundColor:'#6FB1CC', borderRadius:999, borderSkipped:false, barPercentage:.65 }] },
+      data:{ labels:depKeys, datasets:[{ data:depKeys.map(d=>porDep[d]), backgroundColor:'#D65C6E', hoverBackgroundColor:'#C15363', borderRadius:999, borderSkipped:false, barPercentage:.65 }] },
       options:{
         indexAxis:'y', responsive:true, maintainAspectRatio:false,
         scales:{ x:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}}, y:{ticks:{color:'#6E6C68',font:CHART_FONT}, grid:{display:false}, border:{display:false}} },
@@ -5867,28 +5929,50 @@ UI.renderPessoas = function(){
     destroyChart('unidades');
     UI.chartInstances.unidades = new Chart($('#chartUnidades'), {
       type:'doughnut',
-      data:{ labels:['Granbery','Quintas da Avenida'], datasets:[{ data:[nGran,nQuin], backgroundColor:['#CBCBCB','#E58A94'], hoverBackgroundColor:['#CBCBCB','#E58A94'], borderWidth:0, hoverBorderWidth:0, hoverOffset:0, spacing:3 }] },
+      data:{ labels:['Granbery','Quintas da Avenida'], datasets:[{ data:[nGran,nQuin], backgroundColor:['#CBCBCB','#D65C6E'], hoverBackgroundColor:['#B5B5B5','#C15363'], borderWidth:0, hoverBorderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
-        plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:16, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
+        plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:26, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
+      }
+    });
+
+    // ---------- colaboradores por regime ----------
+    const porRegime = {};
+    cs.forEach(c=>{ const r = c.regime||'Não informado'; porRegime[r] = (porRegime[r]||0)+1; });
+    const regimeKeys = Object.keys(porRegime).sort((a,b)=>porRegime[b]-porRegime[a]);
+    const CORES_REGIME = ['#CBCBCB','#D65C6E','#D6B15C','#A98FD2','#8FC7A0'];
+    const CORES_REGIME_HOVER = ['#B5B5B5','#C15363','#AF914B','#8E72B5','#6FA382'];
+    destroyChart('regime');
+    UI.chartInstances.regime = new Chart($('#chartRegime'), {
+      type:'doughnut',
+      data:{ labels:regimeKeys, datasets:[{ data:regimeKeys.map(k=>porRegime[k]), backgroundColor:regimeKeys.map((_,i)=>CORES_REGIME[i%CORES_REGIME.length]), hoverBackgroundColor:regimeKeys.map((_,i)=>CORES_REGIME_HOVER[i%CORES_REGIME_HOVER.length]), borderWidth:0, hoverBorderWidth:0, hoverOffset:6, spacing:3 }] },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'68%',
+        plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:26, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
       }
     });
 
     // ---------- card grande de colaboradores ----------
     const nHome = cs.filter(c=>c.unidade==='Home Office').length;
     const icoUsers = '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>';
-    const icoPredio = '<path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01"/>';
+    const icoPin = '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>';
     const icoHome = '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/>';
-    const colabTile = (num, lab, ico, col) => `
-      <div class="dx-colab-tile">
-        <span class="dx-colab-ico${col?' '+col:''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></span>
-        <div><div class="dx-colab-num">${num}</div><div class="dx-colab-lab">${lab}</div></div>
+    const colabTile = (num, lab, ico, col, sub) => `
+      <div class="dx-stat">
+        <span class="dx-stat-ico ${col}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></span>
+        <div class="dx-stat-tit">${lab}</div>
+        <div class="dx-stat-sub">${sub||'&nbsp;'}</div>
+        <div class="dx-stat-num">${num===0?'0':String(num).padStart(2,'0')}</div>
       </div>`;
+    const icoEstagio = '<path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1 2.5 3 6 3s6-2 6-3v-5"/>';
+    const nEstagiarios = cs.filter(c=>c.departamento==='Estagiários' || /estagi/i.test(c.funcao)).length;
+    const mesAtualLabel = `${cap(MESES[hoje().getMonth()])} ${hoje().getFullYear()}`;
     $('#dxColabCard').innerHTML =
-      colabTile(cs.length, 'Colaboradores ativos', icoUsers, 'c-violet') +
-      colabTile(nQuin, 'Quintas da Avenida', icoPredio, 'c-blue') +
-      colabTile(nGran, 'Granbery', icoPredio, 'c-teal') +
-      colabTile(nHome, 'Home Office', icoHome, 'c-amber');
+      colabTile(cs.length, 'Colaboradores Ativos', icoUsers, 'c-red', mesAtualLabel) +
+      colabTile(nEstagiarios, 'Estagiários', icoEstagio, 'c-red', mesAtualLabel) +
+      colabTile(nQuin, 'Quintas da Avenida', icoPin, 'c-gray', 'Corporativo') +
+      colabTile(nGran, 'Granbery', icoPin, 'c-gray', 'Digital') +
+      colabTile(nHome, 'Home Office', icoHome, 'c-gray', 'Trabalho Remoto');
 
     // ---------- colaboradores por setor (estagiários contam no setor real onde atuam) ----------
     const SETORES = SETORES_BRAND.filter(s=>s.nome!=='Estagiários');
@@ -5910,20 +5994,6 @@ UI.renderPessoas = function(){
         <div class="dx-setor-num">${(n=>n===0?'0':String(n).padStart(2,'0'))(contaSetor[s.nome]||0)}</div>
       </div>`).join('');
 
-    // ---------- admissões por mês ----------
-    const admPorMes = Array(12).fill(0);
-    cs.forEach(c=>admPorMes[pd(c.admissao).getMonth()]++);
-    destroyChart('admissoes');
-    UI.chartInstances.admissoes = new Chart($('#chartAdmissoes'), {
-      type:'bar',
-      data:{ labels:MESES_CAP, datasets:[{ data:admPorMes, backgroundColor:'#D6B15C', borderRadius:999, borderSkipped:false, barPercentage:.6 }] },
-      options:{
-        responsive:true, maintainAspectRatio:false,
-        scales:{ x:CHART_AXIS_X, y:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}} },
-        plugins:{ legend:{display:false}, tooltip:CHART_TOOLTIP }
-      }
-    });
-
     // ---------- estagiários por Setor real (extraído da função, ex.: "Estagiário de Criação" → "Criação") ----------
     const estagiarios = cs.filter(c=>c.departamento==='Estagiários' || /estagi/i.test(c.funcao));
     const porSetorEst = {};
@@ -5939,8 +6009,8 @@ UI.renderPessoas = function(){
     UI.chartInstances.estagiarios = new Chart($('#chartEstagiarios'), {
       type:'bar',
       data:{ labels:setLabels, datasets:[
-        { label:'Colaboradores', data:setLabels.map(s=>porDep[s]||0), grouped:false, order:2, backgroundColor:'#DAD8D3', borderRadius:999, borderSkipped:false, barPercentage:.65 },
-        { label:'Estagiários', data:setLabels.map(s=>porSetorEst[s]||0), grouped:false, order:1, backgroundColor:'#C86FA6', borderRadius:999, borderSkipped:false, barPercentage:.65 }
+        { label:'Colaboradores', data:setLabels.map(s=>porDep[s]||0), grouped:false, order:2, backgroundColor:'#CBCBCB', hoverBackgroundColor:'#B5B5B5', borderRadius:999, borderSkipped:false, barPercentage:.65 },
+        { label:'Estagiários', data:setLabels.map(s=>porSetorEst[s]||0), grouped:false, order:1, backgroundColor:'#D65C6E', hoverBackgroundColor:'#C15363', borderRadius:999, borderSkipped:false, barPercentage:.65 }
       ] },
       options:{
         indexAxis:'y', responsive:true, maintainAspectRatio:false,
@@ -5954,20 +6024,19 @@ UI.renderPessoas = function(){
   // ================= aba TEMPO DE CASA =================
   if(this.pesTab==='tempocasa'){
     const anoAtual = hoje().getFullYear();
-    const ORDEM_DEP2 = ['Direção','Coordenação','Administrativo','Corporativo','Digital','Inbound','Criação','Vídeo','TI','Estagiários'];
+    const ORDEM_DEP2 = ['Direção','Coordenação','Administrativo','Corporativo','Digital','Inbound','Criação','Redação','Revisão','Vídeo','TI','Estagiários'];
 
     // top 3 — colaboradores com mais tempo de casa
     const top3 = cs.slice().sort((a,b)=>a.admissao.localeCompare(b.admissao)).slice(0,5);
     const medalhas = ['🥇','🥈','🥉'];
-    const medalCor = ['#C9A227','#A3A7AD','#B87333','#9B9893','#B8B5AF'];
+    const medalCor = ['#C9A227','#A3A7AD','#B87333','#A6A39D','#A6A39D'];
     $('#casaTop3').innerHTML = top3.map((c,i)=>`
       <a href="#/colab/${c.id}" class="casa-top3-card rank${i+1}" style="text-decoration:none;color:inherit;--medal:${medalCor[i]}">
-        <span class="casa-top3-rankn">${i+1}º</span>
         <div class="casa-top3-medal">${i<3?medalhas[i]:`<span class="casa-top3-num">${i+1}</span>`}</div>
         <div class="mini-av casa-top3-av" style="width:56px;height:56px;font-size:16px">${avatarInner({nome:c.nome, foto:c.foto})}</div>
         <div class="casa-top3-nome">${esc(c.nome)}</div>
         <div class="casa-top3-tempo">${tempoDeCasa(c.admissao)}</div>
-        <div class="casa-top3-desde">desde ${fmt(c.admissao)}</div>
+        <div class="casa-top3-desde">Desde ${fmt(c.admissao)}</div>
       </a>`).join('');
 
     // aniversários redondos (todo o ano, não só o mês atual)
@@ -5977,13 +6046,12 @@ UI.renderPessoas = function(){
       return {c, adm, anos};
     }).filter(x=>x.anos>0 && x.anos%5===0).sort((a,b)=>b.anos-a.anos);
     $('#casaRedondos').innerHTML = redondos.length
-      ? `<div class="casa-aniv-grid">${redondos.map(({c,adm,anos})=>`
+      ? `<div class="casa-aniv-grid">${redondos.map(({c,anos})=>`
           <a href="#/colab/${c.id}" class="casa-aniv-card">
-            <div class="mini-av">${avatarInner({nome:c.nome, foto:c.foto})}</div>
-            <div class="ag-item-info">
-              <div class="ag-item-nome">${esc(c.nome)}</div>
-              <div class="casa-aniv-anos">🏆 ${anos} anos · ${MESES[adm.getMonth()]}</div>
-            </div>
+            <div class="mini-av casa-aniv-av" style="width:56px;height:56px;font-size:16px">${avatarInner({nome:c.nome, foto:c.foto})}</div>
+            <div class="casa-aniv-nome">${esc(c.nome)}</div>
+            <div class="casa-aniv-num">${anos}<small>anos</small></div>
+            <div class="casa-aniv-mes">Desde ${fmt(c.admissao)}</div>
           </a>`).join('')}</div>`
       : `<div class="ag-vazio">Nenhum colaborador completa 5, 10, 15 ou 20 anos de casa neste ano.</div>`;
     $('#casaAnivAno').textContent = anoAtual;
@@ -6004,8 +6072,11 @@ UI.renderPessoas = function(){
       <div class="casa-setor-card" style="--setor:${cor}">
         <div class="casa-setor-nome">${esc(dep)}</div>
         <div class="casa-setor-linha">
-          <div class="mini-av">${avatarInner({nome:antigo.nome, foto:antigo.foto})}</div>
-          <div class="ag-item-info"><div class="ag-item-nome">${esc(antigo.nome)}</div><div class="ag-item-per">mais antigo · ${tempoDeCasa(antigo.admissao)}</div></div>
+          <div class="mini-av casa-setor-av">${avatarInner({nome:antigo.nome, foto:antigo.foto})}</div>
+          <div class="casa-setor-info">
+            <div class="casa-setor-pessoa">${esc(antigo.nome)}</div>
+            <div class="casa-setor-tempo">${tempoDeCasa(antigo.admissao)}</div>
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -6016,7 +6087,7 @@ UI.renderPessoas = function(){
       .concat(setoresFiltro.map(dep=>`<button class="chip ${this.casaFiltroSetor===dep?'on':''}" data-setor="${esc(dep)}">${esc(dep)}</button>`))
       .join('');
     $$('#casaFiltroSetor .chip').forEach(chip=>{
-      chip.onclick = ()=>{ this.casaFiltroSetor = chip.dataset.setor; this.renderPessoas(); };
+      chip.onclick = ()=>{ this.casaFiltroSetor = (this.casaFiltroSetor===chip.dataset.setor && chip.dataset.setor) ? '' : chip.dataset.setor; this.renderPessoas(); };
     });
     this.renderRankCasa();
     $('#btnSortCasa').onclick = ()=>{ this.sortCasaAsc = !this.sortCasaAsc; this.renderRankCasa(); };
@@ -6033,6 +6104,20 @@ UI.renderPessoas = function(){
     UI.chartInstances.contratacoes = new Chart($('#chartContratacoes'), {
       type:'bar',
       data:{ labels:labelsAnos, datasets:[{ data:dataAnos, backgroundColor:(c)=>gradV(c.chart.ctx,c.chart.chartArea,'#1C1B1A','rgba(28,27,26,.5)'), borderRadius:999, borderSkipped:false, barPercentage:.55 }] },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        scales:{ x:CHART_AXIS_X, y:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}} },
+        plugins:{ legend:{display:false}, tooltip:CHART_TOOLTIP }
+      }
+    });
+
+    // ---------- admissões por mês ----------
+    const admPorMes = Array(12).fill(0);
+    cs.forEach(c=>admPorMes[pd(c.admissao).getMonth()]++);
+    destroyChart('admissoes');
+    UI.chartInstances.admissoes = new Chart($('#chartAdmissoes'), {
+      type:'bar',
+      data:{ labels:MESES_CAP, datasets:[{ data:admPorMes, backgroundColor:'#D6B15C', borderRadius:999, borderSkipped:false, barPercentage:.6 }] },
       options:{
         responsive:true, maintainAspectRatio:false,
         scales:{ x:CHART_AXIS_X, y:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}} },
@@ -6137,8 +6222,7 @@ function route(){
   const isPessoas = h==='#/pessoas';
   const isConta = h==='#/conta' && (Auth.podeAuditoria() || Auth.podeGerirUsuarios());
   const isColab = h==='#/colaboradores';
-  const isSolic = h==='#/solicitacoes';
-  const isDash = !mProfile && !isCal && !isAgenda && !isGraf && !isPessoas && !isConta && !isColab && !isSolic; // padrão/rota inicial
+  const isDash = !mProfile && !isCal && !isAgenda && !isGraf && !isPessoas && !isConta && !isColab; // padrão/rota inicial
   $('#viewDir').classList.toggle('on', isColab);
   $('#viewProfile').classList.toggle('on', !!mProfile);
   $('#viewCal').classList.toggle('on', isCal);
@@ -6147,14 +6231,12 @@ function route(){
   $('#viewGraficos').classList.toggle('on', isGraf);
   $('#viewPessoas').classList.toggle('on', isPessoas);
   $('#viewConta').classList.toggle('on', isConta);
-  $('#viewSolic').classList.toggle('on', isSolic);
   $('#navColab').classList.toggle('active', isColab);
   $('#navAgenda').classList.toggle('active', isAgenda);
   $('#navCal').classList.toggle('active', isCal);
   $('#navDash').classList.toggle('active', isDash);
   $('#navGraf').classList.toggle('active', isGraf);
   $('#navPessoas').classList.toggle('active', isPessoas);
-  $('#navSolic').classList.toggle('active', isSolic);
   if(mProfile){ UI.tabAtual='oficiais'; UI.anoPerfil=hoje().getFullYear(); UI.renderProfile(mProfile[1]); }
   else if(isCal) UI.renderCal();
   else if(isAgenda) UI.renderAgenda();
@@ -6162,15 +6244,8 @@ function route(){
   else if(isPessoas){ const t=query.find(x=>x.startsWith('tab=')); if(t) UI.pesTab=t.slice(4); UI.renderPessoas(); }
   else if(isConta) UI.renderConta();
   else if(isColab){ UI.filtro.pendencias=query.includes('pend'); UI.renderDir(); }
-  else if(isSolic) UI.renderSolic();
   else UI.renderDash();
-  atualizarBadgeSolic();
   window.scrollTo({top:0});
-}
-function atualizarBadgeSolic(){
-  const b=$('#navSolicBadge'); if(!b) return;
-  const n=(Store.data.solicitacoes||[]).filter(s=>s.status==='pendente').length;
-  b.textContent=n; b.classList.toggle('on', n>0);
 }
 
 function atualizarAvatarSidebar(){
@@ -6223,6 +6298,7 @@ function seedSolicDemo(){
       id: uid(), colaborador_id: c.id, nome: c.nome, tipo:'folga',
       inicio: ini, fim: ini, dias: 1,
       motivo: i===0 ? 'Consulta médica' : 'Assunto pessoal',
+      aval_coordenador: i===0,
       status:'pendente', criado_em: new Date(Date.now()-i*36e5).toISOString()
     });
   });
@@ -6267,7 +6343,6 @@ function wireSolicPublic(){
   $('#solVoltar')?.addEventListener('click',e=>{e.preventDefault();voltar();});
   $('#solOkVoltar')?.addEventListener('click',e=>{e.preventDefault();voltar();});
   $('#solOutra')?.addEventListener('click',e=>{e.preventDefault();$('#solicForm').reset();$('#solDias').value=1;$('#solOk').style.display='none';$('#solicForm').style.display='';});
-  const diasUteis=(a,b)=>{ let d=new Date(a+'T00:00:00'); const end=new Date(b+'T00:00:00'); let n=0; while(d<=end){ const wd=d.getDay(); if(wd!==0&&wd!==6) n++; d.setDate(d.getDate()+1); } return n; };
   const recalcDias=()=>{ const i=$('#solIni').value, f=$('#solFim').value; if(i&&f&&f>=i) $('#solDias').value=diasUteis(i,f); };
   $('#solIni')?.addEventListener('change',()=>{ if(!$('#solFim').value||$('#solFim').value<$('#solIni').value) $('#solFim').value=$('#solIni').value; recalcDias(); });
   $('#solFim')?.addEventListener('change',recalcDias);
@@ -6275,7 +6350,8 @@ function wireSolicPublic(){
     e.preventDefault();
     const err=$('#solErr'); err.classList.remove('on');
     const cid=$('#solColab').value, ini=$('#solIni').value, fim=$('#solFim').value||ini,
-          dias=Number($('#solDias').value), motivo=$('#solMotivo').value.trim();
+          dias=Number($('#solDias').value), motivo=$('#solMotivo').value.trim(),
+          avalCoordenador=$('#solAval').checked;
     const fail=m=>{ err.textContent=m; err.classList.add('on'); };
     if(!cid) return fail('Selecione seu nome.');
     if(!ini) return fail('Informe a data.');
@@ -6284,7 +6360,8 @@ function wireSolicPublic(){
     const c=(Store.data.colaboradores||[]).find(x=>x.id===cid);
     Store.data.solicitacoes.push({
       id:uid(), colaborador_id:cid, nome:c?c.nome:'', tipo:'folga',
-      inicio:ini, fim, dias, motivo, status:'pendente', criado_em:new Date().toISOString()
+      inicio:ini, fim, dias, motivo, aval_coordenador:avalCoordenador,
+      status:'pendente', criado_em:new Date().toISOString()
     });
     Store.save();
     $('#solicForm').style.display='none'; $('#solOk').style.display='';
