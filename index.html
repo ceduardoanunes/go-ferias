@@ -1075,6 +1075,9 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .dashx-2col{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:stretch;margin-bottom:28px}
 .dashx-2col>.dash-card{margin-bottom:0}
 @media(max-width:900px){.dashx-2col{grid-template-columns:1fr}}
+.dashx-2col-heads{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.dashx-2col-heads .dx-eyebrow{margin:65px 2px 22px}
+@media(max-width:900px){.dashx-2col-heads{grid-template-columns:1fr}}
 
 /* banner de boas-vindas (largura total, mais alto) */
 .dx-hero{
@@ -1349,7 +1352,6 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 
 /* calendário semanal (estilo agenda) */
 .dx-week-card{padding:24px 26px 18px}
-.dx-week-full{margin-bottom:48px}
 .dx-week-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
 .dx-week-title{font-family:var(--font-display);font-weight:800;font-size:21px;letter-spacing:-.3px;color:var(--graphite);text-transform:none}
 .dx-week-title::first-letter{text-transform:uppercase}
@@ -1386,20 +1388,26 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .dx-week-none{color:var(--faint);font-size:15px;line-height:1;margin-top:6px}
 @media(max-width:520px){.dx-week-col{height:210px}.dx-week-avs .mini-av{width:26px;height:26px}}
 
-/* perspectiva dos próximos meses (férias marcadas) */
+/* perspectiva dos próximos meses (férias e folgas marcadas, separadas) */
 .dx-forecast{display:flex;flex-direction:column}
 .dx-fc-row{
-  display:grid;grid-template-columns:150px 1fr 34px;align-items:center;gap:18px;
-  padding:14px 2px;border-bottom:1px solid var(--line-soft);
+  display:grid;grid-template-columns:120px 1fr;align-items:center;gap:18px;
+  padding:12px 2px;
 }
-.dx-fc-row:last-child{border-bottom:none}
 .dx-fc-mes{font-size:14px;font-weight:800;color:var(--ink)}
 .dx-fc-ano{font-size:11.5px;font-weight:600;color:var(--faint)}
-.dx-fc-bar{height:10px;border-radius:99px;background:var(--gray-soft);overflow:hidden}
-.dx-fc-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#d83a58,#C4193B);min-width:0;transition:width .4s}
-.dx-fc-num{font-family:var(--font-display);font-weight:800;font-size:20px;text-align:right}
+.dx-fc-bars{display:flex;flex-direction:column;gap:6px}
+.dx-fc-barline{display:grid;grid-template-columns:44px 1fr 24px;align-items:center;gap:10px}
+.dx-fc-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+.dx-fc-tag.ferias{color:#C4193B}
+.dx-fc-tag.folga{color:#0F6E58}
+.dx-fc-bar{height:7px;border-radius:99px;background:var(--gray-soft);overflow:hidden}
+.dx-fc-fill{height:100%;border-radius:99px;min-width:0;transition:width .4s}
+.dx-fc-fill.fill-ferias{background:linear-gradient(90deg,#d83a58,#C4193B)}
+.dx-fc-fill.fill-folga{background:linear-gradient(90deg,#3EBBA0,#0F6E58)}
+.dx-fc-num{font-family:var(--font-display);font-weight:800;font-size:14px;text-align:right}
 .dx-fc-num.zero{color:var(--faint)}
-@media(max-width:560px){.dx-fc-row{grid-template-columns:120px 1fr 30px;gap:12px}}
+@media(max-width:560px){.dx-fc-row{grid-template-columns:96px 1fr;gap:12px}}
 
 /* gráfico "Ausências por mês" com número grande + bolha de destaque */
 .dx-chart-head{display:flex;align-items:baseline;gap:9px;margin-bottom:14px}
@@ -2069,7 +2077,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 
     <!-- semana: rótulo discreto + calendário em página inteira -->
     <div class="dx-eyebrow"><span>Semana</span><i></i></div>
-    <div class="dash-card dx-week-card dx-week-full">
+    <div class="dash-card dx-week-card">
         <div class="dx-week-head">
           <div class="dx-week-title" id="dxWeekSub"></div>
           <div class="dx-week-nav">
@@ -2081,16 +2089,17 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
         <div class="dx-week-grid" id="dxWeekGrid"></div>
     </div>
 
-    <!-- mês: rótulo discreto + próximos meses e férias vencendo lado a lado -->
-    <div class="dx-eyebrow"><span>Mês</span><i></i></div>
+    <!-- mês: títulos de seção lado a lado (Próximos Meses / Férias Vencendo) -->
+    <div class="dashx-2col-heads">
+      <div class="dx-eyebrow"><span>Próximos Meses</span><i></i></div>
+      <div class="dx-eyebrow"><span>Férias Vencendo</span><i></i></div>
+    </div>
     <div class="dashx-2col">
       <div class="dash-card">
-        <h2 class="dash-card-title" style="font-size:23px;margin-bottom:4px">Próximos Meses</h2>
         <div class="dx-forecast" id="dxForecast"></div>
       </div>
 
       <div class="dash-card dash-card-vencendo" id="dashVencendoCard">
-        <h2 class="dash-card-title" style="font-size:23px;margin-bottom:14px">Férias Vencendo</h2>
         <div id="dashVencendo"></div>
       </div>
     </div>
@@ -2098,14 +2107,6 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
     <!-- rodapé: rankings de folga do ano -->
     <div class="dx-eyebrow dx-eyebrow-sec"><span>Folgas no Ano</span><i></i></div>
     <div class="dx-colab-footer dx-rank-footer" id="dxRankFooter"></div>
-
-    <!-- rodapé: totais de colaboradores -->
-    <div class="dx-eyebrow dx-eyebrow-sec"><span>Pessoas</span><i></i></div>
-    <div class="dx-colab-footer" id="dxColabCard"></div>
-
-    <!-- rodapé: colaboradores por setor -->
-    <div class="dx-eyebrow dx-eyebrow-sec"><span>Setores</span><i></i></div>
-    <div class="dx-setores-grid" id="dxSetoresGrid"></div>
   </section>
 
   <!-- ============ GRÁFICOS ============ -->
@@ -2115,7 +2116,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
         <h1 class="page-title">Relatórios</h1>
       </div>
       <div style="align-self:flex-start;margin-top:18px">
-        <button class="btn btn-primary" id="btnExportFolgas" onclick="Actions.exportarRelatorioFolgas()">
+        <button class="btn btn-primary" id="btnExportGraf">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Exportar Relatório
         </button>
@@ -2160,16 +2161,23 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 
     <div id="grafFeriasContabeis" style="display:none">
       <div class="dash-grid">
-        <div class="span-2">
-          <div class="dept-header"><span class="dept-name">Férias por Mês</span><span class="dept-line"></span></div>
-          <div class="dash-card chart-card"><div class="chart-wrap"><canvas id="chartFeriasMes"></canvas></div></div>
+        <div class="span-2" style="display:grid;grid-template-columns:1fr 1.8fr;gap:56px">
+          <div style="display:flex;flex-direction:column">
+            <div class="dept-header" style="margin-bottom:40px"><span class="dept-name">Resumo do Ano</span><span class="dept-line"></span></div>
+            <div id="statsFerias" style="flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:32px"></div>
+          </div>
+          <div>
+            <div class="dept-header"><span class="dept-name">Férias por Mês</span><span class="dept-line"></span></div>
+            <div class="dash-card chart-card"><div class="chart-wrap"><canvas id="chartFeriasMes"></canvas></div></div>
+          </div>
         </div>
+
         <div>
-          <div class="dept-header"><span class="dept-name">Colaboradores por Situação</span><span class="dept-line"></span></div>
+          <div class="dept-header"><span class="dept-name">Status dos Colaboradores</span><span class="dept-line"></span></div>
           <div class="dash-card chart-card"><div class="chart-wrap chart-wrap-donut"><canvas id="chartPessoas"></canvas></div></div>
         </div>
         <div>
-          <div class="dept-header"><span class="dept-name">Férias por Prazo de Vencimento</span><span class="dept-line"></span></div>
+          <div class="dept-header"><span class="dept-name">Prazo de Vencimento</span><span class="dept-line"></span></div>
           <div class="dash-card chart-card"><div class="chart-wrap chart-wrap-donut"><canvas id="chartVencimento"></canvas></div></div>
         </div>
         <div>
@@ -2177,7 +2185,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
           <div class="dash-card chart-card"><div class="chart-wrap chart-wrap-donut"><canvas id="chartSituacao"></canvas></div></div>
         </div>
         <div>
-          <div class="dept-header"><span class="dept-name">Duração das Férias</span><span class="dept-line"></span></div>
+          <div class="dept-header"><span class="dept-name">Usufruto das Férias</span><span class="dept-line"></span></div>
           <div class="dash-card chart-card"><div class="chart-wrap chart-wrap-donut"><canvas id="chartDuracao"></canvas></div></div>
         </div>
       </div>
@@ -2202,7 +2210,13 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
     </div>
 
     <div id="grafHistoricos">
-      <div class="dash-grid">
+      <div class="dx-eyebrow dx-eyebrow-sec"><span>Pessoas</span><i></i></div>
+      <div class="dx-colab-footer" id="dxColabCard"></div>
+
+      <div class="dx-eyebrow dx-eyebrow-sec"><span>Setores</span><i></i></div>
+      <div class="dx-setores-grid" id="dxSetoresGrid"></div>
+
+      <div class="dash-grid" style="margin-top:40px">
         <div class="dash-card chart-card">
           <h2 class="dash-card-title">Colaboradores por Setor</h2>
           <div class="chart-wrap chart-wrap-sm"><canvas id="chartDeptos"></canvas></div>
@@ -4536,6 +4550,35 @@ const Actions = {
     toast('Relatório exportado ✓');
   },
 
+  // título com kerning mais fechado (mesma técnica do nome no PDF individual)
+  pdfTituloKerned(doc, text, x, y, size, cor, kerning){
+    pdfTitulo(doc); doc.setFontSize(size); doc.setTextColor(cor[0],cor[1],cor[2]);
+    doc.setCharSpace(kerning);
+    doc.text(text, x, y);
+    doc.setCharSpace(0);
+  },
+
+  // linha de 4 cards de estatística (label + número grande + subtítulo), usada nos relatórios
+  pdfStatRow(doc, y, items){
+    const pageW = doc.internal.pageSize.getWidth();
+    const gap = 6, usableW = pageW-28, cardW = (usableW-gap*(items.length-1))/items.length, cardH = 32;
+    items.forEach((it,i)=>{
+      const x = 14 + i*(cardW+gap);
+      doc.setFillColor(250,249,247);
+      doc.setDrawColor(it.cor[0],it.cor[1],it.cor[2]);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(x, y, cardW, cardH, 2.5, 2.5, 'FD');
+      doc.setFillColor(it.cor[0],it.cor[1],it.cor[2]);
+      doc.circle(x+7.5, y+9, 1.7, 'F');
+      pdfBody(doc); doc.setFontSize(7); doc.setTextColor(140,138,134);
+      doc.text(it.label.toUpperCase(), x+13, y+10);
+      this.pdfTituloKerned(doc, String(it.val), x+7, y+21, 16, it.cor, -0.2);
+      pdfBody(doc); doc.setFontSize(8); doc.setTextColor(150,148,144);
+      doc.text(it.sub, x+7, y+27);
+    });
+    return y+cardH;
+  },
+
   exportarRelatorioFolgas(){
     if(!window.jspdf){ toast('Biblioteca de PDF ainda carregando — tente novamente.'); return; }
     const folgasChart = UI.chartInstances.folgasMes;
@@ -4550,17 +4593,9 @@ const Actions = {
     this.pdfHeader(doc); // página 1 não passa por autoTable, então o cabeçalho não sai de graça
 
     const pageW = doc.internal.pageSize.getWidth();
-    pdfTitulo(doc); doc.setFontSize(19); doc.setTextColor(28,27,26);
-    doc.text(`Relatório de Folgas — ${ano}`, 14, 39);
-    pdfBody(doc); doc.setFontSize(11); doc.setTextColor(120);
-    doc.text('Folgas por mês', 14, 46.5);
+    this.pdfTituloKerned(doc, `Relatório de Folgas — ${ano}`, 14, 39, 19, [28,27,26], -0.3);
 
-    const chartW = pageW-28, chartH = 62, y = 58;
-    pdfTitulo(doc); doc.setFontSize(11.5); doc.setTextColor(28,27,26);
-    doc.text('Folgas por Mês', 14, y);
-    doc.addImage(folgasChart.toBase64Image(), 'PNG', 14, y+5, chartW, chartH);
-
-    // ---------- folgas no ano: top10/bottom10, mesmo cálculo da tela ----------
+    // ---------- resumo do ano, folgas no ano por colaborador — mesmo cálculo da tela ----------
     const folgasPorColab = cs.map(c=>{
       let dias=0;
       Dom.periodosDe(c.id).forEach(p=>Dom.folgasDe(p.id).forEach(f=>{
@@ -4568,35 +4603,90 @@ const Actions = {
       }));
       return {nome:c.nome, dias};
     });
+    const {map} = UI.diaMap(ano, {depto:''});
+    const porMes = Array.from({length:12}, ()=>({fol:new Set()}));
+    Object.keys(map).forEach(di=>{ map[di].fol.forEach(p=>porMes[pd(di).getMonth()].fol.add(p.nome)); });
+    const totalDiasFolga = folgasPorColab.reduce((s,x)=>s+x.dias,0);
+    const mediaFolga = cs.length ? totalDiasFolga/cs.length : 0;
+    const coberturaFolga = cs.length ? Math.round(folgasPorColab.filter(x=>x.dias>0).length/cs.length*100) : 0;
+    const picoIdx = porMes.reduce((best,x,i)=> x.fol.size>porMes[best].fol.size ? i : best, 0);
+
+    const statBottom = this.pdfStatRow(doc, 48, [
+      {label:'Total no Ano', sub:'dias de Folga', val:totalDiasFolga, cor:[14,110,88]},
+      {label:'Média', sub:'dias por Pessoa', val:mediaFolga.toFixed(1), cor:[210,134,15]},
+      {label:'Cobertura', sub:'tiraram Folga', val:`${coberturaFolga}%`, cor:[40,81,143]},
+      {label:'Mês de Pico', sub:MESES[picoIdx], val:porMes[picoIdx].fol.size, cor:[210,90,12]},
+    ]);
+
+    const y = statBottom+16;
+    this.pdfTituloKerned(doc, 'Folgas por Mês', 14, y, 15, [28,27,26], -0.2);
+    const porMesLinhas = MESES.map((m,i)=>[m.charAt(0).toUpperCase()+m.slice(1), String(porMes[i].fol.size)]);
+    doc.autoTable({
+      ...base,
+      startY: y+8,
+      head: [['Mês', {content:'Folgas', styles:{halign:'center'}}]],
+      body: porMesLinhas,
+      styles: {font: pdfFont(doc), fontSize:9, cellPadding:2.5},
+      headStyles: {fillColor:[14,110,88], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[238,247,244]},
+      columnStyles: {0:{fontStyle:'bold'}, 1:{halign:'center'}}
+    });
+
     const ordenado = folgasPorColab.slice().sort((a,b)=>b.dias-a.dias);
-    const linhas = lista => lista.map((x,i)=>[String(i+1), x.nome, `${x.dias} ${x.dias===1?'dia':'dias'}`]);
+    const linhas = lista => lista.map(x=>[x.nome, `${x.dias} ${x.dias===1?'dia':'dias'}`]);
 
     doc.addPage();
-    pdfTitulo(doc); doc.setFontSize(15); doc.setTextColor(28,27,26);
-    doc.text('Mais Folgas no Ano', 14, 34);
+    this.pdfTituloKerned(doc, 'Mais Folgas no Ano', 14, 34, 15, [28,27,26], -0.2);
     doc.autoTable({
       ...base,
       startY: 42,
-      head: [['#','Colaborador','Dias']],
+      head: [['Colaborador', {content:'Dias', styles:{halign:'center'}}]],
       body: linhas(ordenado.slice(0,10)),
       styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
       headStyles: {fillColor:[18,131,106], textColor:255, fontStyle:'bold'},
       alternateRowStyles: {fillColor:[238,247,244]},
-      columnStyles: {0:{cellWidth:10}, 2:{cellWidth:28, halign:'right'}}
+      columnStyles: {1:{halign:'center'}}
     });
 
     const y2 = doc.lastAutoTable.finalY + 16;
-    pdfTitulo(doc); doc.setFontSize(15); doc.setTextColor(28,27,26);
-    doc.text('Menos Folgas no Ano', 14, y2);
+    this.pdfTituloKerned(doc, 'Menos Folgas no Ano', 14, y2, 15, [28,27,26], -0.2);
     doc.autoTable({
       ...base,
       startY: y2+8,
-      head: [['#','Colaborador','Dias']],
+      head: [['Colaborador', {content:'Dias', styles:{halign:'center'}}]],
       body: linhas(ordenado.slice(-10).reverse()),
       styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
       headStyles: {fillColor:[28,27,26], textColor:255, fontStyle:'bold'},
       alternateRowStyles: {fillColor:[246,245,243]},
-      columnStyles: {0:{cellWidth:10}, 2:{cellWidth:28, halign:'right'}}
+      columnStyles: {1:{halign:'center'}}
+    });
+
+    // ---------- padrão de folgas por mês, mesmo cálculo da tela ----------
+    const porMesPadrao = Array.from({length:12}, ()=>[]);
+    cs.forEach(c=>{
+      const meses = [];
+      Dom.periodosDe(c.id).forEach(p=>Dom.folgasDe(p.id).forEach(f=>meses.push(pd(f.inicio).getMonth())));
+      if(meses.length < 2) return;
+      const cont = {};
+      meses.forEach(m=>cont[m]=(cont[m]||0)+1);
+      const [mesTop, vezes] = Object.entries(cont).sort((a,b)=>b[1]-a[1])[0];
+      if(vezes >= 2) porMesPadrao[+mesTop].push({nome:c.nome, vezes});
+    });
+    const padraoLinhas = MESES.map((m,i)=>[
+      m.charAt(0).toUpperCase()+m.slice(1),
+      porMesPadrao[i].length ? porMesPadrao[i].map(p=>`${p.nome} (${p.vezes}x)`).join(', ') : '—'
+    ]);
+    doc.addPage();
+    this.pdfTituloKerned(doc, 'Padrão de Folgas por Mês', 14, 34, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: 42,
+      head: [['Mês','Colaboradores recorrentes']],
+      body: padraoLinhas,
+      styles: {font: pdfFont(doc), fontSize:9, cellPadding:3},
+      headStyles: {fillColor:[86,166,148], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[243,248,246]},
+      columnStyles: {0:{cellWidth:32, fontStyle:'bold'}}
     });
 
     const totalPag = doc.internal.getNumberOfPages();
@@ -4604,6 +4694,168 @@ const Actions = {
 
     doc.save(`go-ferias-relatorio-folgas-${ano}.pdf`);
     Store.logAudit('inserir', null, null, `Exportação de relatório PDF — Folgas ${ano}`);
+    toast('Relatório exportado ✓');
+  },
+
+  exportarRelatorioFeriasContabeis(){
+    if(!window.jspdf){ toast('Biblioteca de PDF ainda carregando — tente novamente.'); return; }
+    const feriasChart = UI.chartInstances.feriasMes;
+    if(!feriasChart){ toast('Aguarde os gráficos carregarem.'); return; }
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF();
+    pdfUsarDMSans(doc);
+    const hj = hoje();
+    const ano = UI.anoGraf;
+    const cs = Store.data.colaboradores.filter(c=>c.ativo!==false);
+    const base = { margin:{top:30, bottom:20}, didDrawPage:()=>this.pdfHeader(doc) };
+    this.pdfHeader(doc);
+
+    const pageW = doc.internal.pageSize.getWidth();
+    this.pdfTituloKerned(doc, `Relatório de Férias Contábeis — ${ano}`, 14, 39, 19, [28,27,26], -0.3);
+
+    // ---------- resumo do ano: mesmo cálculo do card da tela ----------
+    const feriasPorColab = cs.map(c=>{
+      let dias=0;
+      Dom.periodosDe(c.id).forEach(p=>Dom.feriasDe(p.id).forEach(f=>{
+        if(pd(f.inicio).getFullYear()===ano || pd(f.fim).getFullYear()===ano) dias+=f.dias;
+      }));
+      return {nome:c.nome, dias};
+    });
+    const {map} = UI.diaMap(ano, {depto:''});
+    const porMes = Array.from({length:12}, ()=>({fer:new Set()}));
+    Object.keys(map).forEach(di=>{ map[di].fer.forEach(p=>porMes[pd(di).getMonth()].fer.add(p.nome)); });
+    const totalDiasFeria = feriasPorColab.reduce((s,x)=>s+x.dias,0);
+    const coberturaFeria = cs.length ? Math.round(feriasPorColab.filter(x=>x.dias>0).length/cs.length*100) : 0;
+    const picoIdxFeria = porMes.reduce((best,x,i)=> x.fer.size>porMes[best].fer.size ? i : best, 0);
+    const emRiscoFeria = cs.filter(c=>{
+      const r = Dom.resumo(c.id);
+      return r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null && r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS;
+    }).length;
+
+    const statBottom = this.pdfStatRow(doc, 48, [
+      {label:'Total no Ano', sub:'dias de Férias', val:totalDiasFeria, cor:[161,19,50]},
+      {label:'Férias Vencendo', sub:'colaboradores', val:emRiscoFeria, cor:[210,134,15]},
+      {label:'Cobertura', sub:'tiraram Férias', val:`${coberturaFeria}%`, cor:[40,81,143]},
+      {label:'Mês de Pico', sub:MESES[picoIdxFeria], val:porMes[picoIdxFeria].fer.size, cor:[210,90,12]},
+    ]);
+
+    const y = statBottom+16;
+    this.pdfTituloKerned(doc, 'Férias por Mês', 14, y, 15, [28,27,26], -0.2);
+    const porMesLinhasFeria = MESES.map((m,i)=>[m.charAt(0).toUpperCase()+m.slice(1), String(porMes[i].fer.size)]);
+    doc.autoTable({
+      ...base,
+      startY: y+8,
+      head: [['Mês', {content:'Férias', styles:{halign:'center'}}]],
+      body: porMesLinhasFeria,
+      styles: {font: pdfFont(doc), fontSize:9, cellPadding:2.5},
+      headStyles: {fillColor:[161,19,50], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[250,238,240]},
+      columnStyles: {0:{fontStyle:'bold'}, 1:{halign:'center'}}
+    });
+
+    // ---------- pendências: mesmo cálculo do card "Férias Vencendo" da tela ----------
+    const pendentes = cs
+      .map(c=>({nome:c.nome, r:Dom.resumo(c.id)}))
+      .filter(x=>x.r.gozavel && x.r.saldoContabil>0 && x.r.diasParaLimite!==null && x.r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS);
+    const vencidas = pendentes.filter(x=>x.r.diasParaLimite<0).sort((a,b)=>a.r.diasParaLimite-b.r.diasParaLimite);
+    const vencendo = pendentes.filter(x=>x.r.diasParaLimite>=0).sort((a,b)=>a.r.diasParaLimite-b.r.diasParaLimite);
+    const linhas = lista => lista.map(x=>[x.nome, `${x.r.saldoContabil} dias`, fmt(x.r.limite)]);
+
+    doc.addPage();
+    this.pdfTituloKerned(doc, 'Férias Vencidas', 14, 34, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: 42,
+      head: [['Colaborador', {content:'Saldo contábil', styles:{halign:'center'}}, {content:'Venceu em', styles:{halign:'center'}}]],
+      body: vencidas.length ? linhas(vencidas) : [['Nenhuma férias vencida','—','—']],
+      styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
+      headStyles: {fillColor:[161,19,50], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[250,238,240]},
+      columnStyles: {1:{halign:'center'}, 2:{halign:'center'}}
+    });
+
+    const y2 = doc.lastAutoTable.finalY + 16;
+    this.pdfTituloKerned(doc, 'Férias Vencendo (≤120 dias)', 14, y2, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: y2+8,
+      head: [['Colaborador', {content:'Saldo contábil', styles:{halign:'center'}}, {content:'Vence em', styles:{halign:'center'}}]],
+      body: vencendo.length ? linhas(vencendo) : [['Nenhuma férias vencendo','—','—']],
+      styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
+      headStyles: {fillColor:[210,134,15], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[252,244,231]},
+      columnStyles: {1:{halign:'center'}, 2:{halign:'center'}}
+    });
+
+    // ---------- demais indicadores, mesmos cálculos da tela — em tabela em vez de donut ----------
+    const sitCount = {pago:0, programado:0, aberto:0, acumulando:0};
+    cs.forEach(c=>Dom.periodosDe(c.id).forEach(p=>{ if(sitCount[p.situacao]!==undefined) sitCount[p.situacao]++; }));
+    const pessoaSit = {pendencia:0, programado:0, emdia:0};
+    cs.forEach(c=>{
+      const k = Dom.status(c.id).k;
+      if(k==='vencendo' || k==='aberto') pessoaSit.pendencia++;
+      else if(k==='programado') pessoaSit.programado++;
+      else pessoaSit.emdia++;
+    });
+    const venc = {vencidas:0, vencendo:0, prazo:0};
+    cs.forEach(c=>{
+      const r = Dom.resumo(c.id);
+      if(r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null){
+        if(r.diasParaLimite<0) venc.vencidas++;
+        else if(r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS) venc.vencendo++;
+        else venc.prazo++;
+      }
+    });
+    const dur = {um:0, dois:0, tres:0};
+    cs.forEach(c=>Dom.periodosDe(c.id).forEach(p=>{
+      const n = Dom.feriasDe(p.id).length;
+      if(n===0) return;
+      if(n===1) dur.um++; else if(n===2) dur.dois++; else dur.tres++;
+    }));
+
+    doc.addPage(); this.pdfHeader(doc);
+    let indY = 34;
+    const indicador = (titulo, cor, linhas, colunas)=>{
+      this.pdfTituloKerned(doc, titulo, 14, indY, 15, [28,27,26], -0.2);
+      doc.autoTable({
+        ...base,
+        startY: indY+8,
+        head: [[colunas[0], {content:colunas[1], styles:{halign:'center'}}]],
+        body: linhas,
+        styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
+        headStyles: {fillColor:cor, textColor:255, fontStyle:'bold'},
+        alternateRowStyles: {fillColor:[246,245,243]},
+        columnStyles: {1:{halign:'center'}}
+      });
+      indY = doc.lastAutoTable.finalY + 16;
+    };
+    indicador('Status dos Colaboradores', [40,81,143], [
+      ['Com pendência', String(pessoaSit.pendencia)],
+      ['Programado', String(pessoaSit.programado)],
+      ['Em dia', String(pessoaSit.emdia)],
+    ], ['Situação','Colaboradores']);
+    indicador('Prazo de Vencimento', [161,19,50], [
+      ['Vencidas', String(venc.vencidas)],
+      ['Vencendo (≤120d)', String(venc.vencendo)],
+      ['No prazo', String(venc.prazo)],
+    ], ['Prazo','Colaboradores']);
+    indicador('Pagamento dos Períodos', [210,134,15], [
+      ['Pago', String(sitCount.pago)],
+      ['Programado', String(sitCount.programado)],
+      ['Em aberto', String(sitCount.aberto)],
+      ['Acumulando', String(sitCount.acumulando)],
+    ], ['Situação','Períodos']);
+    indicador('Usufruto das Férias', [14,110,88], [
+      ['Integral (1x)', String(dur.um)],
+      ['Fracionada (2x)', String(dur.dois)],
+      ['Fracionada (3x+)', String(dur.tres)],
+    ], ['Fracionamento','Períodos']);
+
+    const totalPag = doc.internal.getNumberOfPages();
+    for(let p=1;p<=totalPag;p++){ doc.setPage(p); this.pdfFooter(doc, hj, p); }
+
+    doc.save(`go-ferias-relatorio-ferias-contabeis-${ano}.pdf`);
+    Store.logAudit('inserir', null, null, `Exportação de relatório PDF — Férias Contábeis ${ano}`);
     toast('Relatório exportado ✓');
   }
 };
@@ -4989,9 +5241,6 @@ UI.renderDash = function(){
     return [...vistos.values()];
   };
 
-  const nGran = cs.filter(c=>c.unidade==='Granbery').length;
-  const nQuin = cs.filter(c=>c.unidade==='Quintas da Avenida').length;
-  const nHome = cs.filter(c=>c.unidade==='Home Office').length;
   const ausHoje = pessoasDoDia(hjIso);
   const iniSem = addD(hj, -hj.getDay()), fimSem = addD(iniSem, 6);
   const ausSemana = unicosNoIntervalo(iniSem, fimSem);
@@ -5019,21 +5268,6 @@ UI.renderDash = function(){
   if($('#dxMoon')) $('#dxMoon').style.display = ehNoite ? 'block' : 'none';
   // ilustração fixa: o homem na rede
   if($('#dxArtPraia')) $('#dxArtPraia').style.display = 'block';
-
-  // ---------- card grande de colaboradores ----------
-  const icoUsers = '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>';
-  const icoPredio = '<path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01"/>';
-  const icoHome = '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/>';
-  const colabTile = (num, lab, ico, col) => `
-    <div class="dx-colab-tile">
-      <span class="dx-colab-ico${col?' '+col:''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></span>
-      <div><div class="dx-colab-num">${num}</div><div class="dx-colab-lab">${lab}</div></div>
-    </div>`;
-  $('#dxColabCard').innerHTML =
-    colabTile(cs.length, 'Colaboradores ativos', icoUsers, 'c-violet') +
-    colabTile(nQuin, 'Quintas da Avenida', icoPredio, 'c-blue') +
-    colabTile(nGran, 'Granbery', icoPredio, 'c-teal') +
-    colabTile(nHome, 'Home Office', icoHome, 'c-amber');
 
   const plural = (n, sing, plur) => n===1 ? sing : plur;
 
@@ -5112,7 +5346,7 @@ UI.renderDash = function(){
       <span class="dx-stat-go">↗</span>
     </a>`;
   $('#dxHojeStats').innerHTML =
-    statCard('yellow', ICO.sino, 'Alertas', nAlertas?'férias a vencer':'tudo em dia', nAlertas, '#/colaboradores?pend') +
+    statCard('amber', ICO.sino, 'Alertas', nAlertas?'férias a vencer':'tudo em dia', nAlertas, '#/colaboradores?pend') +
     statCard('violet', ICO.inbox, 'Solicitações', nSolic?'aguardando RH':'nada pendente', nSolic, '#/solicitacoes') +
     statCard('red', ICO.praia, 'Férias Contábeis', feriasHoje.length?'hoje':'ninguém hoje', feriasHoje.length, '#/agenda') +
     statCard('teal', ICO.folga, 'Folgas', folgasHoje.length?'hoje':'ninguém hoje', folgasHoje.length, '#/agenda') +
@@ -5167,33 +5401,43 @@ UI.renderDash = function(){
   $('#dxWeekHoje').onclick=()=>{ this.dashWeekRef=hoje(); this.renderDash(); };
   $('#dxWeekHoje').classList.toggle('atual', iso(ini)===iso(addD(hj,-hj.getDay())));
 
-  // ---------- perspectiva dos próximos meses (quem já tem férias marcadas) ----------
+  // ---------- perspectiva dos próximos meses (férias e folgas já marcadas, separadas) ----------
   const capMes = m => MESES[m][0].toUpperCase()+MESES[m].slice(1);
   const fcMeses = [];
-  for(let k=1;k<=6;k++){
+  for(let k=1;k<=12-mesAtual;k++){
     const dt = new Date(ano, mesAtual+k, 1);
     const y=dt.getFullYear(), m=dt.getMonth();
     const iniM=new Date(y,m,1), fimM=new Date(y,m+1,0);
-    const pessoas = new Set();
+    const pFerias = new Set(), pFolgas = new Set();
     cs.forEach(c=>{
       Dom.periodosDe(c.id).forEach(p=>{
         Dom.feriasDe(p.id).forEach(f=>{
-          if(pd(f.inicio)<=fimM && pd(f.fim)>=iniM) pessoas.add(c.nome);
+          if(pd(f.inicio)<=fimM && pd(f.fim)>=iniM) pFerias.add(c.nome);
+        });
+        Dom.folgasDe(p.id).forEach(f=>{
+          if(pd(f.inicio)<=fimM && pd(f.fim)>=iniM) pFolgas.add(c.nome);
         });
       });
     });
-    fcMeses.push({ label:capMes(m), ano:y, n:pessoas.size });
+    fcMeses.push({ label:capMes(m), ano:y, nFerias:pFerias.size, nFolgas:pFolgas.size });
   }
-  const fcMax = Math.max(1, ...fcMeses.map(x=>x.n));
-  $('#dxForecast').innerHTML = fcMeses.map(mo=>{
-    const n = mo.n;
-    return `
+  const fcMax = Math.max(1, ...fcMeses.flatMap(x=>[x.nFerias, x.nFolgas]));
+  $('#dxForecast').innerHTML = fcMeses.map(mo=>`
     <div class="dx-fc-row">
       <div class="dx-fc-mes">${mo.label} <span class="dx-fc-ano">${mo.ano}</span></div>
-      <div class="dx-fc-bar"><div class="dx-fc-fill" style="width:${Math.round(n/fcMax*100)}%"></div></div>
-      <div class="dx-fc-num${n===0?' zero':''}">${n}</div>
-    </div>`;
-  }).join('');
+      <div class="dx-fc-bars">
+        <div class="dx-fc-barline">
+          <span class="dx-fc-tag ferias">Férias</span>
+          <div class="dx-fc-bar"><div class="dx-fc-fill fill-ferias" style="width:${Math.round(mo.nFerias/fcMax*100)}%"></div></div>
+          <span class="dx-fc-num${mo.nFerias===0?' zero':''}">${mo.nFerias}</span>
+        </div>
+        <div class="dx-fc-barline">
+          <span class="dx-fc-tag folga">Folgas</span>
+          <div class="dx-fc-bar"><div class="dx-fc-fill fill-folga" style="width:${Math.round(mo.nFolgas/fcMax*100)}%"></div></div>
+          <span class="dx-fc-num${mo.nFolgas===0?' zero':''}">${mo.nFolgas}</span>
+        </div>
+      </div>
+    </div>`).join('');
 
   // férias vencendo — só os mais urgentes
   const vencendoOrdenado = vencendo.slice()
@@ -5240,33 +5484,13 @@ UI.renderDash = function(){
       `Folgas em ${ano}`, ''));
   tiles.push(maisFolgas
     ? rankTile('blue', ICO2.subir, maisFolgas.dias, maisFolgas.dias===1?'dia':'dias',
-        maisFolgas.c.nome.split(' ').slice(0,2).join(' '), 'Mais folgas')
+        maisFolgas.c.nome.split(' ').slice(0,2).join(' '), 'Mais Folgas')
     : `<div class="dx-rank-tile dx-rank-vazio">Sem folgas em ${ano}</div>`);
   tiles.push(menosFolgas
     ? rankTile('teal', ICO2.descer, menosFolgas.dias, menosFolgas.dias===1?'dia':'dias',
-        menosFolgas.c.nome.split(' ').slice(0,2).join(' '), 'Menos folgas')
+        menosFolgas.c.nome.split(' ').slice(0,2).join(' '), 'Menos Folgas')
     : `<div class="dx-rank-tile dx-rank-vazio">Sem dados em ${ano}</div>`);
   $('#dxRankFooter').innerHTML = tiles.join('');
-
-  // ---------- colaboradores por setor (estagiários contam no setor real onde atuam) ----------
-  const SETORES = SETORES_BRAND.filter(s=>s.nome!=='Estagiários');
-  const MAPA_SETOR_ESTAGIARIO = { 'Mídia':'Digital' };
-  const contaSetor = {};
-  cs.forEach(c=>{
-    let dep = c.departamento;
-    if(dep==='Estagiários'){
-      const m = c.funcao.match(/estagi[áa]ri[oa]\s+d[eo]\s+(.+)/i);
-      const real = m ? m[1].trim() : null;
-      dep = real ? (MAPA_SETOR_ESTAGIARIO[real]||real) : null;
-    }
-    if(dep) contaSetor[dep] = (contaSetor[dep]||0)+1;
-  });
-  $('#dxSetoresGrid').innerHTML = SETORES.map(s=>`
-    <div class="dx-setor-tile">
-      <span class="dx-setor-ico" style="background:${s.cor}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${s.ico}</svg></span>
-      <div class="dx-setor-lab">${s.nome}</div>
-      <div class="dx-setor-num">${(n=>n===0?'0':String(n).padStart(2,'0'))(contaSetor[s.nome]||0)}</div>
-    </div>`).join('');
 };
 
 /* ================================================================
@@ -5386,7 +5610,7 @@ UI.renderGraficos = function(){
   });
   $('#grafFolgas').style.display = this.grafTab==='folgas' ? '' : 'none';
   $('#grafFeriasContabeis').style.display = this.grafTab==='feriascontabeis' ? '' : 'none';
-  $('#btnExportFolgas').style.display = this.grafTab==='folgas' ? '' : 'none';
+  $('#btnExportGraf').onclick = () => this.grafTab==='folgas' ? Actions.exportarRelatorioFolgas() : Actions.exportarRelatorioFeriasContabeis();
 
   const porMes = Array.from({length:12}, ()=>({fer:new Set(), fol:new Set()}));
   Object.keys(map).forEach(di=>{
@@ -5488,6 +5712,40 @@ UI.renderGraficos = function(){
         plugins:{ legend:{display:false}, tooltip:CHART_TOOLTIP }
       }
     });
+
+    // ---------- resumo do ano (total, em risco, cobertura, mês de pico) ----------
+    const feriasPorColab = cs.map(c=>{
+      let dias=0;
+      Dom.periodosDe(c.id).forEach(p=>Dom.feriasDe(p.id).forEach(f=>{
+        if(pd(f.inicio).getFullYear()===ano || pd(f.fim).getFullYear()===ano) dias+=f.dias;
+      }));
+      return {nome:c.nome, dias};
+    });
+    const totalDiasFeria = feriasPorColab.reduce((s,x)=>s+x.dias,0);
+    const coberturaFeria = cs.length ? Math.round(feriasPorColab.filter(x=>x.dias>0).length/cs.length*100) : 0;
+    const picoIdxFeria = porMes.reduce((best,x,i)=> x.fer.size>porMes[best].fer.size ? i : best, 0);
+    const emRiscoFeria = cs.filter(c=>{
+      const r = Dom.resumo(c.id);
+      return r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null && r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS;
+    }).length;
+    const icoFeria = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>';
+    const icoAlertaFeria = '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>';
+    const icoPizzaFeria = '<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>';
+    const icoPicoFeria = '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>';
+    const statTileFeria = (cor, ico, tit, sub, num) => `
+      <div class="dx-stat" style="padding-bottom:14px">
+        <span class="dx-stat-ico c-${cor}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></span>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:0">
+          <div class="dx-stat-tit">${tit}</div>
+          <div class="dx-stat-sub">${sub}</div>
+          <div class="dx-stat-num">${num}</div>
+        </div>
+      </div>`;
+    $('#statsFerias').innerHTML =
+      statTileFeria('red', icoFeria, 'Total no Ano', 'dias de Férias', totalDiasFeria)
+      + statTileFeria('amber', icoAlertaFeria, 'Férias Vencendo', 'colaboradores', emRiscoFeria)
+      + statTileFeria('blue', icoPizzaFeria, 'Cobertura', 'tiraram Férias', `${coberturaFeria}%`)
+      + statTileFeria('orange', icoPicoFeria, 'Mês de Pico', MESES[picoIdxFeria], porMes[picoIdxFeria].fer.size);
 
     // ---------- situação de pagamento dos períodos (donut, por período) ----------
     const sitCount = {pago:0, programado:0, aberto:0, acumulando:0};
@@ -5615,6 +5873,42 @@ UI.renderPessoas = function(){
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:16, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
       }
     });
+
+    // ---------- card grande de colaboradores ----------
+    const nHome = cs.filter(c=>c.unidade==='Home Office').length;
+    const icoUsers = '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>';
+    const icoPredio = '<path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01"/>';
+    const icoHome = '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/>';
+    const colabTile = (num, lab, ico, col) => `
+      <div class="dx-colab-tile">
+        <span class="dx-colab-ico${col?' '+col:''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></span>
+        <div><div class="dx-colab-num">${num}</div><div class="dx-colab-lab">${lab}</div></div>
+      </div>`;
+    $('#dxColabCard').innerHTML =
+      colabTile(cs.length, 'Colaboradores ativos', icoUsers, 'c-violet') +
+      colabTile(nQuin, 'Quintas da Avenida', icoPredio, 'c-blue') +
+      colabTile(nGran, 'Granbery', icoPredio, 'c-teal') +
+      colabTile(nHome, 'Home Office', icoHome, 'c-amber');
+
+    // ---------- colaboradores por setor (estagiários contam no setor real onde atuam) ----------
+    const SETORES = SETORES_BRAND.filter(s=>s.nome!=='Estagiários');
+    const MAPA_SETOR_ESTAGIARIO = { 'Mídia':'Digital' };
+    const contaSetor = {};
+    cs.forEach(c=>{
+      let dep = c.departamento;
+      if(dep==='Estagiários'){
+        const m = c.funcao.match(/estagi[áa]ri[oa]\s+d[eo]\s+(.+)/i);
+        const real = m ? m[1].trim() : null;
+        dep = real ? (MAPA_SETOR_ESTAGIARIO[real]||real) : null;
+      }
+      if(dep) contaSetor[dep] = (contaSetor[dep]||0)+1;
+    });
+    $('#dxSetoresGrid').innerHTML = SETORES.map(s=>`
+      <div class="dx-setor-tile">
+        <span class="dx-setor-ico" style="background:${s.cor}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${s.ico}</svg></span>
+        <div class="dx-setor-lab">${s.nome}</div>
+        <div class="dx-setor-num">${(n=>n===0?'0':String(n).padStart(2,'0'))(contaSetor[s.nome]||0)}</div>
+      </div>`).join('');
 
     // ---------- admissões por mês ----------
     const admPorMes = Array(12).fill(0);
