@@ -3579,7 +3579,7 @@ const UI = {
     });
     this._ultimaLista = list;
     const btnNovo = $('#btnNovoColab');
-    if(btnNovo) btnNovo.style.display = Auth.podeEditar() ? '' : 'none';
+    if(btnNovo) btnNovo.style.display = Auth.podeAdministrar() ? '' : 'none';
 
     if(!list.length){
       $('#grid').innerHTML = `<div class="empty"><b>Nenhum colaborador encontrado</b>Ajuste a busca ou os filtros para ver resultados.</div>`;
@@ -4013,6 +4013,7 @@ const Modals = {
   },
 
   novoColab(){
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores cadastram colaboradores.'); return; }
     const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(c=>c.departamento)])];
     const unis=[...new Set(Store.data.colaboradores.map(c=>c.unidade))].sort();
     this.open(`
@@ -4305,7 +4306,7 @@ const Actions = {
     UI.renderProfile(cid); UI.renderDir();
   },
   async salvarColab(){
-    if(!this.guard()) return;
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores cadastram colaboradores.'); return; }
     const nome=$('#nNome').value.trim(), funcao=$('#nFuncao').value.trim(), adm=$('#nAdm').value;
     if(!nome||!funcao||!adm){ toast('Preencha nome, função e admissão.'); return; }
     const c=await Store.insert('colaboradores',{nome,funcao,
