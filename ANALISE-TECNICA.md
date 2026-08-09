@@ -2,7 +2,7 @@
 
 > Avaliação completa do sistema (`index.html`, arquivo único de ~6.792 linhas / ~1,5 MB).
 > Foco técnico e realista: segurança, bugs, consistência funcional, UI/UX, design e arquitetura.
-> Data da análise: 2026-08-09. · Atualizado após correção do item 3.1 (permissão de cadastro).
+> Data da análise: 2026-08-09. · Atualizado após correção do item 3.1 (permissão de cadastro) e limpeza de manutenção (seção 5.5).
 
 ---
 
@@ -141,7 +141,15 @@ CSS + JS + fontes base64 + Chart.js + jsPDF, tudo em um `index.html`. **Intencio
 Estilos de features removidas (`ag-cal2`, `ag-tl`, `ag-week`, resquícios de `dx-kpi`) mantidos deliberadamente (CLAUDE.md). Razoável no curto prazo, mas acumula.
 
 ### 5.4 [BAIXO] Cálculo duplicado entre tela e PDF
-Cobertura/média/pico são recomputados de forma independente em `renderGraficos` e em cada `exportarRelatorio*`. Risco de divergência (tela e PDF podem discordar se um lado mudar).
+Cobertura/média/pico são recomputados de forma independente em `renderGraficos` e em cada `exportarRelatorio*`. Risco de divergência (tela e PDF podem discordar se um lado mudar). *(Ainda aberto.)*
+
+### 5.5 [RESOLVIDO — parcial] Limpeza de duplicação e código morto
+Aplicada em 2026-08-09, comportamento preservado (verificado por render headless das rotas afetadas, sem erros de JS):
+- **Função morta removida:** `nomesCurtosAg` estava definida e nunca era chamada.
+- **`nomesCurtos` consolidado:** eram 2 cópias byte-idênticas → um único helper no nível de módulo.
+- **`MESES_CAP` consolidado:** rótulos de mês dos gráficos eram recalculados de forma idêntica em 3 funções → uma constante única ao lado de `MESES`.
+
+Deliberadamente **não** mexido, por decisão/consistência com o CLAUDE.md: o CSS órfão intencional (5.3), a estrutura monolítica (5.1) e os builders de card semelhantes-mas-não-idênticos (`statCard`/`statAg`/`statTileAdm`/`rankStat`) — consolidá-los arriscaria mudança visual.
 
 ---
 

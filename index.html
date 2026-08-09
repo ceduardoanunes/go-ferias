@@ -2918,6 +2918,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const MESES_CAP = MESES.map(m=>m.slice(0,3).toUpperCase());   // ['JAN','FEV',…] — rótulos de eixo dos gráficos
 const hoje = () => { const d=new Date(); d.setHours(0,0,0,0); return d; };
 const iso = d => d.toISOString().slice(0,10);
 const pd  = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
@@ -2935,6 +2936,13 @@ const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const slugify = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
 const uid = () => Math.random().toString(36).slice(2,10);
+// primeiro nome de cada pessoa, truncado ("Ana, Bruno +3"); usado nos cards de resumo
+const nomesCurtos = (lista, max=2) => {
+  const nomes = lista.map(p=>(p.nome||'').split(' ')[0]);
+  if(nomes.length===0) return '';
+  if(nomes.length<=max) return nomes.join(', ');
+  return `${nomes.slice(0,max).join(', ')} +${nomes.length-max}`;
+};
 
 function tempoDeCasa(adm){
   const a=pd(adm), h=hoje();
@@ -5507,12 +5515,6 @@ UI.renderAgenda = function(){
     ausentes:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
     solic:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'
   };
-  const nomesCurtosAg = (lista, max=2) => {
-    const nomes = lista.map(p=>(p.nome||'').split(' ')[0]);
-    if(nomes.length===0) return '';
-    if(nomes.length<=max) return nomes.join(', ');
-    return `${nomes.slice(0,max).join(', ')} +${nomes.length-max}`;
-  };
   const statAg = (col, ico, tit, sub, num, onclick) => `
     <div class="dx-stat${onclick?' dx-stat-click':''}"${onclick?` onclick="${onclick}"`:''}>
       <span class="dx-stat-ico c-${col}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></span>
@@ -5688,12 +5690,6 @@ UI.renderDash = function(){
   });
   const nAlertas = vencendo.length;
 
-  const nomesCurtos = (lista, max=2) => {
-    const nomes = lista.map(p=>(p.nome||'').split(' ')[0]);
-    if(nomes.length===0) return '';
-    if(nomes.length<=max) return nomes.join(', ');
-    return `${nomes.slice(0,max).join(', ')} +${nomes.length-max}`;
-  };
   const ICO = {
     folga:'<path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 1v3M10 1v3M14 1v3"/>',
     bolo:'<path d="M4 21h16M4 21v-6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6M12 7v6M8 9v4M16 9v4M12 3v2M8 5v2M16 5v2"/>',
@@ -5996,7 +5992,6 @@ UI.renderGraficos = function(){
     map[di].fer.forEach(p=>porMes[m].fer.add(p.nome));
     map[di].fol.forEach(p=>porMes[m].fol.add(p.nome));
   });
-  const MESES_CAP = MESES.map(m=>m.slice(0,3).toUpperCase());
 
   if(this.grafTab==='folgas'){
     // ---------- folgas por mês ----------
@@ -6212,7 +6207,6 @@ UI.renderGraficos = function(){
 // ================= PÁGINA PESSOAS (analytics de RH: setor/unidade, tempo de casa, admissões) =================
 UI.renderPessoas = function(){
   const cs = Store.data.colaboradores.filter(c=>c.ativo!==false);
-  const MESES_CAP = MESES.map(m=>m.slice(0,3).toUpperCase());
 
   // abas
   $$('#viewPessoas .tabs-track .tab').forEach(t=>{
