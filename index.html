@@ -1154,31 +1154,11 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .dx-setor-lab{font-size:11.5px;font-weight:700;color:var(--muted);line-height:1.2}
 @media(max-width:1080px){.dx-setores-grid{grid-template-columns:repeat(5,1fr);gap:14px}}
 @media(max-width:640px){.dx-setores-grid{grid-template-columns:repeat(3,1fr)}}
-.dx-colab-ico{
-  width:62px;height:62px;border-radius:18px;flex:none;display:grid;place-items:center;
-  background:var(--red-soft);color:var(--red);
-}
-.dx-colab-ico svg{width:31px;height:31px}
 @media(max-width:980px){.dx-colab-footer{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:540px){.dx-colab-footer{grid-template-columns:1fr}}
 
-/* rodapé de rankings — cards separados, mesmo tamanho dos totais */
-.dx-rank-footer{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-.dx-rank-tile{
-  padding:32px 28px;display:flex;align-items:center;gap:20px;
-  background:var(--card);border:1px solid var(--line-soft);border-radius:22px;box-shadow:var(--shadow-card);
-  color:inherit;
-}
-.dx-colab-ico.c-amber{background:rgba(210,134,15,.13);color:#C67F0D}
-.dx-colab-ico.c-blue{background:rgba(47,95,168,.12);color:var(--blue)}
-.dx-colab-ico.c-teal{background:rgba(18,131,106,.12);color:var(--teal)}
-.dx-colab-ico.c-violet{background:rgba(124,90,216,.13);color:#5738AE}
-.dx-rank-body{min-width:0}
-.dx-rank-num{font-family:var(--font-display);font-weight:800;font-size:42px;line-height:1;letter-spacing:-1px;color:var(--graphite)}
-.dx-rank-num small{font-size:13px;font-weight:700;color:var(--muted);margin-left:4px;letter-spacing:0}
-.dx-rank-lab{font-size:13.5px;color:var(--muted);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dx-rank-lab strong{color:var(--graphite);font-weight:700}
-.dx-rank-vazio{padding:32px 28px;background:var(--card);border:1px solid var(--line-soft);border-radius:22px;box-shadow:var(--shadow-card);color:var(--faint);font-size:13px;font-style:italic;display:flex;align-items:center}
+/* rodapé de rankings — mesmo componente .dx-stat dos outros KPIs */
+.dx-rank-footer{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
 @media(max-width:980px){.dx-rank-footer{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:540px){.dx-rank-footer{grid-template-columns:1fr}}
 
@@ -1587,7 +1567,12 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .adm-setor-dot{width:8px;height:8px;border-radius:50%;flex:none}
 .adm-cargo{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adm-data{font-size:12.5px;color:var(--muted);text-align:right}
-@media(max-width:900px){.adm-row{grid-template-columns:32px 1fr 1fr;grid-template-areas:"av nome nome" "av setor cargo" "av data data";padding:11px 8px}.adm-row-av{grid-area:av}.adm-nome{grid-area:nome}.adm-setor{grid-area:setor}.adm-cargo{grid-area:cargo}.adm-data{grid-area:data;text-align:left}}
+.adm-row.adm-head{
+  font-size:10.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);
+  padding-bottom:12px;border-radius:0;
+}
+.adm-row.adm-head:hover{background:none}
+@media(max-width:900px){.adm-row{grid-template-columns:32px 1fr 1fr;grid-template-areas:"av nome nome" "av setor cargo" "av data data";padding:11px 8px}.adm-row-av{grid-area:av}.adm-nome{grid-area:nome}.adm-setor{grid-area:setor}.adm-cargo{grid-area:cargo}.adm-data{grid-area:data;text-align:left}.adm-row.adm-head{display:none}}
 
 /* padrões de férias — grade de 12 meses */
 .padrao-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
@@ -1907,9 +1892,9 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9.5 8h5"/><path d="M9.5 12h5"/><path d="M9.5 16h5"/></svg>
         <span class="sb-tip">Agenda</span>
       </a>
-      <a class="sb-btn" href="#/colaboradores" id="navColab" title="Colaboradores">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span class="sb-tip">Colaboradores</span>
+      <a class="sb-btn" href="#/colaboradores" id="navColab" title="Colaborador">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="sb-tip">Colaborador</span>
       </a>
       <a class="sb-btn" href="#/calendario" id="navCal" title="Calendário">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
@@ -1920,7 +1905,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
         <span class="sb-tip">Relatórios</span>
       </a>
       <a class="sb-btn" href="#/pessoas" id="navPessoas" title="Gestão de Pessoas">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6.17 15a3 3 0 0 1 5.66 0"/><path d="M16 10h2"/><path d="M16 14h2"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span class="sb-tip">Gestão de Pessoas</span>
       </a>
     </div>
@@ -1951,7 +1936,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
   <section class="view" id="viewDir">
     <div class="page-head">
       <div>
-        <h1 class="page-title">Colaboradores</h1>
+        <h1 class="page-title">Colaborador</h1>
       </div>
       <div style="display:flex;gap:10px;align-items:center;align-self:flex-start;margin-top:18px">
         <button class="btn btn-primary" id="btnNovoColab" onclick="Modals.novoColab()">
@@ -2153,7 +2138,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
     </div>
 
     <!-- rodapé: rankings de folga do ano -->
-    <div class="dx-eyebrow dx-eyebrow-sec"><span>Folgas no Ano</span><i></i></div>
+    <div class="dx-eyebrow dx-eyebrow-sec" style="margin:90px 2px 32px"><span>Folgas no Ano</span><i></i></div>
     <div class="dx-colab-footer dx-rank-footer" id="dxRankFooter"></div>
   </section>
 
@@ -2247,6 +2232,12 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
       <div>
         <h1 class="page-title">Gestão de Pessoas</h1>
       </div>
+      <div style="align-self:flex-start;margin-top:18px">
+        <button class="btn btn-primary" id="btnExportPessoas">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar Relatório
+        </button>
+      </div>
     </div>
 
     <div class="tabs" style="padding:0;margin-bottom:65px">
@@ -2326,7 +2317,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 
       <div class="dash-grid" style="margin-top:65px">
         <div>
-          <div class="dept-header"><span class="dept-name">Contratações por Ano</span><span class="dept-line"></span></div>
+          <div class="dept-header"><span class="dept-name">Admissões por Ano</span><span class="dept-line"></span></div>
           <div class="dash-card chart-card"><div class="chart-wrap"><canvas id="chartContratacoes"></canvas></div></div>
         </div>
         <div>
@@ -2335,7 +2326,8 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
         </div>
       </div>
 
-      <div class="dept-header" style="margin-top:65px"><span class="dept-name">Linha do Tempo de Contratações</span><span class="dept-line"></span></div>
+      <div class="dept-header" style="margin-top:65px"><span class="dept-name">Linha do Tempo de Admissões</span><span class="dept-line"></span></div>
+      <div id="admFiltroAno" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px"></div>
       <div class="dash-card" style="padding:8px 26px">
         <div id="contratacoesTimeline"></div>
       </div>
@@ -2371,7 +2363,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
       <div>
         <h1 class="page-title">Minha Conta</h1>
       </div>
-      <button class="btn btn-primary" id="btnNovoUsuarioConta" style="align-self:flex-start;margin-top:10px" onclick="Modals.novoUsuario()">
+      <button class="btn btn-primary" id="btnNovoUsuarioConta" style="align-self:flex-start;margin-top:18px" onclick="Modals.novoUsuario()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         Novo usuário
       </button>
@@ -3936,6 +3928,7 @@ const UI = {
 /* ================================================================
    MODAIS + AÇÕES
    ================================================================ */
+const ICO_CAMERA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;opacity:.55"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>';
 const Modals = {
   open(html,opts){ const box=$('#modalBox'); box.className='modal'+(opts&&opts.wide?' modal-wide':''); box.innerHTML=html; $('#overlay').classList.add('on'); },
   close(){ $('#overlay').classList.remove('on'); },
@@ -4058,8 +4051,7 @@ const Modals = {
     const atualizarPreview = ()=>{
       if(UI._fotoPendente) return;
       const nome = $('#nNome').value.trim();
-      $('#fotoPreview').innerHTML = nome ? initials(nome)
-        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;opacity:.55"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>';
+      $('#fotoPreview').innerHTML = nome ? initials(nome) : ICO_CAMERA;
     };
     atualizarPreview();
     $('#nNome').addEventListener('input', atualizarPreview);
@@ -4189,13 +4181,15 @@ const Modals = {
     this.open(`
       <h3>${u?'Editar usuário':'Novo usuário'}</h3>
       <p class="msub">${u?'Altere os dados de acesso deste usuário.':'Crie um acesso ao Go Férias!'}</p>
-      <div style="display:flex;justify-content:center;margin-bottom:6px">
-        <div class="avatar-wrap" style="width:76px">
-          <div class="avatar big" id="uFotoPreview" style="width:76px;height:76px;font-size:24px;margin:0">${u?.foto?`<img src="${esc(u.foto)}" alt="">`:initials(u?.nome||'?')}</div>
-          <button class="avatar-edit" type="button" title="Alterar foto" onclick="document.getElementById('uFotoFile').click()" style="width:26px;height:26px;bottom:2px">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-          </button>
+      <div class="edit-foto">
+        <div class="avatar-wrap" style="width:84px;flex:none">
+          <div class="avatar big" id="uFotoPreview" style="width:84px;height:84px;font-size:26px;margin:0">${u?.foto?`<img src="${esc(u.foto)}" alt="">`:ICO_CAMERA}</div>
           <input type="file" id="uFotoFile" accept="image/*" style="display:none">
+        </div>
+        <div class="edit-foto-fields">
+          <div class="edit-foto-lab">Foto do usuário</div>
+          <button type="button" class="btn btn-soft edit-foto-enviar" onclick="document.getElementById('uFotoFile').click()">Enviar foto</button>
+          <button type="button" class="edit-foto-remover" id="uFotoRemover" ${u?.foto?'':'style="display:none"'}>Remover foto</button>
         </div>
       </div>
       <div class="field"><label>Nome</label><input id="uNome" value="${u?esc(u.nome):''}" placeholder="Nome do usuário"></div>
@@ -4226,8 +4220,14 @@ const Modals = {
         ctx.drawImage(img,(img.width-lado)/2,(img.height-lado)/2,lado,lado,0,0,TAM,TAM);
         UI._userFotoPendente = cv.toDataURL('image/jpeg',.85);
         $('#uFotoPreview').innerHTML = `<img src="${UI._userFotoPendente}" alt="">`;
+        $('#uFotoRemover').style.display='';
       };
       img.src = URL.createObjectURL(file);
+    };
+    $('#uFotoRemover').onclick = ()=>{
+      UI._userFotoPendente = null;
+      $('#uFotoPreview').innerHTML = ICO_CAMERA;
+      $('#uFotoRemover').style.display='none';
     };
   }
 };
@@ -4709,7 +4709,7 @@ const Actions = {
     const coberturaFolga = cs.length ? Math.round(folgasPorColab.filter(x=>x.dias>0).length/cs.length*100) : 0;
     const picoIdx = porMes.reduce((best,x,i)=> x.fol.size>porMes[best].fol.size ? i : best, 0);
 
-    const statBottom = this.pdfStatRow(doc, 48, [
+    const statBottom = this.pdfStatRow(doc, 54, [
       {label:'Total no Ano', sub:'dias de Folga', val:totalDiasFolga, cor:[14,110,88]},
       {label:'Média', sub:'dias por Pessoa', val:mediaFolga.toFixed(1), cor:[210,134,15]},
       {label:'Cobertura', sub:'tiraram Folga', val:`${coberturaFolga}%`, cor:[40,81,143]},
@@ -4830,7 +4830,7 @@ const Actions = {
       return r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null && r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS;
     }).length;
 
-    const statBottom = this.pdfStatRow(doc, 48, [
+    const statBottom = this.pdfStatRow(doc, 54, [
       {label:'Total no Ano', sub:'dias de Férias', val:totalDiasFeria, cor:[161,19,50]},
       {label:'Férias Vencendo', sub:'colaboradores', val:emRiscoFeria, cor:[210,134,15]},
       {label:'Cobertura', sub:'tiraram Férias', val:`${coberturaFeria}%`, cor:[40,81,143]},
@@ -4954,6 +4954,274 @@ const Actions = {
 
     doc.save(`go-ferias-relatorio-ferias-contabeis-${ano}.pdf`);
     Store.logAudit('inserir', null, null, `Exportação de relatório PDF — Férias Contábeis ${ano}`);
+    toast('Relatório exportado ✓');
+  },
+
+  exportarRelatorioColaboradores(){
+    if(!window.jspdf){ toast('Biblioteca de PDF ainda carregando — tente novamente.'); return; }
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF();
+    pdfUsarDMSans(doc);
+    const hj = hoje();
+    const cs = Store.data.colaboradores.filter(c=>c.ativo!==false);
+    const base = { margin:{top:30, bottom:20}, didDrawPage:()=>this.pdfHeader(doc) };
+    this.pdfHeader(doc);
+
+    this.pdfTituloKerned(doc, 'Relatório de Colaboradores — Visão Geral', 14, 39, 19, [28,27,26], -0.3);
+
+    // ---------- unidade, mesmo cálculo da tela ----------
+    const nGran = cs.filter(c=>c.unidade==='Granbery').length;
+    const nQuin = cs.filter(c=>c.unidade==='Quintas da Avenida').length;
+    const nHome = cs.filter(c=>c.unidade==='Home Office').length;
+
+    // ---------- colaboradores por setor (estagiários contam no setor real onde atuam) ----------
+    const SETORES = SETORES_BRAND.filter(s=>s.nome!=='Estagiários');
+    const MAPA_SETOR_ESTAGIARIO = { 'Mídia':'Digital' };
+    const contaSetor = {};
+    cs.forEach(c=>{
+      let dep = c.departamento;
+      if(dep==='Estagiários'){
+        const m = c.funcao.match(/estagi[áa]ri[oa]\s+d[eo]\s+(.+)/i);
+        const real = m ? m[1].trim() : null;
+        dep = real ? (MAPA_SETOR_ESTAGIARIO[real]||real) : null;
+      }
+      if(dep) contaSetor[dep] = (contaSetor[dep]||0)+1;
+    });
+
+    this.pdfTituloKerned(doc, 'Colaboradores por Setor', 14, 54, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: 62,
+      head: [['Setor', {content:'Colaboradores', styles:{halign:'center'}}]],
+      body: SETORES.map(s=>[s.nome, String(contaSetor[s.nome]||0)]),
+      styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
+      headStyles: {fillColor:[214,92,110], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[250,240,242]},
+      columnStyles: {1:{halign:'center'}}
+    });
+
+    // ---------- estagiários por setor real ----------
+    const estagiarios = cs.filter(c=>c.departamento==='Estagiários' || /estagi/i.test(c.funcao));
+    const porSetorEst = {};
+    estagiarios.forEach(c=>{
+      const m = c.funcao.match(/estagi[áa]ri[oa]\s+d[eo]\s+(.+)/i);
+      const setorReal = m ? m[1].trim() : 'Não especificado';
+      porSetorEst[setorReal] = (porSetorEst[setorReal]||0)+1;
+    });
+    const y2 = doc.lastAutoTable.finalY + 16;
+    this.pdfTituloKerned(doc, 'Estagiários por Setor', 14, y2, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: y2+8,
+      head: [['Setor', {content:'Estagiários', styles:{halign:'center'}}]],
+      body: Object.keys(porSetorEst).length
+        ? Object.entries(porSetorEst).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[k, String(v)])
+        : [['Nenhum estagiário','—']],
+      styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
+      headStyles: {fillColor:[28,27,26], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[246,245,243]},
+      columnStyles: {1:{halign:'center'}}
+    });
+
+    // ---------- unidade + regime ----------
+    const porRegime = {};
+    cs.forEach(c=>{ const r = c.regime||'Não informado'; porRegime[r] = (porRegime[r]||0)+1; });
+
+    doc.addPage();
+    this.pdfTituloKerned(doc, 'Unidade', 14, 34, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: 42,
+      head: [['Unidade', {content:'Colaboradores', styles:{halign:'center'}}]],
+      body: [['Granbery', String(nGran)], ['Quintas da Avenida', String(nQuin)], ['Home Office', String(nHome)]],
+      styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
+      headStyles: {fillColor:[203,203,203], textColor:[40,38,36], fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[246,245,243]},
+      columnStyles: {1:{halign:'center'}}
+    });
+
+    const y3 = doc.lastAutoTable.finalY + 16;
+    this.pdfTituloKerned(doc, 'Regime de Contratação', 14, y3, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: y3+8,
+      head: [['Regime', {content:'Colaboradores', styles:{halign:'center'}}]],
+      body: Object.entries(porRegime).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[k, String(v)]),
+      styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
+      headStyles: {fillColor:[214,92,110], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[250,240,242]},
+      columnStyles: {1:{halign:'center'}}
+    });
+
+    const totalPag = doc.internal.getNumberOfPages();
+    for(let p=1;p<=totalPag;p++){ doc.setPage(p); this.pdfFooter(doc, hj, p); }
+
+    doc.save(`go-ferias-relatorio-colaboradores-${iso(hj)}.pdf`);
+    Store.logAudit('inserir', null, null, 'Exportação de relatório PDF — Colaboradores (Visão Geral)');
+    toast('Relatório exportado ✓');
+  },
+
+  exportarRelatorioTempoCasa(){
+    if(!window.jspdf){ toast('Biblioteca de PDF ainda carregando — tente novamente.'); return; }
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF();
+    pdfUsarDMSans(doc);
+    const hj = hoje();
+    const anoAtual = hj.getFullYear();
+    const cs = Store.data.colaboradores.filter(c=>c.ativo!==false);
+    const base = { margin:{top:30, bottom:20}, didDrawPage:()=>this.pdfHeader(doc) };
+    this.pdfHeader(doc);
+
+    this.pdfTituloKerned(doc, 'Relatório de Tempo de Casa', 14, 39, 19, [28,27,26], -0.3);
+
+    const ordenadoAntigos = cs.slice().sort((a,b)=>a.admissao.localeCompare(b.admissao));
+
+    this.pdfTituloKerned(doc, 'Mais Tempo de Casa', 14, 54, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: 62,
+      head: [['Colaborador', 'Desde', {content:'Tempo de casa', styles:{halign:'center'}}]],
+      body: ordenadoAntigos.slice(0,10).map(c=>[c.nome, fmt(c.admissao), tempoDeCasa(c.admissao)]),
+      styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
+      headStyles: {fillColor:[201,162,39], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[252,248,235]},
+      columnStyles: {2:{halign:'center'}}
+    });
+
+    // ---------- aniversários redondos do ano ----------
+    const redondos = cs.map(c=>{
+      const adm = pd(c.admissao);
+      const anos = anoAtual - adm.getFullYear();
+      return {c, anos};
+    }).filter(x=>x.anos>0 && x.anos%5===0).sort((a,b)=>b.anos-a.anos);
+
+    const y2 = doc.lastAutoTable.finalY + 16;
+    this.pdfTituloKerned(doc, `Aniversários de Empresa — ${anoAtual}`, 14, y2, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: y2+8,
+      head: [['Colaborador', {content:'Anos de Casa', styles:{halign:'center'}}, 'Admissão']],
+      body: redondos.length
+        ? redondos.map(({c,anos})=>[c.nome, String(anos), fmt(c.admissao)])
+        : [['Nenhum colaborador completa 5, 10, 15 ou 20 anos este ano','—','—']],
+      styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
+      headStyles: {fillColor:[163,167,173], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[246,245,243]},
+      columnStyles: {1:{halign:'center'}}
+    });
+
+    // ---------- mais antigo por setor ----------
+    const ORDEM_DEP = SETORES_BRAND.map(s=>s.nome);
+    const porSetorCasa = {};
+    cs.forEach(c=>{ (porSetorCasa[c.departamento]=porSetorCasa[c.departamento]||[]).push(c); });
+    const setoresCasa = Object.keys(porSetorCasa).sort((a,b)=>{
+      const ia=ORDEM_DEP.indexOf(a), ib=ORDEM_DEP.indexOf(b);
+      if(ia===-1&&ib===-1) return a.localeCompare(b,'pt-BR');
+      if(ia===-1) return 1; if(ib===-1) return -1; return ia-ib;
+    });
+
+    doc.addPage();
+    this.pdfTituloKerned(doc, 'Mais Antigo por Setor', 14, 34, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: 42,
+      head: [['Setor', 'Colaborador', {content:'Tempo de casa', styles:{halign:'center'}}]],
+      body: setoresCasa.map(dep=>{
+        const antigo = porSetorCasa[dep].slice().sort((a,b)=>a.admissao.localeCompare(b.admissao))[0];
+        return [dep, antigo.nome, tempoDeCasa(antigo.admissao)];
+      }),
+      styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
+      headStyles: {fillColor:[28,27,26], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[246,245,243]},
+      columnStyles: {2:{halign:'center'}}
+    });
+
+    // ---------- ranking completo, mais antigos primeiro ----------
+    const y3 = doc.lastAutoTable.finalY + 16;
+    this.pdfTituloKerned(doc, 'Ranking Completo', 14, y3, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: y3+8,
+      head: [['Colaborador', 'Setor', 'Cargo', 'Admissão', {content:'Tempo de casa', styles:{halign:'center'}}]],
+      body: ordenadoAntigos.map(c=>[c.nome, c.departamento, c.funcao, fmt(c.admissao), tempoDeCasa(c.admissao)]),
+      styles: {font: pdfFont(doc), fontSize:8.5, cellPadding:2.2},
+      headStyles: {fillColor:[201,162,39], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[252,248,235]},
+      columnStyles: {4:{halign:'center'}}
+    });
+
+    const totalPag = doc.internal.getNumberOfPages();
+    for(let p=1;p<=totalPag;p++){ doc.setPage(p); this.pdfFooter(doc, hj, p); }
+
+    doc.save(`go-ferias-relatorio-tempo-de-casa-${iso(hj)}.pdf`);
+    Store.logAudit('inserir', null, null, 'Exportação de relatório PDF — Tempo de Casa');
+    toast('Relatório exportado ✓');
+  },
+
+  exportarRelatorioAdmissoes(){
+    if(!window.jspdf){ toast('Biblioteca de PDF ainda carregando — tente novamente.'); return; }
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF();
+    pdfUsarDMSans(doc);
+    const hj = hoje();
+    const anoAtual = hj.getFullYear();
+    const cs = Store.data.colaboradores.filter(c=>c.ativo!==false);
+    const base = { margin:{top:30, bottom:20}, didDrawPage:()=>this.pdfHeader(doc) };
+    this.pdfHeader(doc);
+
+    this.pdfTituloKerned(doc, 'Relatório de Admissões', 14, 39, 19, [28,27,26], -0.3);
+
+    const anos = cs.map(c=>pd(c.admissao).getFullYear());
+    const anoMin = Math.min(...anos), anoMax = Math.max(...anos);
+    const labelsAnos=[], dataAnos=[];
+    for(let a=anoMin; a<=anoMax; a++){ labelsAnos.push(String(a)); dataAnos.push(anos.filter(x=>x===a).length); }
+    const admPorMes = Array(12).fill(0);
+    cs.forEach(c=>admPorMes[pd(c.admissao).getMonth()]++);
+    this.pdfTituloKerned(doc, 'Admissões por Ano', 14, 54, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: 62,
+      head: [['Ano', {content:'Admissões', styles:{halign:'center'}}]],
+      body: labelsAnos.map((a,i)=>[a, String(dataAnos[i])]),
+      styles: {font: pdfFont(doc), fontSize:9, cellPadding:2.5},
+      headStyles: {fillColor:[214,92,110], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[250,240,242]},
+      columnStyles: {0:{fontStyle:'bold'}, 1:{halign:'center'}}
+    });
+
+    const y2 = doc.lastAutoTable.finalY + 16;
+    this.pdfTituloKerned(doc, 'Admissões por Mês', 14, y2, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: y2+8,
+      head: [['Mês', {content:'Admissões', styles:{halign:'center'}}]],
+      body: MESES.map((m,i)=>[m.charAt(0).toUpperCase()+m.slice(1), String(admPorMes[i])]),
+      styles: {font: pdfFont(doc), fontSize:9, cellPadding:2.5},
+      headStyles: {fillColor:[203,203,203], textColor:[40,38,36], fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[246,245,243]},
+      columnStyles: {0:{fontStyle:'bold'}, 1:{halign:'center'}}
+    });
+
+    // ---------- linha do tempo completa, mais recentes primeiro ----------
+    const ordenadoRecentes = cs.slice().sort((a,b)=>b.admissao.localeCompare(a.admissao));
+    doc.addPage();
+    this.pdfTituloKerned(doc, 'Linha do Tempo de Admissões', 14, 34, 15, [28,27,26], -0.2);
+    doc.autoTable({
+      ...base,
+      startY: 42,
+      head: [['Colaborador', 'Setor', 'Cargo', {content:'Admissão', styles:{halign:'center'}}]],
+      body: ordenadoRecentes.map(c=>[c.nome, c.departamento, c.funcao, fmt(c.admissao)]),
+      styles: {font: pdfFont(doc), fontSize:8.5, cellPadding:2.2},
+      headStyles: {fillColor:[214,92,110], textColor:255, fontStyle:'bold'},
+      alternateRowStyles: {fillColor:[250,240,242]},
+      columnStyles: {3:{halign:'center'}}
+    });
+
+    const totalPag = doc.internal.getNumberOfPages();
+    for(let p=1;p<=totalPag;p++){ doc.setPage(p); this.pdfFooter(doc, hj, p); }
+
+    doc.save(`go-ferias-relatorio-admissoes-${iso(hj)}.pdf`);
+    Store.logAudit('inserir', null, null, 'Exportação de relatório PDF — Admissões');
     toast('Relatório exportado ✓');
   }
 };
@@ -5432,7 +5700,8 @@ UI.renderDash = function(){
     aviao:'<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3.5s-2.5 0-3.5 1.5L14 8.5 5.8 6.7c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 4.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>',
     inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
     sol:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
-    trofeu:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0Z"/><path d="M17 5h3v1.5a3.5 3.5 0 0 1-3.5 3.5M7 5H4v1.5A3.5 3.5 0 0 0 7.5 10"/>'
+    trofeu:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0Z"/><path d="M17 5h3v1.5a3.5 3.5 0 0 1-3.5 3.5M7 5H4v1.5A3.5 3.5 0 0 0 7.5 10"/>',
+    pizza:'<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>'
   };
   const nSolic = (Store.data.solicitacoes||[]).filter(s=>s.status==='pendente').length;
   // quem está de férias / folga hoje (dia corrente)
@@ -5572,25 +5841,31 @@ UI.renderDash = function(){
     subir:'<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>',
     descer:'<path d="M22 17 13.5 8.5 8.5 13.5 2 7"/><path d="M16 17h6v-6"/>'
   };
-  const rankTile = (col, ico, val, unit, nome, det) => `
-    <div class="dx-rank-tile">
-      <span class="dx-colab-ico c-${col}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></span>
-      <div class="dx-rank-body">
-        <div class="dx-rank-num">${val}<small>${unit}</small></div>
-        <div class="dx-rank-lab"><strong>${esc(nome)}</strong>${det?` · ${esc(det)}`:''}</div>
-      </div>
+  const rankStat = (ico, tit, sub, num, href) => `
+    <a class="dx-stat" href="${href}">
+      <span class="dx-stat-ico c-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></span>
+      <div class="dx-stat-tit">${tit}</div>
+      <div class="dx-stat-sub">${sub||'&nbsp;'}</div>
+      <div class="dx-stat-num">${num===0?'0':String(num).padStart(2,'0')}</div>
+    </a>`;
+  const rankStatVazio = tit => `
+    <div class="dx-stat">
+      <span class="dx-stat-ico c-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICO.folga}</svg></span>
+      <div class="dx-stat-tit">${tit}</div>
+      <div class="dx-stat-sub">&nbsp;</div>
+      <div class="dx-stat-num">—</div>
     </div>`;
+  const nComFolga = folgasColab.filter(x=>x.dias>0).length;
+  const coberturaFolga = cs.length ? Math.round(nComFolga/cs.length*100) : 0;
   const tiles = [];
-  tiles.push(rankTile('amber', ICO.folga, totalFolgas, totalFolgas===1?'dia':'dias',
-      `Folgas em ${ano}`, ''));
+  tiles.push(rankStat(ICO.folga, 'Total Anual', `dias de Folga em ${ano}`, totalFolgas, '#/graficos'));
+  tiles.push(rankStat(ICO.pizza, 'Cobertura', `${nComFolga} de ${cs.length} tiraram Folga`, `${coberturaFolga}%`, '#/graficos'));
   tiles.push(maisFolgas
-    ? rankTile('blue', ICO2.subir, maisFolgas.dias, maisFolgas.dias===1?'dia':'dias',
-        maisFolgas.c.nome.split(' ').slice(0,2).join(' '), 'Mais Folgas')
-    : `<div class="dx-rank-tile dx-rank-vazio">Sem folgas em ${ano}</div>`);
+    ? rankStat(ICO2.subir, 'Mais Folgas', esc(maisFolgas.c.nome.split(' ').slice(0,2).join(' ')), maisFolgas.dias, `#/colab/${maisFolgas.c.id}`)
+    : rankStatVazio('Mais Folgas'));
   tiles.push(menosFolgas
-    ? rankTile('teal', ICO2.descer, menosFolgas.dias, menosFolgas.dias===1?'dia':'dias',
-        menosFolgas.c.nome.split(' ').slice(0,2).join(' '), 'Menos Folgas')
-    : `<div class="dx-rank-tile dx-rank-vazio">Sem dados em ${ano}</div>`);
+    ? rankStat(ICO2.descer, 'Menos Folgas', esc(menosFolgas.c.nome.split(' ').slice(0,2).join(' ')), menosFolgas.dias, `#/colab/${menosFolgas.c.id}`)
+    : rankStatVazio('Menos Folgas'));
   $('#dxRankFooter').innerHTML = tiles.join('');
 };
 
@@ -5759,7 +6034,8 @@ UI.renderGraficos = function(){
     // ---------- resumo do ano (total, média, cobertura, mês de pico) ----------
     const totalDiasFolga = folgasPorColab.reduce((s,x)=>s+x.dias,0);
     const mediaFolga = cs.length ? totalDiasFolga/cs.length : 0;
-    const coberturaFolga = cs.length ? Math.round(folgasPorColab.filter(x=>x.dias>0).length/cs.length*100) : 0;
+    const nComFolga = folgasPorColab.filter(x=>x.dias>0).length;
+    const coberturaFolga = cs.length ? Math.round(nComFolga/cs.length*100) : 0;
     const picoIdx = porMes.reduce((best,x,i)=> x.fol.size>porMes[best].fol.size ? i : best, 0);
     const icoFolga = '<path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 1v3M10 1v3M14 1v3"/>';
     const icoPessoa = '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>';
@@ -5777,7 +6053,7 @@ UI.renderGraficos = function(){
     $('#statsFolgas').innerHTML =
       statTile('teal', icoFolga, 'Total no Ano', 'dias de Folga', totalDiasFolga)
       + statTile('amber', icoPessoa, 'Média', 'dias por Pessoa', mediaFolga.toFixed(1))
-      + statTile('blue', icoPizza, 'Cobertura', 'tiraram Folga', `${coberturaFolga}%`)
+      + statTile('blue', icoPizza, 'Cobertura', `${nComFolga} de ${cs.length} tiraram Folga`, `${coberturaFolga}%`)
       + statTile('orange', icoPico, 'Mês de Pico', MESES[picoIdx], porMes[picoIdx].fol.size);
 
     // ---------- padrões de folgas por mês ----------
@@ -5945,6 +6221,11 @@ UI.renderPessoas = function(){
   $('#grafHistoricos').style.display = this.pesTab==='historicos' ? '' : 'none';
   $('#grafTempoCasa').style.display = this.pesTab==='tempocasa' ? '' : 'none';
   $('#grafContratacoes').style.display = this.pesTab==='contratacoes' ? '' : 'none';
+  $('#btnExportPessoas').onclick = () => {
+    if(this.pesTab==='historicos') Actions.exportarRelatorioColaboradores();
+    else if(this.pesTab==='tempocasa') Actions.exportarRelatorioTempoCasa();
+    else Actions.exportarRelatorioAdmissoes();
+  };
 
   // ================= aba VISÃO GERAL (setor/unidade) =================
   if(this.pesTab==='historicos'){
@@ -6163,7 +6444,7 @@ UI.renderPessoas = function(){
         <span class="dx-stat-ico ${col}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></span>
         <div class="dx-stat-tit">${lab}</div>
         <div class="dx-stat-sub">${sub||'&nbsp;'}</div>
-        <div class="dx-stat-num">${String(num).padStart(2,'0')}</div>
+        <div class="dx-stat-num">${num===0?'0':String(num).padStart(2,'0')}</div>
       </div>`;
     const idxAnoRecorde = dataAnos.indexOf(Math.max(...dataAnos));
     const idxMesComum = admPorMes.indexOf(Math.max(...admPorMes));
@@ -6177,7 +6458,7 @@ UI.renderPessoas = function(){
     destroyChart('contratacoes');
     UI.chartInstances.contratacoes = new Chart($('#chartContratacoes'), {
       type:'bar',
-      data:{ labels:labelsAnos, datasets:[{ data:dataAnos, backgroundColor:(c)=>gradV(c.chart.ctx,c.chart.chartArea,'#1C1B1A','rgba(28,27,26,.5)'), borderRadius:999, borderSkipped:false, barPercentage:.55 }] },
+      data:{ labels:labelsAnos, datasets:[{ data:dataAnos, backgroundColor:'#D65C6E', hoverBackgroundColor:'#C15363', borderRadius:999, borderSkipped:false, barPercentage:.55 }] },
       options:{
         responsive:true, maintainAspectRatio:false,
         scales:{ x:CHART_AXIS_X, y:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}} },
@@ -6188,7 +6469,7 @@ UI.renderPessoas = function(){
     destroyChart('admissoes');
     UI.chartInstances.admissoes = new Chart($('#chartAdmissoes'), {
       type:'bar',
-      data:{ labels:MESES_CAP, datasets:[{ data:admPorMes, backgroundColor:'#D6B15C', borderRadius:999, borderSkipped:false, barPercentage:.6 }] },
+      data:{ labels:MESES_CAP, datasets:[{ data:admPorMes, backgroundColor:'#CBCBCB', hoverBackgroundColor:'#B5B5B5', borderRadius:999, borderSkipped:false, barPercentage:.6 }] },
       options:{
         responsive:true, maintainAspectRatio:false,
         scales:{ x:CHART_AXIS_X, y:{...CHART_AXIS_Y, beginAtZero:true, ticks:{...CHART_AXIS_Y.ticks, precision:0}} },
@@ -6196,29 +6477,46 @@ UI.renderPessoas = function(){
       }
     });
 
-    // ---------- linha do tempo: agrupada por ano, cada linha com foto, nome, setor e cargo ----------
-    const porAno = {};
-    cs.forEach(c=>{ const a=pd(c.admissao).getFullYear(); (porAno[a]=porAno[a]||[]).push(c); });
-    const anosOrdenados = Object.keys(porAno).map(Number).sort((a,b)=>b-a);
-    $('#contratacoesTimeline').innerHTML = anosOrdenados.map(ano=>{
-      const lista = porAno[ano].slice().sort((a,b)=>a.admissao.localeCompare(b.admissao));
-      return `
-      <div class="casa-anos-sep"><span>${ano}</span><span class="dept-line"></span></div>` +
-      lista.map(c=>{
-        const setorInfo = SETORES_BRAND.find(s=>s.nome===c.departamento)||{};
-        const cor = setorInfo.cor || '#6E6C68';
-        return `
-        <a href="#/colab/${c.id}" class="adm-row">
-          <div class="mini-av adm-row-av">${avatarInner({nome:c.nome, foto:c.foto})}</div>
-          <span class="adm-nome">${esc(c.nome)}</span>
-          <span class="adm-setor"><span class="adm-setor-dot" style="background:${cor}"></span>${esc(c.departamento)}</span>
-          <span class="adm-cargo">${esc(c.funcao)}</span>
-          <span class="adm-data">${fmt(c.admissao)}</span>
-        </a>`;
-      }).join('');
-    }).join('');
+    this.renderAdmTimeline();
     return;
   }
+};
+
+// ---------- linha do tempo de admissões: filtro por ano, sem tocar nos gráficos ----------
+UI.renderAdmTimeline = function(){
+  const cs = Store.data.colaboradores.filter(c=>c.ativo!==false);
+  const anoAtual = hoje().getFullYear();
+  const porAno = {};
+  cs.forEach(c=>{ const a=pd(c.admissao).getFullYear(); (porAno[a]=porAno[a]||[]).push(c); });
+  const anosOrdenados = Object.keys(porAno).map(Number).sort((a,b)=>b-a);
+  if(!anosOrdenados.includes(this.admFiltroAno)){
+    this.admFiltroAno = anosOrdenados.includes(anoAtual) ? anoAtual : anosOrdenados[0];
+  }
+
+  $('#admFiltroAno').innerHTML = anosOrdenados.map(ano=>
+    `<button class="chip ${this.admFiltroAno===ano?'on':''}" data-ano="${ano}">${ano}<b>${porAno[ano].length}</b></button>`
+  ).join('');
+  $$('#admFiltroAno .chip').forEach(chip=>{
+    chip.onclick = ()=>{ this.admFiltroAno = Number(chip.dataset.ano); this.renderAdmTimeline(); };
+  });
+
+  const lista = (porAno[this.admFiltroAno]||[]).slice().sort((a,b)=>a.admissao.localeCompare(b.admissao));
+  $('#contratacoesTimeline').innerHTML = `
+    <div class="adm-row adm-head">
+      <span style="grid-column:1/3">Colaborador</span><span>Setor</span><span>Cargo</span><span style="text-align:right">Admissão</span>
+    </div>` +
+    (lista.length ? lista.map(c=>{
+      const setorInfo = SETORES_BRAND.find(s=>s.nome===c.departamento)||{};
+      const cor = setorInfo.cor || '#6E6C68';
+      return `
+      <a href="#/colab/${c.id}" class="adm-row">
+        <div class="mini-av adm-row-av">${avatarInner({nome:c.nome, foto:c.foto})}</div>
+        <span class="adm-nome">${esc(c.nome)}</span>
+        <span class="adm-setor"><span class="adm-setor-dot" style="background:${cor}"></span>${esc(c.departamento)}</span>
+        <span class="adm-cargo">${esc(c.funcao)}</span>
+        <span class="adm-data">${fmt(c.admissao)}</span>
+      </a>`;
+    }).join('') : `<div class="ag-vazio">Nenhuma admissão em ${this.admFiltroAno}.</div>`);
 };
 
 UI.renderRankCasa = function(){
