@@ -3077,16 +3077,24 @@ const SS = safeStorage('sessionStorage');
 const REGRAS = { DIAS_CONTABEIS: 30, DIAS_FOLGAS: 22, ALERTA_VENC_DIAS: 120 };
 
 const Store = {
+  // 'local' (localStorage) | 'node' (API Node/Express — server/) | 'postgrest' (alternativa)
   driver: 'local',
-  pgUrl: '/api',              // ex.: https://ferias.suaempresa.com/api (PostgREST via Traefik)
+  apiUrl: 'http://localhost:3333', // base do backend Node (produção: proxie via '/api')
+  pgUrl: '/api',              // (só p/ driver 'postgrest')
   key: 'goferias_v4',
   data: null,
+  vazio: () => ({ colaboradores:[], periodos:[], ferias:[], folgas:[], usuarios:[], solicitacoes:[], auditoria:[] }),
 
   async init(){
+    if(this.driver==='node'){
+      // as rotas exigem login; pré-login fica vazio. Dados completos após o login (nodeLoad).
+      this.data = this.vazio();
+      return;
+    }
     if(this.driver==='postgrest'){
       // pré-login: só o que o role `anon` pode ler (colaboradores p/ o form público).
       // O dataset completo é carregado por pgLoad() logo após o login.
-      this.data = { colaboradores:[], periodos:[], ferias:[], folgas:[], usuarios:[], solicitacoes:[], auditoria:[] };
+      this.data = this.vazio();
       try{
         const r = await fetch(`${this.pgUrl}/colaboradores?ativo=eq.true&select=id,nome,funcao,departamento,ativo&order=nome`, {headers:this.pgHeaders(false)});
         if(r.ok) this.data.colaboradores = await r.json();
@@ -3178,6 +3186,32 @@ const Store = {
     return r.json().catch(()=>null);
   },
 
+  /* --- adaptador do backend Node (server/) --- */
+  apiHeaders(json=true){
+    const h = json ? {'Content-Type':'application/json'} : {};
+    if(Auth.token) h['Authorization'] = 'Bearer '+Auth.token;
+    return h;
+  },
+  async apiFetch(path, opts={}){
+    const r = await fetch(this.apiUrl+path, opts);
+    if(r.status===401){ Auth.logout(); throw new Error('sessão expirada'); }
+    if(!r.ok) throw new Error((await r.json().catch(()=>({}))).message || 'Falha na operação');
+    return r.status===204 ? null : r.json();
+  },
+  async nodeLoad(){
+    const g = p => this.apiFetch(p, {headers:this.apiHeaders(false)}).catch(()=>[]);
+    const [c,p,f,gg,u,s] = await Promise.all([
+      g('/colaboradores'), g('/periodos_aquisitivos'), g('/ferias_oficiais'),
+      g('/folgas'), g('/usuarios'), g('/solicitacoes'),
+    ]);
+    this.data = { colaboradores:c||[], periodos:p||[], ferias:f||[], folgas:gg||[], usuarios:u||[], solicitacoes:s||[], auditoria:[] };
+  },
+  nodeInsert(table,row){ return this.apiFetch(`/${this.pgTable(table)}`, {method:'POST', headers:this.apiHeaders(), body:JSON.stringify(row)}); },
+  nodeUpdate(table,id,patch){ return this.apiFetch(`/${this.pgTable(table)}/${id}`, {method:'PATCH', headers:this.apiHeaders(), body:JSON.stringify(patch)}); },
+  nodeDelete(table,id){ return this.apiFetch(`/${this.pgTable(table)}/${id}`, {method:'DELETE', headers:this.apiHeaders(false)}); },
+  // carrega o dataset completo conforme o driver remoto (após o login)
+  async carregarRemoto(){ if(this.driver==='node') return this.nodeLoad(); if(this.driver==='postgrest') return this.pgLoad(); },
+
   /* --- Auditoria no modo local (no PostgREST, triggers fazem isso) --- */
   logAudit(acao, tabela, registro_id, detalhe, dados_antes=null, dados_depois=null){
     if(this.driver!=='local') return;
@@ -3191,14 +3225,15 @@ const Store = {
     this.save();
   },
   async getAudit(){
+    if(this.driver==='node') return this.apiFetch('/auditoria?limit=500', {headers:this.apiHeaders(false)}).catch(()=>[]);
     if(this.driver==='postgrest') return this.pgAudit();
     return this.data.auditoria;
   },
 
-  /* --- API unificada usada pela UI (mesma assinatura nos dois modos) --- */
+  /* --- API unificada usada pela UI (mesma assinatura nos 3 modos) --- */
   async insert(table,row,detalhe=''){
-    if(this.driver==='postgrest'){
-      const saved = await this.pgInsert(table,row);        // servidor gera id + auditoria (trigger)
+    if(this.driver!=='local'){
+      const saved = this.driver==='node' ? await this.nodeInsert(table,row) : await this.pgInsert(table,row);
       (this.data[table] = this.data[table] || []).push(saved); // espelha em memória p/ a UI
       return saved;
     }
@@ -3208,8 +3243,8 @@ const Store = {
     this.save(); return row;
   },
   async update(table,id,patch,detalhe=''){
-    if(this.driver==='postgrest'){
-      const saved = await this.pgUpdate(table,id,patch);
+    if(this.driver!=='local'){
+      const saved = this.driver==='node' ? await this.nodeUpdate(table,id,patch) : await this.pgUpdate(table,id,patch);
       const obj = (this.data[table]||[]).find(r=>r.id===id);
       if(obj) Object.assign(obj, saved || patch);          // espelha em memória p/ a UI
       return obj;
@@ -3222,8 +3257,8 @@ const Store = {
     return obj;
   },
   async remove(table,id,detalhe=''){
-    if(this.driver==='postgrest'){
-      await this.pgDelete(table,id);
+    if(this.driver!=='local'){
+      if(this.driver==='node') await this.nodeDelete(table,id); else await this.pgDelete(table,id);
       if(this.data[table]) this.data[table] = this.data[table].filter(r=>r.id!==id);
       return;
     }
@@ -3262,7 +3297,18 @@ const Auth = {
 
   async login(email, senha){
     email = email.trim().toLowerCase();
-    if(Store.driver==='postgrest'){
+    if(Store.driver==='node'){
+      const r = await fetch(Store.apiUrl+'/auth/login',{method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email, senha})});
+      if(!r.ok){
+        const e = await r.json().catch(()=>({}));
+        throw new Error(e.message || 'E-mail ou senha inválidos');
+      }
+      const d = await r.json();
+      this.user = {nome:d.nome, email:d.email, papel:d.papel};
+      this.token = d.token;
+    } else if(Store.driver==='postgrest'){
       const r = await fetch(Store.pgUrl+'/rpc/login',{method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({email, senha})});
@@ -4342,7 +4388,7 @@ const Actions = {
     await Store.insert(table,{periodo_id:perId,inicio:ini,fim,dias,obs},
       `${tipo==='ferias'?'Férias':'Folga'} de ${dias} dia(s) — ${c?.nome} · ${fmt(ini)} a ${fmt(fim)}`);
     if(tipo==='ferias'){
-      if(Store.driver==='postgrest'){
+      if(Store.driver!=='local'){
         await Store.update('periodos', perId, status==='pago'
           ? {situacao:'pago', pago_em:iso(hoje())}
           : {situacao:'programado', pago_em:null});
@@ -4397,7 +4443,7 @@ const Actions = {
     const mudou = Object.keys(depois).filter(k=>antes[k]!==depois[k]);
     const fotoMudou = UI._fotoPendente!==undefined && (UI._fotoPendente||null)!==(c.foto||null);
     if(!mudou.length && !fotoMudou){ Modals.close(); return; }
-    if(Store.driver==='postgrest'){
+    if(Store.driver!=='local'){
       const patch = {...depois};
       if(fotoMudou) patch.foto = UI._fotoPendente || null;
       Store.update('colaboradores', cid, patch)
@@ -4432,7 +4478,7 @@ const Actions = {
       ok:'Reativar'
     });
     if(!ok) return;
-    if(Store.driver==='postgrest'){
+    if(Store.driver!=='local'){
       try{ await Store.update('colaboradores', cid, {ativo: !inativando}); }
       catch(e){ toast('Erro: '+e.message); return; }
       toast(inativando?'Colaborador inativado':'Colaborador reativado ✓');
@@ -4460,7 +4506,7 @@ const Actions = {
     if(usadoSem+dias>cap_ && !(await Modals.confirm({titulo:'Passa do limite do período', message:`Esta edição passa de ${cap_} dias no período (${usadoSem}+${dias}). Salvar mesmo assim?`, ok:'Salvar'}))) return;
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     const antes = `${fmt(r.inicio)} a ${fmt(r.fim)} (${r.dias} dias)`;
-    if(Store.driver==='postgrest'){
+    if(Store.driver!=='local'){
       try{
         await Store.update(table, id, {inicio:ini, fim, dias, obs});
         if(table==='ferias'){
@@ -4494,7 +4540,7 @@ const Actions = {
     if(p.situacao==='acumulando'){ toast('Período ainda em acumulação — não pode ser pago.'); return; }
     if(!Dom.feriasDe(perId).length){ toast('Lance ao menos um gozo antes de marcar como pago.'); return; }
     const c = Store.data.colaboradores.find(x=>x.id===cid);
-    if(Store.driver==='postgrest'){
+    if(Store.driver!=='local'){
       try{ await Store.update('periodos', perId, {situacao:'pago', pago_em:iso(hoje())}); }
       catch(e){ toast('Erro: '+e.message); return; }
       toast('Período marcado como pago ✓'); UI.renderProfile(cid); UI.renderDir(); return;
@@ -4512,7 +4558,7 @@ const Actions = {
     if(!p) return;
     if(!(await Modals.confirm({titulo:'Reabrir período?', message:'A marcação de pagamento será removida.', ok:'Reabrir'}))) return;
     const c = Store.data.colaboradores.find(x=>x.id===cid);
-    if(Store.driver==='postgrest'){
+    if(Store.driver!=='local'){
       try{ await Store.update('periodos', perId, {situacao: Dom.feriasDe(perId).length?'programado':'aberto', pago_em:null}); }
       catch(e){ toast('Erro: '+e.message); return; }
       toast('Período reaberto'); UI.renderProfile(cid); UI.renderDir(); return;
@@ -4531,19 +4577,27 @@ const Actions = {
           papel=$('#uPapel').value, senha=$('#uSenha').value;
     if(!nome||!email){ toast('Preencha nome e e-mail.'); return; }
     const foto = UI._userFotoPendente;
-    if(Store.driver==='postgrest'){
+    if(Store.driver!=='local'){
       (async()=>{
         try{
           if(id){
-            await Store.update('usuarios', id, {nome, papel, ...(foto!==undefined?{foto}:{})});
-            if(senha) await Store.pgRpc('alterar_senha', {usuario_id:id, nova_senha:senha});
+            if(Store.driver==='node'){
+              await Store.update('usuarios', id, {nome, papel, ...(foto!==undefined?{foto}:{}), ...(senha?{senha}:{})});
+            } else {
+              await Store.update('usuarios', id, {nome, papel, ...(foto!==undefined?{foto}:{})});
+              if(senha) await Store.pgRpc('alterar_senha', {usuario_id:id, nova_senha:senha});
+            }
             if(Auth.user.email===email){ Auth.user.nome=nome; Auth.persist(); atualizarAvatarSidebar(); }
             toast('Usuário atualizado ✓');
           } else {
             if(!senha){ toast('Defina uma senha para o novo usuário.'); return; }
-            const novo = await Store.pgRpc('criar_usuario', {nome, email, senha, papel, foto: foto||null});
-            const row = Array.isArray(novo) ? novo[0] : novo;
-            if(row) (Store.data.usuarios = Store.data.usuarios || []).push(row);
+            if(Store.driver==='node'){
+              await Store.insert('usuarios', {nome, email, senha, papel, foto: foto||null});
+            } else {
+              const novo = await Store.pgRpc('criar_usuario', {nome, email, senha, papel, foto: foto||null});
+              const row = Array.isArray(novo) ? novo[0] : novo;
+              if(row) (Store.data.usuarios = Store.data.usuarios || []).push(row);
+            }
             toast('Usuário criado ✓');
           }
           Modals.close(); UI.renderUsers();
@@ -4578,7 +4632,7 @@ const Actions = {
     if(!u) return;
     if(u.email===Auth.user.email){ toast('Você não pode remover o próprio acesso.'); return; }
     if(!(await Modals.confirm({titulo:'Remover acesso?', message:`${u.nome} (${u.email}) perderá o acesso ao sistema.`, ok:'Remover', perigo:true}))) return;
-    if(Store.driver==='postgrest'){
+    if(Store.driver!=='local'){
       try{ await Store.remove('usuarios', id); }
       catch(e){ toast('Erro: '+e.message); return; }
       toast('Usuário removido'); UI.renderUsers(); return;
@@ -6028,6 +6082,19 @@ UI.decidirSolic = async function(id, aprovar){
   if(!Auth.podeEditar()){ toast('Seu acesso é somente leitura.'); return; }
   const s = (Store.data.solicitacoes||[]).find(x=>x.id===id);
   if(!s || s.status!=='pendente') return;
+  // no modo node, o servidor faz tudo (lança a folga + status + e-mail) em /decidir
+  if(Store.driver==='node'){
+    if(aprovar){
+      const conflito = Actions.conflitoDatas(s.colaborador_id, s.inicio, s.fim);
+      if(conflito){ toast(`Conflito: já existe ausência de ${fmt(conflito.inicio)} a ${fmt(conflito.fim)}.`); return; }
+    }
+    try{
+      await Store.apiFetch(`/solicitacoes/${id}/decidir`, {method:'POST', headers:Store.apiHeaders(), body:JSON.stringify({aprovar})});
+      await Store.nodeLoad();  // recarrega: folga criada + status atualizado no servidor
+    }catch(e){ toast('Erro: '+e.message); return; }
+    toast(aprovar ? 'Solicitação aprovada ✓ — folga lançada' : 'Solicitação recusada');
+    UI.renderSolic(); UI.renderAgenda(); return;
+  }
   if(aprovar){
     const conflito = Actions.conflitoDatas(s.colaborador_id, s.inicio, s.fim);
     if(conflito){ toast(`Conflito: já existe ausência de ${fmt(conflito.inicio)} a ${fmt(conflito.fim)}.`); return; }
@@ -6039,7 +6106,7 @@ UI.decidirSolic = async function(id, aprovar){
       `Folga aprovada — ${s.nome} · ${fmt(s.inicio)} a ${fmt(s.fim)} (${s.dias} dias)`);
   }
   const patch = { status: aprovar ? 'aprovada' : 'recusada', decidido_em: new Date().toISOString(), decidido_por: Auth.user?.nome || '' };
-  if(Store.driver==='postgrest'){
+  if(Store.driver!=='local'){
     try{ await Store.update('solicitacoes', id, patch); }
     catch(e){ toast('Erro: '+e.message); return; }
   } else {
@@ -6855,7 +6922,7 @@ function wireSolicPublic(){
     if(!dias||dias<1) return fail('Informe quantos dias.');
     const c=(Store.data.colaboradores||[]).find(x=>x.id===cid);
     const ok=()=>{ $('#solicForm').style.display='none'; $('#solOk').style.display=''; };
-    if(Store.driver==='postgrest'){
+    if(Store.driver!=='local'){
       // envio anônimo (sem token) — o RLS permite INSERT do anon em solicitacoes
       Store.insert('solicitacoes', {colaborador_id:cid, nome:c?c.nome:'', tipo:'folga', inicio:ini, fim, dias, motivo, aval_coordenador:avalCoordenador})
         .then(ok).catch(ex=>fail('Não foi possível enviar: '+ex.message));
@@ -6885,7 +6952,7 @@ function wireSolicPublic(){
     return;
   }
 
-  if(Auth.restore()){ if(Store.driver==='postgrest') await Store.pgLoad(); bootApp(); return; }
+  if(Auth.restore()){ if(Store.driver!=='local') await Store.carregarRemoto(); bootApp(); return; }
 
   // --- login obrigatório ---
   const wrap=$('#loginWrap');
@@ -6898,7 +6965,7 @@ function wireSolicPublic(){
     const btn=e.target.querySelector('button'); btn.disabled=true; btn.textContent='Entrando...';
     try{
       await Auth.login($('#loginEmail').value, $('#loginSenha').value);
-      if(Store.driver==='postgrest') await Store.pgLoad();
+      if(Store.driver!=='local') await Store.carregarRemoto();
       wrap.style.display='none';
       bootApp();
     }catch(ex){
