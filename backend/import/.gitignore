@@ -1,0 +1,7 @@
+# NUNCA comitar dados reais de RH (PII) nem as saídas geradas
+saida/
+*.xlsx
+*.xls
+dados.json
+inserts.sql
+REVISAR.txt
