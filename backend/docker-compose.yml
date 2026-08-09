@@ -1,0 +1,58 @@
+# ============================================================================
+# Go Férias! — stack local (espelha produção: Postgres + PostgREST + proxy).
+#   db        → PostgreSQL 16 (schema/auth/seed via ./sql, roda 1x no init)
+#   postgrest → API REST automática sobre o schema `api`
+#   web       → nginx: serve o index.html e faz proxy /api → postgrest
+#
+# Subir:   cp .env.example .env  &&  docker compose up -d
+# Frontend em  http://localhost:8080   (troque Store.driver p/ 'postgrest')
+# API direta   http://localhost:3000
+# Reiniciar do zero (reaplica ./sql):  docker compose down -v && docker compose up -d
+# ============================================================================
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      AUTHENTICATOR_PASSWORD: ${AUTHENTICATOR_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d:ro   # 00_init.sh, 01..05 rodam em ordem
+      - dbdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgrest:
+    image: postgrest/postgrest:v12.2.3
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${AUTHENTICATOR_PASSWORD}@db:5432/${POSTGRES_DB}
+      PGRST_DB_SCHEMAS: api
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+  web:
+    image: nginx:alpine
+    volumes:
+      - ../index.html:/usr/share/nginx/html/index.html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - postgrest
+    ports:
+      - "8080:80"
+
+volumes:
+  dbdata:
