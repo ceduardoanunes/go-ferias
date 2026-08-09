@@ -34,7 +34,7 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "3000:3000"
+      - "${API_PORT:-3000}:3000"
 
 volumes:
   dbdata:

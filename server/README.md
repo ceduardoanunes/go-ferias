@@ -4,9 +4,10 @@ API do sistema em **Node.js + Express + Prisma (PostgreSQL)**, com autenticaçã
 **JWT**, controle de acesso por papel e **envio de e-mail via SMTP** — a stack
 escolhida pelo TI (que fará a manutenção).
 
-> ⚠️ **Escrito, mas ainda não executado** (a máquina de desenvolvimento não tinha
-> Node). Rode e revise antes de considerar pronto. É uma base idiomática,
-> pensada para o time evoluir.
+> ✅ **Testado de ponta a ponta** (Docker + Postgres): login/JWT, CRUD,
+> controle por papel (403/401), fluxo de solicitação → aprovação → folga,
+> auditoria e o caminho de e-mail (SMTP). Base idiomática, pronta para o time
+> evoluir.
 >
 > Existe também uma alternativa em `../backend/` (PostgreSQL + PostgREST). Esta
 > pasta (`server/`) é a **escolhida**.
