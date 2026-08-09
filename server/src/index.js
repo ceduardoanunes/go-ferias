@@ -1,0 +1,53 @@
+// Servidor Express do Go Férias! (Node + Prisma).
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+
+const ser = require('./serialize');
+const { crudRouter } = require('./routes/crud');
+const { smtpAtivo } = require('./mailer');
+
+const app = express();
+app.use(cors());
+app.use(express.json({ limit: '5mb' })); // fotos em base64 podem ser grandes
+
+// saúde
+app.get('/health', (req, res) => res.json({ ok: true, smtp: smtpAtivo }));
+
+// autenticação
+app.use('/auth', require('./routes/auth'));
+
+// recursos simples (CRUD com papel)
+app.use('/colaboradores', crudRouter({
+  model: 'colaborador', tabela: 'colaboradores',
+  serializar: ser.colaborador, desserializar: ser.paraPrisma.colaboradores,
+  readRoles: ['admin', 'rh', 'leitura'], writeRoles: ['admin'], orderBy: { nome: 'asc' },
+}));
+app.use('/periodos_aquisitivos', crudRouter({
+  model: 'periodoAquisitivo', tabela: 'periodos_aquisitivos',
+  serializar: ser.periodo, desserializar: ser.paraPrisma.periodos,
+  readRoles: ['admin', 'rh', 'leitura'], writeRoles: ['admin', 'rh'],
+}));
+app.use('/ferias_oficiais', crudRouter({
+  model: 'feriasOficial', tabela: 'ferias_oficiais',
+  serializar: ser.lancamento, desserializar: ser.paraPrisma.lancamentos,
+  readRoles: ['admin', 'rh', 'leitura'], writeRoles: ['admin', 'rh'],
+}));
+app.use('/folgas', crudRouter({
+  model: 'folga', tabela: 'folgas',
+  serializar: ser.lancamento, desserializar: ser.paraPrisma.lancamentos,
+  readRoles: ['admin', 'rh', 'leitura'], writeRoles: ['admin', 'rh'],
+}));
+
+// recursos com regra especial
+app.use('/usuarios', require('./routes/usuarios'));
+app.use('/solicitacoes', require('./routes/solicitacoes'));
+app.use('/auditoria', require('./routes/auditoria'));
+
+// 404
+app.use((req, res) => res.status(404).json({ message: 'Rota não encontrada' }));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Go Férias! API rodando na porta ${PORT}  (SMTP ${smtpAtivo ? 'ativo' : 'não configurado'})`);
+});

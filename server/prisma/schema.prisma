@@ -1,0 +1,142 @@
+// Modelo de dados do Go Férias! (Prisma + PostgreSQL)
+// Reflete as entidades que o frontend usa. Tabelas em snake_case (@@map/@map)
+// para manter o mesmo formato de dados que o app já consome.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Papel {
+  admin
+  rh
+  leitura
+}
+
+enum PeriodoSituacao {
+  acumulando
+  programado
+  aberto
+  pago
+}
+
+enum SolicitacaoStatus {
+  pendente
+  aprovada
+  recusada
+}
+
+enum AusenciaTipo {
+  ferias
+  folga
+}
+
+model Usuario {
+  id        String   @id @default(uuid())
+  nome      String
+  email     String   @unique
+  senhaHash String   @map("senha_hash") // bcrypt — nunca texto puro
+  papel     Papel    @default(leitura)
+  foto      String?
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  @@map("usuarios")
+}
+
+model Colaborador {
+  id           String              @id @default(uuid())
+  nome         String
+  email        String? // NOVO (pedido do TI) — usado para notificações por e-mail
+  funcao       String
+  departamento String
+  unidade      String
+  regime       String
+  admissao     DateTime            @db.Date
+  foto         String?
+  ativo        Boolean             @default(true)
+  periodos     PeriodoAquisitivo[]
+  solicitacoes Solicitacao[]
+
+  @@map("colaboradores")
+}
+
+model PeriodoAquisitivo {
+  id            String          @id @default(uuid())
+  colaboradorId String          @map("colaborador_id")
+  colaborador   Colaborador     @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+  inicio        DateTime        @db.Date
+  fim           DateTime        @db.Date
+  situacao      PeriodoSituacao @default(acumulando)
+  pagoEm        DateTime?       @map("pago_em") @db.Date
+  ferias        FeriasOficial[]
+  folgas        Folga[]
+
+  @@index([colaboradorId])
+  @@map("periodos_aquisitivos")
+}
+
+model FeriasOficial {
+  id        String            @id @default(uuid())
+  periodoId String            @map("periodo_id")
+  periodo   PeriodoAquisitivo @relation(fields: [periodoId], references: [id], onDelete: Cascade)
+  inicio    DateTime          @db.Date
+  fim       DateTime          @db.Date
+  dias      Int
+  obs       String            @default("")
+
+  @@index([periodoId])
+  @@map("ferias_oficiais")
+}
+
+model Folga {
+  id        String            @id @default(uuid())
+  periodoId String            @map("periodo_id")
+  periodo   PeriodoAquisitivo @relation(fields: [periodoId], references: [id], onDelete: Cascade)
+  inicio    DateTime          @db.Date
+  fim       DateTime          @db.Date
+  dias      Int
+  obs       String            @default("")
+
+  @@index([periodoId])
+  @@map("folgas")
+}
+
+model Solicitacao {
+  id              String            @id @default(uuid())
+  colaboradorId   String?           @map("colaborador_id")
+  colaborador     Colaborador?      @relation(fields: [colaboradorId], references: [id], onDelete: SetNull)
+  nome            String            @default("")
+  tipo            AusenciaTipo      @default(folga)
+  inicio          DateTime          @db.Date
+  fim             DateTime          @db.Date
+  dias            Int
+  motivo          String            @default("")
+  avalCoordenador Boolean           @default(false) @map("aval_coordenador")
+  status          SolicitacaoStatus @default(pendente)
+  criadoEm        DateTime          @default(now()) @map("criado_em")
+  decididoEm      DateTime?         @map("decidido_em")
+  decididoPor     String?           @map("decidido_por")
+
+  @@index([status])
+  @@map("solicitacoes")
+}
+
+model Auditoria {
+  id           String   @id @default(uuid())
+  ts           DateTime @default(now())
+  usuarioNome  String?  @map("usuario_nome")
+  usuarioEmail String?  @map("usuario_email")
+  acao         String // inserir|atualizar|excluir|login|logout|login_falhou
+  tabela       String?
+  registroId   String?  @map("registro_id")
+  detalhe      String?
+  dadosAntes   Json?    @map("dados_antes")
+  dadosDepois  Json?    @map("dados_depois")
+
+  @@index([ts])
+  @@map("auditoria")
+}
