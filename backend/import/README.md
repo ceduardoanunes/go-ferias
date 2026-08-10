@@ -33,12 +33,28 @@ Gera na pasta `saida/`:
 
 ## Carregar no banco
 
-Depois de revisar, há duas formas:
-1. **Junto com a subida do backend:** copie o `inserts.sql` (renomeado, ex.
-   `07_dados_reais.sql`) para `backend/sql/` — ele roda na primeira inicialização.
-   (Remova/ajuste o `04_seed.sql` para não misturar demo com dado real.)
-2. **Com o backend já no ar:** rode o `inserts.sql` via `psql` no container do
-   Postgres.
+### ✅ Backend Node/Prisma (o que está no Render) — use este
+Envie o `dados.json` **pela API** com o `enviar_para_api.py`. Não precisa de Node,
+psql nem Prisma na sua máquina — só Python (que o parser já usa):
+
+```bash
+py enviar_para_api.py saida/dados.json \
+   --url https://SEU-APP.onrender.com \
+   --email admin@goegrow.com.br --senha demo
+```
+
+- `--dry-run` mostra o que faria sem enviar nada (teste antes).
+- É **seguro re-rodar**: colaboradores cujo nome já existe são **pulados** (não duplica).
+- `empresa` (setor da planilha) vira `departamento`; `unidade`/`regime` usam padrões
+  ajustáveis no topo do script.
+
+> As **folgas do REVISAR.txt** (venda pela MP, licença, banco de horas) **não** são
+> enviadas — lance à mão no app depois da decisão do RH.
+
+### Backend legado (PostgREST em `backend/sql/`) — só se ainda usar aquele
+O `inserts.sql` gerado é para o schema `api.` do PostgREST **antigo**, e **não**
+funciona no backend Node/Prisma. Se ainda usar o legado: copie o `inserts.sql`
+(renomeado, ex. `07_dados_reais.sql`) para `backend/sql/`, ou rode via `psql`.
 
 ## ⚠️ Privacidade
 
