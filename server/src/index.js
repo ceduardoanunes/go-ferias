@@ -1,5 +1,7 @@
 // Servidor Express do Go Férias! (Node + Prisma).
 require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 
@@ -43,6 +45,13 @@ app.use('/folgas', crudRouter({
 app.use('/usuarios', require('./routes/usuarios'));
 app.use('/solicitacoes', require('./routes/solicitacoes'));
 app.use('/auditoria', require('./routes/auditoria'));
+
+// Frontend (arquivo único). Em produção (Render) o index.html fica na raiz do repo,
+// então a mesma URL entrega o site e a API. Se não existir (ex.: Docker só da API), ignora.
+const FRONT = path.join(__dirname, '..', '..', 'index.html');
+if (fs.existsSync(FRONT)) {
+  app.get('/', (req, res) => res.sendFile(FRONT));
+}
 
 // 404
 app.use((req, res) => res.status(404).json({ message: 'Rota não encontrada' }));

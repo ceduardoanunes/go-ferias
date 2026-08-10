@@ -1,0 +1,31 @@
+# Blueprint do Render — sobe a API Node + o frontend + PostgreSQL num projeto só.
+# Como usar: no Render → "New +" → "Blueprint" → conecte este repositório.
+# O Render lê este arquivo e cria tudo automaticamente (o DATABASE_URL é injetado sozinho).
+
+databases:
+  - name: goferias-db
+    databaseName: goferias
+    user: goferias
+    plan: free            # Postgres gratuito (expira em ~90 dias; depois é pago)
+
+services:
+  - type: web
+    name: goferias
+    runtime: node
+    plan: free            # a API "dorme" sem uso e acorda em ~30s no 1º acesso
+    region: oregon
+    healthCheckPath: /health
+    buildCommand: cd server && npm install && npx prisma generate
+    # cria/atualiza as tabelas, roda o seed (idempotente) e sobe a API que também serve o site
+    startCommand: cd server && npx prisma db push --skip-generate && node prisma/seed.js && node src/index.js
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: goferias-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true   # o Render gera um segredo forte automaticamente
+      - key: JWT_EXPIRA
+        value: 12h
+      - key: NODE_VERSION
+        value: "20"

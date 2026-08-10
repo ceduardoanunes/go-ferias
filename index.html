@@ -3078,8 +3078,10 @@ const REGRAS = { DIAS_CONTABEIS: 30, DIAS_FOLGAS: 22, ALERTA_VENC_DIAS: 120 };
 
 const Store = {
   // 'local' (localStorage) | 'node' (API Node/Express — server/) | 'postgrest' (alternativa)
-  driver: 'local',
-  apiUrl: 'http://localhost:3333', // base do backend Node (produção: proxie via '/api')
+  // Detecta sozinho: aberto como arquivo (file://) → demo local; servido por http(s)
+  // (Render/produção) → API Node na MESMA origem (apiUrl vazio = mesmo domínio).
+  driver: (location.protocol === 'file:') ? 'local' : 'node',
+  apiUrl: (location.protocol === 'file:') ? 'http://localhost:3333' : '',
   pgUrl: '/api',              // (só p/ driver 'postgrest')
   key: 'goferias_v4',
   data: null,
