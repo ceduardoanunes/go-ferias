@@ -1,2 +1,12 @@
 .DS_Store
 .claude/settings.local.json
+
+# planilhas do RH — dados pessoais reais, NUNCA versionar
+*.xlsx
+~$*.xlsx
+
+# prints/temporários gerados em sessão
+_print-*.png
+
+# python
+__pycache__/
