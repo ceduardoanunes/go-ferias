@@ -755,7 +755,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .gozo-row:hover .gozo-del{opacity:1}
 .gozo-del:hover{color:var(--red);background:var(--red-soft)}
 .gozo-del svg{width:14px;height:14px}
-.none-yet{color:var(--faint);font-size:13px;padding:10px 0;font-style:italic}
+.none-yet{color:var(--faint);font-size:16px;padding:34px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
 
 /* calendar */
 .cal-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:16px}
@@ -1000,7 +1000,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 }
 .ag-item-dias.tipo-ferias{background:var(--red-soft);color:var(--red-deep)}
 .ag-item-dias.tipo-folga{background:var(--teal-soft);color:var(--teal)}
-.ag-vazio{color:var(--faint);font-size:13px;font-style:italic;padding:8px 0}
+.ag-vazio{color:var(--faint);font-size:16px;padding:34px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
 
 /* ---------- timeline / gantt por setor (visão temporal da agenda) ---------- */
 .ag-tl-panel{padding:26px 28px 24px}
@@ -1186,7 +1186,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .dx-search-item .mini-av{width:38px;height:38px;font-size:13px;flex:none}
 .dx-search-nome{font-weight:700;font-size:14px}
 .dx-search-sub{font-size:12px;color:var(--muted);margin-top:1px}
-.dx-search-vazio{padding:16px;color:var(--faint);font-size:13px;font-style:italic}
+.dx-search-vazio{padding:16px;color:var(--faint);font-size:13px}
 
 /* ausentes hoje — título vazado grande à esquerda + cards à direita */
 .dx-hoje-sec{display:flex;align-items:center;gap:40px;margin-bottom:26px}
@@ -1248,7 +1248,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .sol-ac-item:hover,.sol-ac-item.sel{background:var(--gray-soft)}
 .sol-ac-nome{font-weight:700;font-size:14px}
 .sol-ac-sub{font-size:12px;color:var(--muted);margin-top:1px}
-.sol-ac-vazio{padding:12px 14px;color:var(--faint);font-size:13px;font-style:italic}
+.sol-ac-vazio{padding:12px 14px;color:var(--faint);font-size:13px}
 .dx-stat{
   position:relative;flex:1 1 112px;min-width:104px;background:var(--card);border:1px solid rgba(28,27,26,.05);
   border-radius:20px;padding:36px 12px 24px;display:flex;flex-direction:column;align-items:center;
@@ -1349,7 +1349,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .dx-member .mini-av{width:50px;height:50px;font-size:15px}
 .dx-member-nome{font-size:12.5px;font-weight:700;line-height:1.2;max-width:82px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dx-member-sub{font-size:11px;color:var(--muted)}
-.dx-empty{color:var(--faint);font-size:13px;font-style:italic;padding:14px 0;text-align:center}
+.dx-empty{color:var(--faint);font-size:16px;padding:34px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
 
 /* calendário semanal (estilo agenda) */
 .dx-week-card{padding:24px 26px 18px}
@@ -1584,7 +1584,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .padrao-mes.tem{background:rgba(18,131,106,.07)}
 .padrao-mes-nome{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);text-transform:capitalize;margin-bottom:10px}
 .padrao-avs{display:flex;flex-wrap:wrap;gap:6px}
-.padrao-vazio{color:var(--faint);font-size:12px;font-style:italic}
+.padrao-vazio{color:var(--faint);font-size:12px}
 
 /* dashboard: ausências por setor — lista limpa em colunas */
 .dash-setor-list{display:grid;grid-template-columns:1fr 1fr;gap:2px 40px}
@@ -1706,7 +1706,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
   margin-left:auto;font-size:11px;font-weight:800;letter-spacing:0;text-transform:none;
   color:var(--muted);background:var(--gray-soft);border-radius:99px;padding:2px 9px;
 }
-.ag-setor-vazio{font-size:12.5px;font-style:italic;color:var(--faint);padding:6px 0}
+.ag-setor-vazio{font-size:12.5px;color:var(--faint);padding:6px 0}
 .ag-setor-col .ag-item{padding:11px 0;border-bottom:1px solid var(--line-soft)}
 .ag-setor-col .ag-item:last-child{border-bottom:none}
 .ag-setor-itens{display:grid;gap:2px}
@@ -1733,7 +1733,11 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .agt-per{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:left;display:flex;align-items:baseline;justify-content:flex-start;gap:7px}
 .agt-per-lab{font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--faint)}
 .agt2-linha .ag-item-dias{display:inline-block;min-width:64px;text-align:center;box-sizing:border-box;justify-self:center}
-.agt-vazio{color:var(--faint);font-style:italic;padding:30px 4px;text-align:center}
+.agt-vazio{color:var(--faint);font-size:16px;padding:34px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.dx-empty::before,.none-yet::before,.ag-vazio::before,.agt-vazio::before{
+  content:"";width:40px;height:40px;flex:none;
+  background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A6A39D' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><path d='m9 12 2 2 4-4'/></svg>") center/contain no-repeat;
+}
 @media(max-width:680px){
   .agt2-linha{grid-template-columns:1fr;gap:6px;text-align:left}
   .agt-per{text-align:left}
@@ -6009,7 +6013,7 @@ UI.renderDash = function(){
   const menosFolgas = folgasColab.slice().sort((a,b)=>a.dias-b.dias)[0];
   const ICO2 = {
     trofeu:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0Z"/><path d="M17 5h3v1.5a3.5 3.5 0 0 1-3.5 3.5M7 5H4v1.5A3.5 3.5 0 0 0 7.5 10"/>',
-    subir:'<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>',
+    subir:'<path d="M12 20V5"/><path d="m5 12 7-7 7 7"/>',
     descer:'<path d="M22 17 13.5 8.5 8.5 13.5 2 7"/><path d="M16 17h6v-6"/>'
   };
   const rankStat = (ico, tit, sub, num, href) => `
