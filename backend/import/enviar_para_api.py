@@ -88,7 +88,7 @@ def main():
             "nome": nome,
             "email": None,
             "funcao": p.get("funcao") or "",
-            "departamento": p.get("empresa") or "",   # empresa = setor → departamento
+            "departamento": p.get("setor") or p.get("empresa") or "",   # setor do app (mapeado da aba)
             "unidade": UNIDADE_PADRAO,
             "regime": REGIME_PADRAO,
             "admissao": p.get("admissao"),
@@ -105,6 +105,8 @@ def main():
         cid = colab["id"]
         criados += 1
         for per in p["periodos"]:
+            if per.get("pular"):                 # período degenerado/duplicado marcado no parse
+                continue
             _, pr = http(f"{base}/periodos_aquisitivos", token=token, method="POST", body={
                 "colaborador_id": cid,
                 "inicio": per["inicio"], "fim": per["fim"],

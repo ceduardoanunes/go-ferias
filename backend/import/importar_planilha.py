@@ -41,9 +41,36 @@ def norm(s):
     s = unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode()
     return s.strip().upper()
 
+# conectores que ficam minúsculos no meio do nome (não no começo)
+_CONECTORES = {'de', 'da', 'do', 'das', 'dos', 'e', 'di', 'du', 'del', 'la'}
+
+def titulo(nome):
+    """'DAVI ALVES (BAHAMAS)' -> 'Davi Alves (Bahamas)'. Conectores minúsculos.
+    Capitaliza a 1ª letra de cada palavra (mesmo após '(' ou '-') e abaixa o resto."""
+    def cap(w):
+        for i, ch in enumerate(w):
+            if ch.isalpha():
+                return w[:i] + ch.upper() + w[i + 1:].lower()
+        return w.lower()
+    def cap_hifen(w):                       # trata "ANA-MARIA" -> "Ana-Maria"
+        return '-'.join(cap(x) for x in w.split('-'))
+    partes = str(nome).strip().split()
+    out = []
+    for i, w in enumerate(partes):
+        base = norm(w).lower()
+        if i > 0 and base in _CONECTORES:
+            out.append(base)
+        else:
+            out.append(cap_hifen(w))
+    return ' '.join(out)
+
 def iso_data(dia, mes, ano):
     if ano < 100:                      # ano com 2 dígitos → 20YY
         ano += 2000
+    # valida: datas absurdas (mês>12, dia>31) são texto ambíguo → devolve None
+    # para o segmento cair no REVISAR em vez de derrubar o parser.
+    if not (1 <= mes <= 12) or not (1 <= dia <= 31):
+        return None
     return f"{ano:04d}-{mes:02d}-{dia:02d}"
 
 def parse_token_data(tok, ref_mes=None, ref_ano=None):
@@ -73,7 +100,7 @@ def parse_intervalo_ferias(txt):
     """
     if not txt:
         return None
-    t = txt.strip()
+    t = str(txt).strip()   # a célula pode vir como datetime; vira string (data solta não é intervalo → None)
     if norm(t) in ('X', ''):
         return None
     # precisa de duas datas separadas por a/à/A
@@ -137,7 +164,11 @@ def parse_folgas(txt):
                 ini = parse_token_data(mi.group(1), ref_mes=fm, ref_ano=fa)
                 dias = _soma_cont(cont) or _dias_intervalo(ini, fim)
                 if ini:
-                    folgas.append({'inicio': ini, 'fim': fim, 'dias': dias, 'obs': _limpa_obs(cont, seg)})
+                    motivo = _valida_folga(ini, fim, dias)
+                    if motivo:
+                        revisar.append(f'{obs}  [!{motivo}]')
+                    else:
+                        folgas.append({'inicio': ini, 'fim': fim, 'dias': dias, 'obs': _limpa_obs(cont, seg)})
                     continue
         if datas:
             # usa a última data como referência de mês/ano
@@ -148,7 +179,12 @@ def parse_folgas(txt):
                 todas = [d for d in todas if d]
                 if todas:
                     dias = _soma_cont(cont) or len(todas)
-                    folgas.append({'inicio': min(todas), 'fim': max(todas), 'dias': dias, 'obs': _limpa_obs(cont, seg)})
+                    ini2, fim2 = min(todas), max(todas)
+                    motivo = _valida_folga(ini2, fim2, dias)
+                    if motivo:
+                        revisar.append(f'{obs}  [!{motivo}]')
+                    else:
+                        folgas.append({'inicio': ini2, 'fim': fim2, 'dias': dias, 'obs': _limpa_obs(cont, seg)})
                     continue
         # não conseguiu extrair data → revisar
         revisar.append(obs)
@@ -188,6 +224,58 @@ def _limpa_obs(cont, seg):
     # observação curta preservando a contagem original entre parênteses
     return (cont.group(1).strip() if cont else re.sub(r'\s+', ' ', seg).strip())[:60]
 
+def _valida_folga(ini, fim, dias):
+    """Retorna None se a folga é coerente, senão o motivo p/ mandar ao REVISAR."""
+    from datetime import date
+    try:
+        d0 = date(int(ini[:4]), int(ini[5:7]), int(ini[8:10]))
+        d1 = date(int(fim[:4]), int(fim[5:7]), int(fim[8:10]))
+    except Exception:
+        return 'data inválida'
+    if d1 < d0:
+        return 'fim antes do início'
+    span = (d1 - d0).days + 1
+    if dias and dias > span:              # não dá pra tirar mais dias que o intervalo comporta
+        return f'{dias} dias num intervalo de {span}'
+    return None
+
+def revisar_incoerencias(p):
+    """Checagens CRUZADAS por pessoa: move p/ 'revisar' o que não dá pra confiar,
+    em vez de importar lixo (período degenerado/duplicado; folga idêntica a uma
+    férias do mesmo período — possível dupla contagem).
+
+    NÃO comparamos folga com a admissão: no grupo há troca de CNPJ (readmissão),
+    então períodos/folgas legítimos podem ser anteriores à admissão atual."""
+    from datetime import date
+    def d(iso):
+        try:
+            return date(int(iso[:4]), int(iso[5:7]), int(iso[8:10]))
+        except Exception:
+            return None
+    vistos = set()
+    inicios = set()
+    for per in p['periodos']:
+        pini, pfim = d(per['inicio']), d(per['fim'])
+        chave = (per['inicio'], per['fim'])
+        if pini and pfim and pfim <= pini:                       # 0/1 dia → lixo de readmissão
+            per['revisar'].append({'linha': 0, 'texto': f"período de 0/1 dia {per['inicio']}..{per['fim']} — NÃO importado"})
+            per['pular'] = True
+        elif chave in vistos:                                    # duplicado exato → lixo
+            per['revisar'].append({'linha': 0, 'texto': f"período duplicado {per['inicio']}..{per['fim']} — NÃO importado"})
+            per['pular'] = True
+        elif per['inicio'] in inicios:                           # mesmo início, fim diferente → conferir
+            per['revisar'].append({'linha': 0, 'texto': f"período com mesmo início de outro ({per['inicio']}) — conferir no app"})
+        vistos.add(chave)
+        inicios.add(per['inicio'])
+        fer_set = {(f['inicio'], f['fim']) for f in per['ferias']}
+        ok = []
+        for f in per['folgas']:
+            if (f['inicio'], f['fim']) in fer_set:
+                per['revisar'].append({'linha': 0, 'texto': f"{f['inicio']}..{f['fim']} ({f['dias']}d) [folga idêntica a uma férias]"})
+            else:
+                ok.append(f)
+        per['folgas'] = ok
+
 def parse_planilha(caminho):
     wb = openpyxl.load_workbook(caminho, data_only=True)
     ws = wb.active
@@ -200,9 +288,9 @@ def parse_planilha(caminho):
         D = ws.cell(r, 4).value               # admissão presente em toda linha do bloco
         if A and str(A).strip():              # início de um novo funcionário
             atual = {
-                'nome': str(A).strip(),
+                'nome': titulo(A),
                 'empresa': (str(ws.cell(r, 2).value).strip() if ws.cell(r, 2).value else ''),
-                'funcao': (str(ws.cell(r, 3).value).strip() if ws.cell(r, 3).value else ''),
+                'funcao': (titulo(str(ws.cell(r, 3).value).strip()) if ws.cell(r, 3).value else ''),
                 'admissao': (D.date().isoformat() if hasattr(D, 'date') else str(D)[:10]) if D else None,
                 'periodos': [],
             }
@@ -231,6 +319,8 @@ def parse_planilha(caminho):
         if rev:
             per['revisar'] = [{'linha': r, 'texto': x} for x in rev]
         atual['periodos'].append(per)
+    for p in pessoas:
+        revisar_incoerencias(p)
     return pessoas
 
 def gerar_sql(pessoas):
