@@ -4146,7 +4146,8 @@ const Modals = {
         <div class="field"><label>Setor</label>
           <select id="nDepto">${deps.map(d=>`<option>${esc(d)}</option>`).join('')}</select></div>
         <div class="field"><label>Unidade</label>
-          <select id="nUni">${unis.map(u=>`<option>${esc(u)}</option>`).join('')}</select></div>
+          <input id="nUni" list="uniList" placeholder="ex.: Granbery" autocomplete="off">
+          <datalist id="uniList">${unis.filter(Boolean).map(u=>`<option value="${esc(u)}"></option>`).join('')}</datalist></div>
       </div>
       <div class="field-row">
         <div class="field"><label>Regime</label>
@@ -4216,7 +4217,8 @@ const Modals = {
         <div class="field"><label>Setor</label>
           <select id="nDepto">${deps.map(d=>`<option${d===c.departamento?' selected':''}>${esc(d)}</option>`).join('')}</select></div>
         <div class="field"><label>Unidade</label>
-          <select id="nUni">${unis.map(u=>`<option${u===c.unidade?' selected':''}>${esc(u)}</option>`).join('')}</select></div>
+          <input id="nUni" list="uniList" value="${esc(c.unidade)}" placeholder="ex.: Granbery" autocomplete="off">
+          <datalist id="uniList">${unis.filter(Boolean).map(u=>`<option value="${esc(u)}"></option>`).join('')}</datalist></div>
       </div>
       <div class="field-row">
         <div class="field"><label>Regime</label>
