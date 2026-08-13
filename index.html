@@ -5809,7 +5809,7 @@ UI.renderDash = function(){
   $('#dxHeroTitulo').textContent = `${saud}, ${Auth.user.nome.split(' ')[0]}!`;
   $('#dxHeroMsg').textContent = ausHoje.length
     ? `Você tem ${ausHoje.length} ${ausHoje.length===1?'pessoa ausente':'pessoas ausentes'} hoje e ${vencendo.length} ${vencendo.length===1?'férias a vencer':'férias a vencer'}.`
-    : `Ninguém está de férias contábeis ou folga hoje. A equipe está completa.`;
+    : `Ninguém está de folga ou férias contábeis hoje. A equipe está completa.`;
   // cor do banner conforme o horário
   const periodo = hora < 12 ? 'manha' : hora < 18 ? 'tarde' : 'noite';
   const heroEl = $('#dxHero');
