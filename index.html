@@ -4125,7 +4125,7 @@ const Modals = {
   novoColab(){
     if(!Auth.podeAdministrar()){ toast('Apenas administradores cadastram colaboradores.'); return; }
     const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(c=>c.departamento)])];
-    const unis=[...new Set(Store.data.colaboradores.map(c=>c.unidade))].sort();
+    const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(c=>c.unidade)])].filter(Boolean).sort();
     this.open(`
       <h3>Novo colaborador</h3>
       <p class="msub">O período aquisitivo inicial é criado automaticamente a partir da admissão.</p>
@@ -4195,7 +4195,7 @@ const Modals = {
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     if(!c) return;
     const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(x=>x.departamento)])];
-    const unis=[...new Set(Store.data.colaboradores.map(x=>x.unidade))].sort();
+    const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(x=>x.unidade)])].filter(Boolean).sort();
     const regimes=['CLT','PJ','Estágio'];
     this.open(`
       <h3>Editar colaborador</h3>
