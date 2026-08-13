@@ -1234,6 +1234,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .sol-nome{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .sol-fields{font-size:13px;color:var(--muted);margin-top:5px;display:flex;flex-direction:column;gap:3px}
 .sol-fields b{color:var(--ink);font-weight:700}
+.sol-decisao{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);font-size:12px;color:var(--muted)}
 .sol-actions{display:flex;gap:8px;flex:none}
 .sol-actions .btn{height:38px;padding:0 18px;font-size:13px}
 .sol-badge{font-size:11px;font-weight:800;padding:2px 9px;border-radius:99px;letter-spacing:.3px}
@@ -6063,6 +6064,7 @@ UI.renderSolic = function(){
           <div><b>Dias Úteis:</b> ${s.dias}</div>
           <div><b>Motivo:</b> ${s.motivo ? esc(s.motivo) : '—'}</div>
           <div><b>Aval do Coordenador:</b> ${s.aval_coordenador ? 'Sim' : 'Não'}</div>
+          ${s.status!=='pendente' && (s.decidido_por||s.decidido_em) ? `<div class="sol-decisao"><b>${s.status==='aprovada'?'Aprovada':'Recusada'} por:</b> ${esc(s.decidido_por||'—')} <b>em:</b> ${s.decidido_em?fmt(s.decidido_em):'—'}</div>` : ''}
         </div>
       </div>
       ${s.status==='pendente' && podeAgir ? `<div class="sol-actions">

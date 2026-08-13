@@ -47,6 +47,9 @@ const emailSolicitacaoDecidida = (solic, aprovada) => ({
     <p>Sua solicitação de folga de <b>${fmt(solic.inicio)}</b> a <b>${fmt(solic.fim)}</b>
        (${solic.dias} dia(s)) foi <b>${aprovada ? 'APROVADA' : 'recusada'}</b>.</p>
     ${aprovada ? '<p>A folga já foi lançada no sistema.</p>' : ''}
+    <p style="color:#6b7280;font-size:13px;margin-top:16px;border-top:1px solid #e5e7eb;padding-top:8px">
+       ${aprovada ? 'Aprovada' : 'Recusada'} por <b>${solic.decididoPor || solic.decidido_por || '—'}</b>
+       em <b>${fmt(solic.decididoEm || solic.decidido_em)}</b>.</p>
     <p>— Go Férias! · RH</p>`,
 });
 
