@@ -6023,9 +6023,9 @@ UI.renderDash = function(){
       <div class="dx-stat-sub">${sub||'&nbsp;'}</div>
       <div class="dx-stat-num">${num===0?'0':String(num).padStart(2,'0')}</div>
     </a>`;
-  const rankStatVazio = tit => `
+  const rankStatVazio = (tit, ico=ICO.folga) => `
     <div class="dx-stat">
-      <span class="dx-stat-ico c-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICO.folga}</svg></span>
+      <span class="dx-stat-ico c-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></span>
       <div class="dx-stat-tit">${tit}</div>
       <div class="dx-stat-sub">&nbsp;</div>
       <div class="dx-stat-num">—</div>
@@ -6037,10 +6037,10 @@ UI.renderDash = function(){
   tiles.push(rankStat(ICO.pizza, 'Cobertura', `${nComFolga} de ${cs.length} tiraram Folga`, `${coberturaFolga}%`, '#/graficos'));
   tiles.push(maisFolgas
     ? rankStat(ICO2.subir, 'Mais Folgas', esc(maisFolgas.c.nome.split(' ').slice(0,2).join(' ')), maisFolgas.dias, `#/colab/${maisFolgas.c.id}`)
-    : rankStatVazio('Mais Folgas'));
+    : rankStatVazio('Mais Folgas', ICO2.subir));
   tiles.push(menosFolgas
     ? rankStat(ICO2.descer, 'Menos Folgas', esc(menosFolgas.c.nome.split(' ').slice(0,2).join(' ')), menosFolgas.dias, `#/colab/${menosFolgas.c.id}`)
-    : rankStatVazio('Menos Folgas'));
+    : rankStatVazio('Menos Folgas', ICO2.descer));
   $('#dxRankFooter').innerHTML = tiles.join('');
 };
 
