@@ -5,6 +5,9 @@
 *.xlsx
 ~$*.xlsx
 
+# docs locais com nomes reais — NUNCA versionar
+*.local.md
+
 # prints/temporários gerados em sessão
 _print-*.png
 
