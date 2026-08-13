@@ -6035,8 +6035,8 @@ UI.renderDash = function(){
   const nComFolga = folgasColab.filter(x=>x.dias>0).length;
   const coberturaFolga = cs.length ? Math.round(nComFolga/cs.length*100) : 0;
   const tiles = [];
-  tiles.push(rankStat(ICO.folga, 'Total Anual', `dias de Folga em ${ano}`, totalFolgas, '#/graficos'));
-  tiles.push(rankStat(ICO.pizza, 'Cobertura', `${nComFolga} de ${cs.length} tiraram Folga`, `${coberturaFolga}%`, '#/graficos'));
+  tiles.push(rankStat(ICO.folga, 'Total Anual', `dias de Folga em ${ano}`, totalFolgas, '#/graficos?tab=folgas'));
+  tiles.push(rankStat(ICO.pizza, 'Cobertura', `${nComFolga} de ${cs.length} tiraram Folga`, `${coberturaFolga}%`, '#/graficos?tab=folgas'));
   tiles.push(maisFolgas
     ? rankStat(ICO2.subir, 'Mais Folgas', esc(maisFolgas.c.nome.split(' ').slice(0,2).join(' ')), maisFolgas.dias, `#/colab/${maisFolgas.c.id}`)
     : rankStatVazio('Mais Folgas', ICO2.subir));
