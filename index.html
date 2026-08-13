@@ -5895,8 +5895,8 @@ UI.renderDash = function(){
   $('#dxHojeStats').innerHTML =
     statCard('amber', ICO.sino, 'Alertas', nAlertas?'férias a vencer':'tudo em dia', nAlertas, '#/colaboradores?pend') +
     statCard('violet', ICO.inbox, 'Solicitações', nSolic?'aguardando RH':'nada pendente', nSolic, '#/agenda') +
-    statCard('red', ICO.sol, 'Férias Contábeis', feriasHoje.length?'hoje':'ninguém hoje', feriasHoje.length, '#/agenda') +
-    statCard('teal', ICO.folga, 'Folgas', folgasHoje.length?'hoje':'ninguém hoje', folgasHoje.length, '#/agenda') +
+    statCard('red', ICO.sol, 'Férias Contábeis', feriasHoje.length?'hoje':'ninguém hoje', feriasHoje.length, '#/agenda?tipo=ferias') +
+    statCard('teal', ICO.folga, 'Folgas', folgasHoje.length?'hoje':'ninguém hoje', folgasHoje.length, '#/agenda?tipo=folga') +
     statCard('orange', ICO.trofeu, 'Aniversários', aniversHoje.length?nomesCurtos(aniversHoje):'ninguém hoje', aniversHoje.length, '#/pessoas?tab=tempocasa');
 
   // ---------- calendário SEMANAL (agenda de ausências da semana) ----------
@@ -6813,7 +6813,7 @@ function route(){
   $('#navPessoas').classList.toggle('active', isPessoas);
   if(mProfile){ UI.tabAtual='oficiais'; UI.anoPerfil=hoje().getFullYear(); UI.renderProfile(mProfile[1]); }
   else if(isCal) UI.renderCal();
-  else if(isAgenda) UI.renderAgenda();
+  else if(isAgenda){ const t=query.find(x=>x.startsWith('tipo=')); if(t) UI.agTipo=t.slice(5); UI.renderAgenda(); }
   else if(isGraf){ const t=query.find(x=>x.startsWith('tab=')); if(t) UI.grafTab=t.slice(4); UI.renderGraficos(); }
   else if(isPessoas){ const t=query.find(x=>x.startsWith('tab=')); if(t) UI.pesTab=t.slice(4); UI.renderPessoas(); }
   else if(isConta) UI.renderConta();
