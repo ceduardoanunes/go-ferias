@@ -6080,7 +6080,7 @@ UI.renderSolic = function(){
   const tituloBadge = $('#solTituloBadge');
   if(tituloBadge){ tituloBadge.textContent = pend.length; tituloBadge.style.display = pend.length ? 'inline-flex' : 'none'; }
   $('#solicLista').innerHTML =
-    `${pend.length ? pend.map(row).join('') : '<div class="dx-empty">Nenhuma solicitação pendente. ✨</div>'}
+    `${pend.length ? pend.map(row).join('') : '<div class="dx-empty">Nenhuma solicitação pendente.</div>'}
      ${hist.length ? `<div class="sol-label" style="margin-top:34px">Histórico</div>${hist.map(row).join('')}` : ''}`;
   if(podeAgir){
     $$('#solicLista .sol-aprovar').forEach(b=>b.onclick=()=>UI.decidirSolic(b.dataset.id, true));
