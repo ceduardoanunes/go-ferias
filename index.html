@@ -3243,7 +3243,42 @@ const Store = {
   nodeUpdate(table,id,patch){ return this.apiFetch(`/${this.pgTable(table)}/${id}`, {method:'PATCH', headers:this.apiHeaders(), body:JSON.stringify(patch)}); },
   nodeDelete(table,id){ return this.apiFetch(`/${this.pgTable(table)}/${id}`, {method:'DELETE', headers:this.apiHeaders(false)}); },
   // carrega o dataset completo conforme o driver remoto (após o login)
-  async carregarRemoto(){ if(this.driver==='node') return this.nodeLoad(); if(this.driver==='postgrest') return this.pgLoad(); },
+  async carregarRemoto(){
+    if(this.driver==='node') await this.nodeLoad();
+    else if(this.driver==='postgrest') await this.pgLoad();
+    else return;
+    await this.garantirPeriodosAtuais();
+  },
+
+  // A aquisição de férias é contínua: quando o último período de um colaborador
+  // ATIVO já terminou, o ciclo seguinte começa sozinho (a pessoa não foi demitida).
+  // Cria os períodos que faltam até o ciclo que contém hoje — o atual fica
+  // 'acumulando'; ciclos intermediários já vencidos ficam 'aberto' (saldo a vencer).
+  // Idempotente (só cria o que falta) e só roda para quem tem permissão de escrita;
+  // para leitura, a correção aparece assim que um usuário de edição (RH/admin) acessa.
+  async garantirPeriodosAtuais(){
+    if(this.driver==='local') return;                 // no modo local o seed já rola sozinho
+    if(!Auth.podeEditar || !Auth.podeEditar()) return; // leitura não escreve no banco
+    const h = hoje();
+    for(const c of (this.data.colaboradores||[])){
+      if(c.ativo===false) continue;                   // demitido não gera novo período
+      let ultimo = (this.data.periodos||[])
+        .filter(p=>p.colaborador_id===c.id)
+        .sort((a,b)=>b.inicio.localeCompare(a.inicio))[0];
+      if(!ultimo) continue;                            // sem período base: addColab cuida disso
+      let guard = 0;
+      while(pd(ultimo.fim) < h && guard++ < 30){
+        const ini = addD(pd(ultimo.fim), 1);
+        const fim = addD(addM(ini,12), -1);
+        const ehAtual = pd(fim) >= h;                  // o ciclo que contém hoje
+        try{
+          ultimo = await this.insert('periodos',
+            {colaborador_id:c.id, inicio:iso(ini), fim:iso(fim), situacao: ehAtual?'acumulando':'aberto'},
+            `Período aquisitivo aberto automaticamente — ${c.nome} (${iso(ini)} a ${iso(fim)})`);
+        }catch(e){ break; }                            // conflito/sem permissão: não trava o load
+      }
+    }
+  },
 
   /* --- Auditoria no modo local (no PostgREST, triggers fazem isso) --- */
   logAudit(acao, tabela, registro_id, detalhe, dados_antes=null, dados_depois=null){
