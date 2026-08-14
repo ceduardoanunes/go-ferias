@@ -3860,7 +3860,7 @@ const UI = {
           </div>
           <div class="saldos saldos-row">
             <div class="saldo contabil">
-              <div class="saldo-lab">Férias Contábeis<b>${r.gozavel ? r.saldoContabil+' dias disponíveis' : 'Em aquisição'}</b></div>
+              <div class="saldo-lab">Férias Contábeis<b>${r.gozavel ? r.saldoContabil+' dias a usufruir' : 'Em aquisição'}</b></div>
               <div class="meter"><i style="width:${pctC*100}%"></i></div>
               <div class="saldo-hint">${r.gozavel ? 'Período '+fmtCurto(r.gozavel.inicio)+' – '+fmtCurto(r.gozavel.fim)+'/'+pd(r.gozavel.fim).getFullYear() : (r.atual ? 'Período em aquisição: '+fmtCurto(r.atual.inicio)+' – '+fmtCurto(r.atual.fim)+'/'+pd(r.atual.fim).getFullYear() : 'Nenhum período vencido')}</div>
             </div>
@@ -4809,7 +4809,7 @@ const Actions = {
       const frac = Math.max(0, Math.min(1, val/max));
       if(frac>0){ doc.setFillColor(cor[0],cor[1],cor[2]); doc.roundedRect(x, barY, Math.max(half*frac,5), 5, 2.5, 2.5, 'F'); }
     };
-    drawStat(14,         'FÉRIAS DISPONÍVEIS', r.saldoContabil,           REGRAS.DIAS_CONTABEIS, [196,25,59]);
+    drawStat(14,         'FÉRIAS A USUFRUIR', r.saldoContabil,           REGRAS.DIAS_CONTABEIS, [196,25,59]);
     drawStat(14+half+10, 'FOLGAS DISPONÍVEIS', Math.max(r.saldoFolgas,0), REGRAS.DIAS_FOLGAS,    [18,131,106]);
 
     const feriasLinhas = [];
