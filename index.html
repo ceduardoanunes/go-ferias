@@ -3080,6 +3080,9 @@ const SS = safeStorage('sessionStorage');
    Tabelas espelham o schema.sql que acompanha este arquivo.
    ================================================================ */
 const REGRAS = { DIAS_CONTABEIS: 30, DIAS_FOLGAS: 22, ALERTA_VENC_DIAS: 120 };
+// rótulo amigável do regime (valor guardado continua 'CLT'/'PJ' p/ compatibilidade com dados existentes)
+const REGIME_LABEL = { CLT:'Celetista', PJ:'Pessoa Jurídica', 'Estágio':'Estágio' };
+const regimeLabel = r => REGIME_LABEL[r] || r || 'Não informado';
 
 const Store = {
   // 'local' (localStorage) | 'node' (API Node/Express — server/) | 'postgrest' (alternativa)
@@ -3813,7 +3816,7 @@ const UI = {
             <div class="pcard-facts">
               <div class="fact"><span>Unidade</span><b>${esc(c.unidade)}</b></div>
               <div class="fact"><span>Setor</span><b>${esc(c.departamento)}</b></div>
-              <div class="fact"><span>Regime</span><b>${esc(c.regime)}</b></div>
+              <div class="fact"><span>Regime</span><b>${esc(regimeLabel(c.regime))}</b></div>
               <div class="fact"><span>Admissão</span><b>${fmt(c.admissao)}</b></div>
               <div class="fact"><span>Tempo de casa</span><b>${tempoDeCasa(c.admissao)}</b></div>
               <div class="fact"><span>Período aquisitivo</span><b>${r.atual?fmtCurto(r.atual.inicio)+' – '+fmt(r.atual.fim):'—'}</b></div>
@@ -4158,7 +4161,7 @@ const Modals = {
       </div>
       <div class="field-row">
         <div class="field"><label>Regime</label>
-          <select id="nRegime"><option>CLT</option><option>PJ</option><option>Estágio</option></select></div>
+          <select id="nRegime"><option value="CLT">Celetista</option><option value="PJ">Pessoa Jurídica</option><option value="Estágio">Estágio</option></select></div>
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${iso(hoje())}"></div>
       </div>
       <div class="modal-actions">
@@ -4230,7 +4233,7 @@ const Modals = {
       </div>
       <div class="field-row">
         <div class="field"><label>Regime</label>
-          <select id="nRegime">${regimes.map(r=>`<option${r===c.regime?' selected':''}>${r}</option>`).join('')}</select></div>
+          <select id="nRegime">${regimes.map(r=>`<option value="${r}"${r===c.regime?' selected':''}>${regimeLabel(r)}</option>`).join('')}</select></div>
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${c.admissao}"></div>
       </div>
       <div class="modal-actions">
@@ -4783,7 +4786,7 @@ const Actions = {
     kv('setor',   'Setor',         c.departamento,                 colL, boxY+17.5);
     kv('tempo',   'Tempo de casa', tempoDeCasa(c.admissao),        colR, boxY+17.5);
     kv('unidade', 'Unidade',       c.unidade,                      colL, boxY+26);
-    kv('regime',  'Regime',        c.regime,                       colR, boxY+26);
+    kv('regime',  'Regime',        regimeLabel(c.regime),          colR, boxY+26);
 
     // gráficos de saldos disponíveis (barras)
     const cy = boxY + boxH + 16;
@@ -5242,7 +5245,7 @@ const Actions = {
       ...base,
       startY: y3+8,
       head: [['Regime', {content:'Colaboradores', styles:{halign:'center'}}]],
-      body: Object.entries(porRegime).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[k, String(v)]),
+      body: Object.entries(porRegime).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[regimeLabel(k), String(v)]),
       styles: {font: pdfFont(doc), fontSize:9.5, cellPadding:2.5},
       headStyles: {fillColor:[214,92,110], textColor:255, fontStyle:'bold'},
       alternateRowStyles: {fillColor:[250,240,242]},
@@ -6465,7 +6468,7 @@ UI.renderPessoas = function(){
     destroyChart('regime');
     UI.chartInstances.regime = new Chart($('#chartRegime'), {
       type:'doughnut',
-      data:{ labels:regimeKeys, datasets:[{ data:regimeKeys.map(k=>porRegime[k]), backgroundColor:regimeKeys.map((_,i)=>CORES_REGIME[i%CORES_REGIME.length]), hoverBackgroundColor:regimeKeys.map((_,i)=>CORES_REGIME_HOVER[i%CORES_REGIME_HOVER.length]), borderWidth:0, hoverBorderWidth:0, hoverOffset:6, spacing:3 }] },
+      data:{ labels:regimeKeys.map(regimeLabel), datasets:[{ data:regimeKeys.map(k=>porRegime[k]), backgroundColor:regimeKeys.map((_,i)=>CORES_REGIME[i%CORES_REGIME.length]), hoverBackgroundColor:regimeKeys.map((_,i)=>CORES_REGIME_HOVER[i%CORES_REGIME_HOVER.length]), borderWidth:0, hoverBorderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%',
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:26, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
