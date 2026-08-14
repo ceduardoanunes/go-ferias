@@ -3249,7 +3249,8 @@ const Store = {
     if(this.driver==='node') await this.nodeLoad();
     else if(this.driver==='postgrest') await this.pgLoad();
     else return;
-    await this.garantirPeriodosAtuais();
+    // normalização de dados: nunca deve impedir o login se falhar
+    await this.garantirPeriodosAtuais().catch(e=>console.warn('garantirPeriodosAtuais falhou:', e));
   },
 
   // A aquisição de férias é contínua: quando o último período de um colaborador
@@ -3267,12 +3268,12 @@ const Store = {
       let ultimo = (this.data.periodos||[])
         .filter(p=>p.colaborador_id===c.id)
         .sort((a,b)=>b.inicio.localeCompare(a.inicio))[0];
-      if(!ultimo) continue;                            // sem período base: addColab cuida disso
+      if(!ultimo || typeof ultimo.fim !== 'string') continue;  // sem período base / data inválida
       let guard = 0;
       while(pd(ultimo.fim) < h && guard++ < 30){
         const ini = addD(pd(ultimo.fim), 1);
         const fim = addD(addM(ini,12), -1);
-        const ehAtual = pd(fim) >= h;                  // o ciclo que contém hoje
+        const ehAtual = fim >= h;                      // o ciclo que contém hoje (fim já é Date)
         try{
           ultimo = await this.insert('periodos',
             {colaborador_id:c.id, inicio:iso(ini), fim:iso(fim), situacao: ehAtual?'acumulando':'aberto'},
