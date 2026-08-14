@@ -1505,9 +1505,8 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 }
 .casa-top3-av{margin:4px 0;box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--medal)}
 .casa-top3-card.rank4 .casa-top3-av,.casa-top3-card.rank5 .casa-top3-av{box-shadow:none}
-/* reserva sempre 2 linhas p/ o nome: padroniza a altura dos cards e alinha as
-   linhas "tempo"/"desde" entre eles, independentemente de o nome quebrar ou não */
-.casa-top3-nome{font-weight:700;font-size:14.5px;line-height:1.3;min-height:2.6em;display:flex;align-items:center;justify-content:center}
+/* nome curto (1º + sobrenome) cabe em 1 linha; nowrap garante cards uniformes */
+.casa-top3-nome{font-weight:700;font-size:14.5px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .casa-top3-tempo{font-size:12.5px;color:var(--muted)}
 .casa-top3-desde{font-size:11.5px;color:var(--faint);margin-top:-3px}
 @media(max-width:640px){.casa-top3-card.rank1,.casa-top3-card.rank2,.casa-top3-card.rank3,.casa-top3-card.rank4,.casa-top3-card.rank5{order:0}.casa-top3-card{flex-basis:100%;max-width:none}}
@@ -6724,10 +6723,10 @@ UI.renderPessoas = function(){
     const medalhas = ['🥇','🥈','🥉'];
     const medalCor = ['#C9A227','#A3A7AD','#B87333','#A6A39D','#A6A39D'];
     $('#casaTop3').innerHTML = top3.map((c,i)=>`
-      <a href="#/colab/${c.id}" class="casa-top3-card rank${i+1}" style="text-decoration:none;color:inherit;--medal:${medalCor[i]}">
+      <a href="#/colab/${c.id}" class="casa-top3-card rank${i+1}" title="${esc(c.nome)}" style="text-decoration:none;color:inherit;--medal:${medalCor[i]}">
         <div class="casa-top3-medal">${i<3?medalhas[i]:`<span class="casa-top3-num">${i+1}</span>`}</div>
         <div class="mini-av casa-top3-av" style="width:56px;height:56px;font-size:16px">${avatarInner({nome:c.nome, foto:c.foto})}</div>
-        <div class="casa-top3-nome">${esc(c.nome)}</div>
+        <div class="casa-top3-nome">${esc(c.nome.split(' ').slice(0,2).join(' '))}</div>
         <div class="casa-top3-tempo">${tempoDeCasa(c.admissao)}</div>
         <div class="casa-top3-desde">Desde ${fmt(c.admissao)}</div>
       </a>`).join('');
