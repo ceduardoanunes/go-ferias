@@ -3847,7 +3847,7 @@ const UI = {
           </div>
           <div class="saldos saldos-row">
             <div class="saldo contabil">
-              <div class="saldo-lab">Férias<b>${r.saldoContabil} dias disponíveis</b></div>
+              <div class="saldo-lab">Férias Contábeis<b>${r.saldoContabil} dias disponíveis</b></div>
               <div class="meter"><i style="width:${pctC*100}%"></i></div>
               <div class="saldo-hint">${r.gozavel ? 'Período '+fmtCurto(r.gozavel.inicio)+' – '+fmtCurto(r.gozavel.fim)+'/'+pd(r.gozavel.fim).getFullYear() : 'Nenhum período vencido'}</div>
             </div>
@@ -4217,8 +4217,7 @@ const Modals = {
         <div class="field"><label>Setor</label>
           <select id="nDepto">${deps.map(d=>`<option${d===c.departamento?' selected':''}>${esc(d)}</option>`).join('')}</select></div>
         <div class="field"><label>Unidade</label>
-          <input id="nUni" list="uniList" value="${esc(c.unidade)}" placeholder="ex.: Granbery" autocomplete="off">
-          <datalist id="uniList">${unis.filter(Boolean).map(u=>`<option value="${esc(u)}"></option>`).join('')}</datalist></div>
+          <select id="nUni">${unis.map(u=>`<option${u===c.unidade?' selected':''}>${esc(u)}</option>`).join('')}</select></div>
       </div>
       <div class="field-row">
         <div class="field"><label>Regime</label>
