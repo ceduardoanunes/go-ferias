@@ -1753,6 +1753,10 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
   content:"";width:40px;height:40px;flex:none;
   background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A6A39D' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><path d='m9 12 2 2 4-4'/></svg>") center/contain no-repeat;
 }
+/* "ferias vencendo" sem pendencia: rosto feliz no lugar do check (so neste card) */
+#dashVencendo .ag-vazio::before{
+  background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A6A39D' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><path d='M8 14s1.5 2 4 2 4-2 4-2'/><path d='M9 9h.01'/><path d='M15 9h.01'/></svg>") center/contain no-repeat;
+}
 @media(max-width:680px){
   .agt2-linha{grid-template-columns:1fr;gap:6px;text-align:left}
   .agt-per{text-align:left}
@@ -6183,7 +6187,7 @@ UI.renderDash = function(){
           <span class="venc-badge" title="Prazo para usufruto">vence em ${r.diasParaLimite} ${r.diasParaLimite===1?'dia':'dias'}</span>
         </a>`;
       }).join('')
-    : `<div class="ag-vazio">Nenhum colaborador com férias contábeis vencendo. Tudo em dia.</div>`;
+    : `<div class="ag-vazio">Nenhum colaborador com férias contábeis vencendo.<br>Tudo em dia.</div>`;
 
   // ---------- rodapé horizontal: aniversário + rankings de folga ----------
   const folgasColab = cs.map(c=>{
