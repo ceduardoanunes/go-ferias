@@ -3609,7 +3609,7 @@ const Dom = {
       return {k:'programado', cls:'b-programado', dot:'var(--amber)', lab:'Pagamento programado'};
     if(r.gozavel)
       return {k:'aberto', cls:'b-programado', dot:'var(--amber)', lab:'Saldo em aberto'};
-    return {k:'acumulando', cls:'b-acumulando', dot:'var(--faint)', lab:'Acumulando'};
+    return {k:'acumulando', cls:'b-acumulando', dot:'var(--faint)', lab:'Em aquisição'};
   },
 
   alertas(cid){
@@ -3891,7 +3891,7 @@ const UI = {
       pago:`<span class="badge b-pago">Pago${p.pago_em?' · '+fmt(p.pago_em):''}</span>`,
       programado:'<span class="badge b-programado">Pagamento programado</span>',
       aberto:'<span class="badge b-programado">Em aberto</span>',
-      acumulando:'<span class="badge b-acumulando">Acumulando</span>'
+      acumulando:'<span class="badge b-acumulando">Em aquisição</span>'
     }[p.situacao]||'');
 
     if(this.tabAtual==='oficiais'){
@@ -4557,7 +4557,7 @@ const Actions = {
     if(!this.guard()) return;
     const p = Store.data.periodos.find(x=>x.id===perId);
     if(!p) return;
-    if(p.situacao==='acumulando'){ toast('Período ainda em acumulação — não pode ser pago.'); return; }
+    if(p.situacao==='acumulando'){ toast('Período ainda em aquisição — não pode ser pago.'); return; }
     if(!Dom.feriasDe(perId).length){ toast('Lance ao menos um gozo antes de marcar como pago.'); return; }
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     if(Store.driver!=='local'){
@@ -5140,7 +5140,7 @@ const Actions = {
       ['Pago', String(sitCount.pago)],
       ['Programado', String(sitCount.programado)],
       ['Em aberto', String(sitCount.aberto)],
-      ['Acumulando', String(sitCount.acumulando)],
+      ['Em aquisição', String(sitCount.acumulando)],
     ], ['Situação','Períodos']);
     indicador('Usufruto das Férias', [14,110,88], [
       ['Integral (1x)', String(dur.um)],
@@ -6334,7 +6334,7 @@ UI.renderGraficos = function(){
     destroyChart('situacao');
     UI.chartInstances.situacao = new Chart($('#chartSituacao'), {
       type:'doughnut', plugins:[legendGap],
-      data:{ labels:['Pago','Programado','Em aberto','Acumulando'],
+      data:{ labels:['Pago','Programado','Em aberto','Em aquisição'],
         datasets:[{ data:[sitCount.pago, sitCount.programado, sitCount.aberto, sitCount.acumulando],
           backgroundColor:['#4FA891','#D6B15C','#D65C6E','#6FB1CC'],
           hoverBackgroundColor:['#408976','#AF914B','#AF4B5A','#5B91A7'], borderWidth:0, hoverOffset:6, spacing:3 }] },
