@@ -5820,7 +5820,9 @@ UI.renderDash = function(){
 
   // ---------- banner de boas-vindas ----------
   const hora = new Date().getHours();
-  const saud = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
+  // noite (lua, banner escuro): madrugada até 5h59 e a partir das 18h
+  const ehNoite = hora < 6 || hora >= 18;
+  const saud = ehNoite ? 'Boa noite' : hora < 12 ? 'Bom dia' : 'Boa tarde';
   const DIAS_EXT = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
   const diaSemana = DIAS_EXT[hj.getDay()];
   $('#dxHeroData').textContent = `${diaSemana[0].toUpperCase()+diaSemana.slice(1)}, ${hj.getDate()} de ${MESES[mesAtual]} de ${ano}`;
@@ -5829,11 +5831,10 @@ UI.renderDash = function(){
     ? `Você tem ${ausHoje.length} ${ausHoje.length===1?'pessoa ausente':'pessoas ausentes'} hoje e ${vencendo.length} ${vencendo.length===1?'férias a vencer':'férias a vencer'}.`
     : `Ninguém está de folga ou férias contábeis hoje. A equipe está completa.`;
   // cor do banner conforme o horário
-  const periodo = hora < 12 ? 'manha' : hora < 18 ? 'tarde' : 'noite';
+  const periodo = ehNoite ? 'noite' : hora < 12 ? 'manha' : 'tarde';
   const heroEl = $('#dxHero');
   if(heroEl){ heroEl.classList.remove('manha','tarde','noite'); heroEl.classList.add(periodo); }
   // sol de dia · lua de noite
-  const ehNoite = periodo === 'noite';
   if($('#dxSun')) $('#dxSun').style.display = ehNoite ? 'none' : 'block';
   if($('#dxMoon')) $('#dxMoon').style.display = ehNoite ? 'block' : 'none';
   // ilustração fixa: o homem na rede
