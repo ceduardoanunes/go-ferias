@@ -9,8 +9,15 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 
 ---
 
-## ✅ Concluído nesta 1ª inserção
+## ✅ Concluído
 
+### 2ª inserção — aba ATENDIMENTO OFF (3 colaboradores)
+- **Amanda Guerra de Castro Pires**, **Mateus Jose Guedes Oliveira (Bahamas)**, **Andre Tuchtler Soares** → setor **Atendimento OFF**. Total: 20 períodos, 19 férias, 34 folgas.
+- **André** era descartado pelo parser (a célula do nome tinha a nota "TEM 51 DIAS P TIRAR" colada, >60 chars → tratado como nota). Corrigido no envio: nome limpo + **admissão 05/12/2017** (a planilha trazia 02/02/2026 na 1ª linha). Períodos dele têm lacuna de **readmissão/troca de CNPJ** (2022→2023) — **reconciliar à mão no app**.
+- **Mateus:** "(Bahamas)" (empresa/CNPJ) ficou no nome — **remover depois** (pendência de campo CNPJ).
+- SSL do Python 3.14 no Mac: rodar o envio com `SSL_CERT_FILE=$(python3 -m certifi)` (ou instalar certificados).
+
+### 1ª inserção
 - **Demo de teste apagada** (2 registros).
 - **Aba VÍDEO importada 100%** → 4 colaboradores no setor **Vídeo**, com nome/função em Title Case, períodos/férias/folgas limpos.
 - Pipeline de import maduro e validado (scripts abaixo).
@@ -27,11 +34,10 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 
 ---
 
-## ⏳ Abas ainda NÃO importadas (9)
+## ⏳ Abas ainda NÃO importadas (8)
 
 | Aba | Setor do app | A enviar | Períodos | Férias | Folgas | Revisar |
 |---|---|--:|--:|--:|--:|--:|
-| ATENDIMENTO OFF | Atendimento OFF | 2 | 10 | 12 | 31 | 4 |
 | ADM | Administrativo | 9 | 25 | 12 | 88 | 4 |
 | ATENDIMENTO CORPORATIVO | Corporativo | 9 | 34 | 31 | 123 | 7 |
 | SUPERVISÃO | Coordenação | 8 | 42 | 32 | 149 | 21 |
@@ -67,11 +73,13 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 
 ## ⏳ Decisões pendentes do RH (não implementar até definir)
 
-1. **Saldo de folga multiciclo** — hoje o app mostra só o **período atual** (`22 − usadas`). Somar todos os ciclos aguarda decisão do RH. Fórmula proposta: `Σ max(0, 22 − usadas por período)`.
-2. **Meter na acumulação** — durante o período `acumulando` (2+ ciclos) a barra de férias fica **cheia** e diz "0 disponíveis", parecendo que a pessoa tirou tudo (quando não tirou; só não venceu). Definir se muda a visualização.
-3. **Empresa/CNPJ** (EDITORAÇÃO, GO&REC, BAHAMAS…) — não tem campo no cadastro hoje. Decidir se guarda em algum lugar (ex.: "unidade") ou ignora.
+1. ~~**Saldo de folga multiciclo**~~ — ✅ **DECIDIDO:** só o **período atual** tem folga disponível (`22 − usadas do atual`). Períodos anteriores são completos/histórico (aparecem no hint "Período Anterior", mas não somam). Base fixa 22.
+2. ~~**Meter na acumulação**~~ — ✅ **RESOLVIDO:** barra de férias começa vazia e reflete só o gozo do período gozável; período aquisitivo já vencido deixa de ser "em aquisição" (vira saldo a usufruir). Termo padronizado "Em aquisição".
+3. **Empresa/CNPJ** (EDITORAÇÃO, GO&REC, BAHAMAS…) — não tem campo no cadastro hoje. Decidir se guarda em algum lugar (ex.: "unidade") ou ignora. (Ex. vivo: Mateus com "(Bahamas)" no nome, a remover.)
 
 ---
 
 ## Próximo passo
-Retomar por **Atendimento OFF** ou **ADM**: gerar `dados.json` da aba → conferir REVISAR → enviar → conferir no app.
+Retomar por **ADM** (Administrativo): gerar `dados.json` da aba → conferir REVISAR → enviar → conferir no app.
+
+> Lembrete: rodar o envio com `SSL_CERT_FILE=$(python3 -m certifi) python3 enviar_para_api.py saida/dados.json --url https://goferias.onrender.com --senha demo`.
