@@ -3539,12 +3539,15 @@ const Dom = {
   diasFerias(pid){ return this.feriasDe(pid).reduce((s,f)=>s+Number(f.dias||0),0) },
   diasFolgas(pid){ return this.folgasDe(pid).reduce((s,f)=>s+Number(f.dias||0),0) },
 
+  // "em aquisição" só enquanto o período aquisitivo ainda não venceu; se o fim já passou, os 30 dias estão conquistados
+  emAquisicao(p){ return p.situacao==='acumulando' && pd(p.fim) >= hoje() },
+
   /* período em aquisição (mais recente) e período "gozável" (anterior em aberto) */
   resumo(cid){
     const pers = this.periodosDe(cid);
     const atual = pers[0] || null;                       // acumulando
     const anterior = pers[1] || null;                    // período anterior
-    const gozavel = pers.find(p=>p.situacao!=='acumulando' && this.diasFerias(p.id) < REGRAS.DIAS_CONTABEIS) || null;
+    const gozavel = pers.find(p=>!this.emAquisicao(p) && this.diasFerias(p.id) < REGRAS.DIAS_CONTABEIS) || null;
     const saldoContabil = gozavel ? REGRAS.DIAS_CONTABEIS - this.diasFerias(gozavel.id)
                         : (pers[1] ? 0 : REGRAS.DIAS_CONTABEIS);
     const folgasAtual = atual ? this.diasFolgas(atual.id) : 0;
@@ -3891,7 +3894,9 @@ const UI = {
       pago:`<span class="badge b-pago">Pago${p.pago_em?' · '+fmt(p.pago_em):''}</span>`,
       programado:'<span class="badge b-programado">Pagamento programado</span>',
       aberto:'<span class="badge b-programado">Em aberto</span>',
-      acumulando:'<span class="badge b-acumulando">Em aquisição</span>'
+      acumulando: Dom.emAquisicao(p)
+        ? '<span class="badge b-acumulando">Em aquisição</span>'
+        : '<span class="badge b-programado">Saldo em aberto</span>'
     }[p.situacao]||'');
 
     if(this.tabAtual==='oficiais'){
@@ -3907,7 +3912,7 @@ const UI = {
             <div class="periodo-right">${sitBadge(p)}
               ${p.situacao==='pago'
                 ? `<button class="per-pay reabrir" onclick="event.stopPropagation();Actions.reabrirPeriodo('${cid}','${p.id}')">Reabrir</button>`
-                : (p.situacao!=='acumulando' && fer.length
+                : (!Dom.emAquisicao(p) && fer.length
                     ? `<button class="per-pay" onclick="event.stopPropagation();Actions.marcarPago('${cid}','${p.id}')">Marcar como pago</button>`
                     : '')}
               <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
@@ -4557,7 +4562,7 @@ const Actions = {
     if(!this.guard()) return;
     const p = Store.data.periodos.find(x=>x.id===perId);
     if(!p) return;
-    if(p.situacao==='acumulando'){ toast('Período ainda em aquisição — não pode ser pago.'); return; }
+    if(Dom.emAquisicao(p)){ toast('Período ainda em aquisição — não pode ser pago.'); return; }
     if(!Dom.feriasDe(perId).length){ toast('Lance ao menos um gozo antes de marcar como pago.'); return; }
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     if(Store.driver!=='local'){
@@ -5086,7 +5091,7 @@ const Actions = {
 
     // ---------- demais indicadores, mesmos cálculos da tela — em tabela em vez de donut ----------
     const sitCount = {pago:0, programado:0, aberto:0, acumulando:0};
-    cs.forEach(c=>Dom.periodosDe(c.id).forEach(p=>{ if(sitCount[p.situacao]!==undefined) sitCount[p.situacao]++; }));
+    cs.forEach(c=>Dom.periodosDe(c.id).forEach(p=>{ const k=(p.situacao==='acumulando'&&!Dom.emAquisicao(p))?'aberto':p.situacao; if(sitCount[k]!==undefined) sitCount[k]++; }));
     const pessoaSit = {pendencia:0, programado:0, emdia:0};
     cs.forEach(c=>{
       const k = Dom.status(c.id).k;
@@ -6330,7 +6335,7 @@ UI.renderGraficos = function(){
 
     // ---------- situação de pagamento dos períodos (donut, por período) ----------
     const sitCount = {pago:0, programado:0, aberto:0, acumulando:0};
-    cs.forEach(c=>Dom.periodosDe(c.id).forEach(p=>{ if(sitCount[p.situacao]!==undefined) sitCount[p.situacao]++; }));
+    cs.forEach(c=>Dom.periodosDe(c.id).forEach(p=>{ const k=(p.situacao==='acumulando'&&!Dom.emAquisicao(p))?'aberto':p.situacao; if(sitCount[k]!==undefined) sitCount[k]++; }));
     destroyChart('situacao');
     UI.chartInstances.situacao = new Chart($('#chartSituacao'), {
       type:'doughnut', plugins:[legendGap],
