@@ -40,6 +40,11 @@ app.use('/folgas', crudRouter({
   serializar: ser.lancamento, desserializar: ser.paraPrisma.lancamentos,
   readRoles: ['admin', 'rh', 'leitura'], writeRoles: ['admin', 'rh'],
 }));
+app.use('/notas', crudRouter({
+  model: 'nota', tabela: 'notas',
+  serializar: ser.nota, desserializar: ser.paraPrisma.notas,
+  readRoles: ['admin', 'rh', 'leitura'], writeRoles: ['admin', 'rh'], orderBy: { criadoEm: 'desc' },
+}));
 
 // recursos com regra especial
 app.use('/usuarios', require('./routes/usuarios'));

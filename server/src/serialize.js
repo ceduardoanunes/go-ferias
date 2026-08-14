@@ -28,6 +28,11 @@ const solicitacao = (s) => s && ({
   criado_em: ts(s.criadoEm), decidido_em: ts(s.decididoEm), decidido_por: s.decididoPor || null,
 });
 
+const nota = (n) => n && ({
+  id: n.id, colaborador_id: n.colaboradorId, periodo_id: n.periodoId || null,
+  categoria: n.categoria, texto: n.texto, data: dia(n.data), criado_em: ts(n.criadoEm),
+});
+
 const usuario = (u) => u && ({ // NUNCA inclui senhaHash
   id: u.id, nome: u.nome, email: u.email, papel: u.papel, foto: u.foto || null,
   criado_em: ts(u.criadoEm),
@@ -65,12 +70,18 @@ const paraPrisma = {
     status: b.status, decididoEm: b.decidido_em ? new Date(b.decidido_em) : undefined,
     decididoPor: b.decidido_por,
   }),
+  notas: (b) => ({
+    colaboradorId: b.colaborador_id,
+    periodoId: b.periodo_id === undefined ? undefined : (b.periodo_id || null),
+    categoria: b.categoria, texto: b.texto,
+    data: b.data ? new Date(b.data) : (b.data === null ? null : undefined),
+  }),
 };
 
 // remove chaves undefined (para PATCH parcial não sobrescrever com undefined)
 const limpo = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 
 module.exports = {
-  colaborador, periodo, lancamento, solicitacao, usuario, auditoria,
+  colaborador, periodo, lancamento, solicitacao, nota, usuario, auditoria,
   paraPrisma, limpo,
 };

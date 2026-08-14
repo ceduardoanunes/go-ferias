@@ -60,6 +60,7 @@ model Colaborador {
   ativo        Boolean             @default(true)
   periodos     PeriodoAquisitivo[]
   solicitacoes Solicitacao[]
+  notas        Nota[]
 
   @@map("colaboradores")
 }
@@ -74,6 +75,7 @@ model PeriodoAquisitivo {
   pagoEm        DateTime?       @map("pago_em") @db.Date
   ferias        FeriasOficial[]
   folgas        Folga[]
+  notas         Nota[]
 
   @@index([colaboradorId])
   @@map("periodos_aquisitivos")
@@ -123,6 +125,21 @@ model Solicitacao {
 
   @@index([status])
   @@map("solicitacoes")
+}
+
+model Nota {
+  id            String             @id @default(uuid())
+  colaboradorId String             @map("colaborador_id")
+  colaborador   Colaborador        @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+  periodoId     String?            @map("periodo_id")
+  periodo       PeriodoAquisitivo? @relation(fields: [periodoId], references: [id], onDelete: SetNull)
+  categoria     String // venda_mp | licenca | pandemia | outro (rótulos no frontend)
+  texto         String
+  data          DateTime?          @db.Date // data de referência do fato (opcional)
+  criadoEm      DateTime           @default(now()) @map("criado_em")
+
+  @@index([colaboradorId])
+  @@map("notas")
 }
 
 model Auditoria {

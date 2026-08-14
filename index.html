@@ -655,6 +655,18 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .saldo.contabil .meter i{background:var(--red)}
 .saldo.folgas .meter i{background:var(--teal)}
 .saldo-hint{font-size:11.5px;color:var(--faint);margin-top:8px}
+/* Notas (observações de RH) */
+.notas-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:2px 2px 16px;flex-wrap:wrap}
+.notas-desc{font-size:12.5px;color:var(--muted);max-width:64%;line-height:1.45}
+.nota-card{border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:11px;background:var(--card)}
+.nota-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+.nota-cat{font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:#fff;background:var(--nc,#6E6C68);border-radius:20px;padding:3px 11px}
+.nota-data,.nota-per{font-size:11.5px;color:var(--muted);font-weight:600}
+.nota-per{background:rgba(28,27,26,.05);border-radius:20px;padding:2px 10px}
+.nota-acoes{margin-left:auto;display:flex;gap:2px}
+.nota-texto{font-size:13.5px;color:var(--ink);line-height:1.5;white-space:pre-wrap}
+.field textarea{width:100%;font:inherit;font-size:14px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);resize:vertical;line-height:1.45}
+.field textarea:focus{outline:none;border-color:#B9BEFF}
 .pcard-actions{display:grid;gap:15px;margin-top:26px}
 .pcard-actions-row{display:grid;grid-template-columns:1fr;gap:15px}
 .pcard-actions .btn{padding:0 14px;height:40px;white-space:nowrap;font-size:12.5px}
@@ -3084,6 +3096,16 @@ const REGRAS = { DIAS_CONTABEIS: 30, DIAS_FOLGAS: 22, ALERTA_VENC_DIAS: 120 };
 const REGIME_LABEL = { CLT:'Celetista', PJ:'Pessoa Jurídica', 'Estágio':'Estágio' };
 const regimeLabel = r => REGIME_LABEL[r] || r || 'Não informado';
 
+// categorias das Notas (observações de RH que vêm da planilha: venda pela MP, licença, pandemia…)
+const CATEGORIAS_NOTA = [
+  { k:'venda_mp',  lab:'Venda pela MP',           cor:'#8E44AD' },
+  { k:'licenca',   lab:'Licença',                 cor:'#2980B9' },
+  { k:'pandemia',  lab:'Pandemia / Banco de horas', cor:'#16A085' },
+  { k:'abono',     lab:'Abono / Feriado coletivo', cor:'#B8860B' },
+  { k:'outro',     lab:'Outro',                   cor:'#6E6C68' },
+];
+const catNota = k => CATEGORIAS_NOTA.find(c=>c.k===k) || { k, lab:k||'Outro', cor:'#6E6C68' };
+
 const Store = {
   // 'local' (localStorage) | 'node' (API Node/Express — server/) | 'postgrest' (alternativa)
   // Detecta sozinho: aberto como arquivo (file://) → demo local; servido por http(s)
@@ -3093,7 +3115,7 @@ const Store = {
   pgUrl: '/api',              // (só p/ driver 'postgrest')
   key: 'goferias_v4',
   data: null,
-  vazio: () => ({ colaboradores:[], periodos:[], ferias:[], folgas:[], usuarios:[], solicitacoes:[], auditoria:[] }),
+  vazio: () => ({ colaboradores:[], periodos:[], ferias:[], folgas:[], notas:[], usuarios:[], solicitacoes:[], auditoria:[] }),
 
   async init(){
     if(this.driver==='node'){
@@ -3157,13 +3179,13 @@ const Store = {
       if(r.status===401){ Auth.logout(); throw new Error('sessão expirada'); }
       return r.json();
     });
-    const [c,p,f,g,u,s] = await Promise.all([
+    const [c,p,f,g,n,u,s] = await Promise.all([
       get('colaboradores?order=nome'), get('periodos_aquisitivos'),
-      get('ferias_oficiais'), get('folgas'),
+      get('ferias_oficiais'), get('folgas'), get('notas'),
       get('usuarios?order=nome'), get('solicitacoes'),
     ]);
     // usuarios/solicitacoes voltam [] p/ quem o RLS não autoriza — sem erro
-    this.data = { colaboradores:c, periodos:p, ferias:f, folgas:g, usuarios:u||[], solicitacoes:s||[], auditoria:[] };
+    this.data = { colaboradores:c, periodos:p, ferias:f, folgas:g, notas:n||[], usuarios:u||[], solicitacoes:s||[], auditoria:[] };
   },
   async pgAudit(){  // auditoria vem pronta dos triggers, via view
     const r = await fetch(`${this.pgUrl}/v_auditoria?limit=500`,{headers:this.pgHeaders(false)});
@@ -3210,11 +3232,11 @@ const Store = {
   },
   async nodeLoad(){
     const g = p => this.apiFetch(p, {headers:this.apiHeaders(false)}).catch(()=>[]);
-    const [c,p,f,gg,u,s] = await Promise.all([
+    const [c,p,f,gg,n,u,s] = await Promise.all([
       g('/colaboradores'), g('/periodos_aquisitivos'), g('/ferias_oficiais'),
-      g('/folgas'), g('/usuarios'), g('/solicitacoes'),
+      g('/folgas'), g('/notas'), g('/usuarios'), g('/solicitacoes'),
     ]);
-    this.data = { colaboradores:c||[], periodos:p||[], ferias:f||[], folgas:gg||[], usuarios:u||[], solicitacoes:s||[], auditoria:[] };
+    this.data = { colaboradores:c||[], periodos:p||[], ferias:f||[], folgas:gg||[], notas:n||[], usuarios:u||[], solicitacoes:s||[], auditoria:[] };
   },
   nodeInsert(table,row){ return this.apiFetch(`/${this.pgTable(table)}`, {method:'POST', headers:this.apiHeaders(), body:JSON.stringify(row)}); },
   nodeUpdate(table,id,patch){ return this.apiFetch(`/${this.pgTable(table)}/${id}`, {method:'PATCH', headers:this.apiHeaders(), body:JSON.stringify(patch)}); },
@@ -3364,11 +3386,12 @@ const Auth = {
    ================================================================ */
 const Seed = {
   build(){
-    const colaboradores=[], periodos=[], ferias=[], folgas=[];
+    const colaboradores=[], periodos=[], ferias=[], folgas=[], notas=[];
     const addColab = c => { c.id=uid(); colaboradores.push(c); return c.id; };
     const addPer = (cid,ini,fim,sit) => { const id=uid(); periodos.push({id,colaborador_id:cid,inicio:ini,fim,situacao:sit}); return id; };
     const addFer = (pid,ini,fim,dias,obs='') => ferias.push({id:uid(),periodo_id:pid,inicio:ini,fim,dias,obs});
     const addFol = (pid,ini,fim,dias,obs='') => folgas.push({id:uid(),periodo_id:pid,inicio:ini,fim,dias,obs});
+    const addNota = (cid,categoria,texto,data=null,periodo_id=null) => notas.push({id:uid(),colaborador_id:cid,periodo_id,categoria,texto,data,criado_em:new Date().toISOString()});
 
     /* ---- Carlos (real, da planilha) ---- */
     const carlos = addColab({nome:'Carlos Eduardo Nunes',funcao:'Designer Gráfico',departamento:'Criação',unidade:'Granbery',regime:'CLT',admissao:'2018-05-14'});
@@ -3422,6 +3445,9 @@ const Seed = {
     addFol(p,'2024-05-13','2024-05-13',1);
     addFol(p,'2025-01-06','2025-01-17',16,'10+4+2');
     addFol(p,'2025-01-20','2025-01-23',7,'5+2');
+    // notas (regras de negócio da planilha) — exemplos
+    addNota(amanda,'venda_mp','13 dias vendidos pela MP no período 2020/21.','2021-11-16');
+    addNota(amanda,'licenca','Licença maternidade terminou em 15/11/2021.','2021-11-15');
 
     /* ---- Roster fictício (validação de UI em escala) ---- */
     const nomes = [
@@ -3520,7 +3546,7 @@ const Seed = {
       }
     });
 
-    return {colaboradores, periodos, ferias, folgas, auditoria:[], usuarios:[
+    return {colaboradores, periodos, ferias, folgas, notas, auditoria:[], usuarios:[
       {id:uid(), email:'admin@goegrow.com.br',    senha:'demo', nome:'Administrador',  papel:'admin'},
       {id:uid(), email:'rh@goegrow.com.br',       senha:'demo', nome:'RH Go & Grow',   papel:'rh'},
       {id:uid(), email:'consulta@goegrow.com.br', senha:'demo', nome:'Consulta Geral', papel:'leitura'},
@@ -3535,6 +3561,7 @@ const Dom = {
   periodosDe: cid => Store.data.periodos.filter(p=>p.colaborador_id===cid).sort((a,b)=>b.inicio.localeCompare(a.inicio)),
   feriasDe: pid => Store.data.ferias.filter(f=>f.periodo_id===pid).sort((a,b)=>a.inicio.localeCompare(b.inicio)),
   folgasDe: pid => Store.data.folgas.filter(f=>f.periodo_id===pid).sort((a,b)=>a.inicio.localeCompare(b.inicio)),
+  notasDe: cid => (Store.data.notas||[]).filter(n=>n.colaborador_id===cid).sort((a,b)=>String(b.criado_em||'').localeCompare(String(a.criado_em||''))),
 
   diasFerias(pid){ return this.feriasDe(pid).reduce((s,f)=>s+Number(f.dias||0),0) },
   diasFolgas(pid){ return this.folgasDe(pid).reduce((s,f)=>s+Number(f.dias||0),0) },
@@ -3876,6 +3903,7 @@ const UI = {
                 <button class="tab ${this.tabAtual==='oficiais'?'on':''}" data-tab="oficiais">Férias Contábeis</button>
                 <button class="tab ${this.tabAtual==='folgas'?'on':''}" data-tab="folgas">Folgas</button>
                 <button class="tab ${this.tabAtual==='cal'?'on':''}" data-tab="cal">Calendário</button>
+                <button class="tab ${this.tabAtual==='notas'?'on':''}" data-tab="notas">Notas ${(()=>{const n=Dom.notasDe(cid).length;return n?`<span class="cnt">${n}</span>`:'';})()}</button>
                 <button class="tab ${this.tabAtual==='pend'?'on':''}" data-tab="pend">Pendências ${nAlertReal?`<span class="cnt">${nAlertReal}</span>`:''}</button>
               </div>
             </div>
@@ -3967,6 +3995,36 @@ const UI = {
           </div>
         </div>`;
       }).join('') || '<div class="none-yet">Nenhuma folga registrada.</div>';
+    }
+
+    if(this.tabAtual==='notas'){
+      const notas = Dom.notasDe(cid);
+      const podeEd = Auth.podeEditar();
+      const icoEdit = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
+      const icoTrash = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2m1 0-1 14H8L7 6"/></svg>';
+      const cardNota = n => {
+        const cat = catNota(n.categoria);
+        const per = n.periodo_id ? Store.data.periodos.find(p=>p.id===n.periodo_id) : null;
+        return `
+        <div class="nota-card">
+          <div class="nota-top">
+            <span class="nota-cat" style="--nc:${cat.cor}">${esc(cat.lab)}</span>
+            ${n.data?`<span class="nota-data">${fmt(n.data)}</span>`:''}
+            ${per?`<span class="nota-per">Período ${fmtCurto(per.inicio)} – ${fmtCurto(per.fim)}/${pd(per.fim).getFullYear()}</span>`:''}
+            ${podeEd?`<span class="nota-acoes">
+              <button class="gozo-del" title="Editar nota" onclick="Modals.editarNota('${cid}','${n.id}')">${icoEdit}</button>
+              <button class="gozo-del" title="Excluir nota" onclick="Actions.excluirNota('${cid}','${n.id}')">${icoTrash}</button>
+            </span>`:''}
+          </div>
+          <div class="nota-texto">${esc(n.texto)}</div>
+        </div>`;
+      };
+      body.innerHTML = `
+        <div class="notas-head">
+          <p class="notas-desc">Observações de RH que vêm da planilha (venda pela MP, licença, banco de horas, pandemia…) e não cabem nos campos estruturados.</p>
+          ${podeEd?`<button class="btn btn-primary" style="padding:9px 16px" onclick="Modals.novaNota('${cid}')">+ Nova nota</button>`:''}
+        </div>
+        ${notas.length ? notas.map(cardNota).join('') : '<div class="none-yet">Nenhuma nota registrada.</div>'}`;
     }
 
     if(this.tabAtual==='cal'){
@@ -4304,6 +4362,30 @@ const Modals = {
     fim.onchange=sync;
   },
 
+  novaNota(cid){ this._notaModal(cid, null); },
+  editarNota(cid, nid){ const n=(Store.data.notas||[]).find(x=>x.id===nid); if(n) this._notaModal(cid, n); },
+  _notaModal(cid, n){
+    if(!Auth.podeEditar()){ toast('Seu acesso é somente leitura.'); return; }
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    const pers = Dom.periodosDe(cid);
+    const catOpts = CATEGORIAS_NOTA.map(x=>`<option value="${x.k}"${n&&n.categoria===x.k?' selected':''}>${esc(x.lab)}</option>`).join('');
+    const perOpts = ['<option value="">— Nenhum (nota geral) —</option>']
+      .concat(pers.map(p=>`<option value="${p.id}"${n&&n.periodo_id===p.id?' selected':''}>${fmtCurto(p.inicio)} – ${fmtCurto(p.fim)}/${pd(p.fim).getFullYear()}</option>`)).join('');
+    this.open(`
+      <h3>${n?'Editar nota':'Nova nota'}</h3>
+      <p class="msub">${esc(c?.nome||'')}</p>
+      <div class="field-row">
+        <div class="field"><label>Categoria</label><select id="nCat">${catOpts}</select></div>
+        <div class="field"><label>Data de referência (opcional)</label><input type="date" id="nData" value="${n&&n.data?n.data:''}"></div>
+      </div>
+      <div class="field"><label>Período vinculado (opcional)</label><select id="nPer">${perOpts}</select></div>
+      <div class="field"><label>Observação</label><textarea id="nTexto" rows="4" placeholder="ex.: 13 dias vendidos pela MP no período 2020/21.">${n?esc(n.texto):''}</textarea></div>
+      <div class="modal-actions">
+        <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
+        <button class="btn btn-primary" onclick="Actions.${n?`salvarEdicaoNota('${cid}','${n.id}')`:`salvarNota('${cid}')`}">Salvar</button>
+      </div>`);
+  },
+
   novoUsuario(usuario){
     const u = usuario || null;
     UI._userFotoPendente = undefined;
@@ -4438,6 +4520,38 @@ const Actions = {
       `Exclusão de ${table==='ferias'?'férias':'folga'} — ${c?.nome}${reg?` · ${fmt(reg.inicio)} a ${fmt(reg.fim)} (${reg.dias} dias)`:''}`);
     toast('Lançamento excluído');
     UI.renderProfile(cid); UI.renderDir();
+  },
+
+  _lerNota(){
+    return {
+      categoria: $('#nCat').value,
+      texto: $('#nTexto').value.trim(),
+      data: $('#nData').value || null,
+      periodo_id: $('#nPer').value || null,
+    };
+  },
+  salvarNota(cid){
+    if(!this.guard()) return;
+    const n = this._lerNota();
+    if(!n.texto){ toast('Escreva a observação da nota.'); return; }
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    Store.insert('notas', {colaborador_id:cid, ...n}, `Nota (${catNota(n.categoria).lab}) — ${c?.nome||''}`)
+      .then(()=>{ UI.tabAtual='notas'; Modals.close(); toast('Nota registrada ✓'); UI.renderProfile(cid); })
+      .catch(e=>toast('Erro ao salvar: '+e.message));
+  },
+  salvarEdicaoNota(cid, nid){
+    if(!this.guard()) return;
+    const n = this._lerNota();
+    if(!n.texto){ toast('Escreva a observação da nota.'); return; }
+    Store.update('notas', nid, n, 'Edição de nota')
+      .then(()=>{ UI.tabAtual='notas'; Modals.close(); toast('Nota atualizada ✓'); UI.renderProfile(cid); })
+      .catch(e=>toast('Erro ao salvar: '+e.message));
+  },
+  async excluirNota(cid, nid){
+    if(!this.guard()) return;
+    if(!(await Modals.confirm({titulo:'Excluir nota?', message:'Esta ação não pode ser desfeita.', ok:'Excluir', perigo:true}))) return;
+    await Store.remove('notas', nid, 'Exclusão de nota');
+    UI.tabAtual='notas'; toast('Nota excluída'); UI.renderProfile(cid);
   },
   async salvarColab(){
     if(!Auth.podeAdministrar()){ toast('Apenas administradores cadastram colaboradores.'); return; }
