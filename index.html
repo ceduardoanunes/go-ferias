@@ -1624,8 +1624,10 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .dash-card-cal{padding:20px 20px 12px}
 
 /* férias vencendo — lista vertical enxuta (coluna larga ao lado do calendário) */
-.dash-card-vencendo{padding:24px 26px}
-#dashVencendo{display:flex;flex-direction:column}
+.dash-card-vencendo{padding:24px 26px;display:flex;flex-direction:column}
+#dashVencendo{display:flex;flex-direction:column;flex:1}
+/* quando não há nada vencendo, centraliza o aviso vertical/horizontalmente no card */
+#dashVencendo:has(.ag-vazio){justify-content:center;align-items:center}
 .venc-row{
   display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;
   padding:12px 4px;border-bottom:1px solid var(--line-soft);transition:background .12s;border-radius:8px;
