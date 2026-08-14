@@ -4060,7 +4060,6 @@ const UI = {
       };
       body.innerHTML = `
         <div class="notas-head">
-          <p class="notas-desc">Observações de RH que vêm da planilha (venda pela MP, licença, banco de horas, pandemia…) e não cabem nos campos estruturados.</p>
           ${podeEd?`<button class="btn btn-primary" style="padding:9px 16px" onclick="Modals.novaNota('${cid}')">+ Nova nota</button>`:''}
         </div>
         ${notas.length ? notas.map(cardNota).join('') : '<div class="none-yet">Nenhuma nota registrada.</div>'}`;
