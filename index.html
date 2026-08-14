@@ -3552,8 +3552,8 @@ const Dom = {
                         : (pers[1] ? 0 : REGRAS.DIAS_CONTABEIS);
     const folgasAtual = atual ? this.diasFolgas(atual.id) : 0;
     const folgasAnterior = anterior ? this.diasFolgas(anterior.id) : 0;
-    const usadasFolgas = folgasAtual + folgasAnterior;   // soma os 2 períodos no gráfico
-    const baseFolgas = REGRAS.DIAS_FOLGAS * (anterior ? 2 : 1); // acumulou 2 períodos → 44
+    const usadasFolgas = folgasAtual;                    // só o período atual tem folga disponível
+    const baseFolgas = REGRAS.DIAS_FOLGAS;               // base 22 (períodos anteriores são completos/histórico)
     const saldoFolgas = baseFolgas - usadasFolgas;
     // prazo legal: gozo deve terminar até 12 meses após o fim do aquisitivo
     let limite=null, diasParaLimite=null;
@@ -3626,7 +3626,7 @@ const Dom = {
     if(r.gozavel && r.saldoContabil>0 && r.gozavel.situacao!=='programado' && (r.diasParaLimite===null || r.diasParaLimite>REGRAS.ALERTA_VENC_DIAS))
       out.push({tipo:'amber', t:'Férias sem agendamento', d:`${r.saldoContabil} dias contábeis do período ${fmt(r.gozavel.inicio)} – ${fmt(r.gozavel.fim)} ainda sem data marcada.`});
     if(r.saldoFolgas<0)
-      out.push({tipo:'amber', t:'Folgas acima do limite', d:`Foram usadas ${r.usadasFolgas} de ${r.baseFolgas} folgas${r.anterior?' (período atual + anterior)':''} (${Math.abs(r.saldoFolgas)} além do previsto).`});
+      out.push({tipo:'amber', t:'Folgas acima do limite', d:`Foram usadas ${r.usadasFolgas} de ${r.baseFolgas} folgas do período atual (${Math.abs(r.saldoFolgas)} além do previsto).`});
     if(out.length===0)
       out.push({tipo:'green', t:'Tudo em dia', d:'Nenhuma pendência para este colaborador.'});
     return out;
