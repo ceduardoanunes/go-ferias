@@ -81,6 +81,35 @@ def to_iso(v):
             return f'{y:04d}-{mo:02d}-{d:02d}'
     return None
 
+# --- Notas (observações de RH da planilha: venda pela MP, licença, pandemia/banco) ---
+def _prettify_nota(s):
+    s = s.strip().rstrip(' -').strip()
+    letras = [c for c in s if c.isalpha()]
+    if letras and all(c.isupper() for c in letras):   # texto TODO EM CAIXA -> vira sentença
+        s = s.capitalize()
+    if s and not s.endswith('.'):
+        s += '.'
+    return s
+
+def extrai_notas(texto):
+    """Extrai notas de regra de negócio de um texto livre (colunas de gozo).
+    Retorna lista de dicts {categoria, texto, data}. NÃO pega os avisos de
+    inconsistência — só os casos de negócio (MP, licença, pandemia/banco)."""
+    out = []
+    if not texto:
+        return out
+    t = str(texto)
+    for m in re.finditer(r'(\d+\s*dias?\s*vendid[oa]s?\s*pela\s*mp)', t, re.I):
+        out.append({'categoria': 'venda_mp', 'texto': _prettify_nota(m.group(1)), 'data': None})
+    for m in re.finditer(r'(licen[çc]a\s+maternidade[^)+]*)', t, re.I):
+        frag = m.group(1)
+        dm = re.search(r'(\d{2})/(\d{2})/(\d{4})', frag)
+        data = f'{dm.group(3)}-{dm.group(2)}-{dm.group(1)}' if dm else None
+        out.append({'categoria': 'licenca', 'texto': _prettify_nota(frag), 'data': data})
+    for m in re.finditer(r'(pandemia|banco de hora[s]?|antecipa\w+)', t, re.I):
+        out.append({'categoria': 'pandemia', 'texto': _prettify_nota(m.group(1)), 'data': None})
+    return out
+
 def eh_titulo_ou_nota(nome):
     """True p/ linhas que NÃO são pessoa: título da aba, nota longa, placeholder."""
     n = norm(nome)
@@ -115,6 +144,7 @@ def parse_aba(ws, setor):
                 'setor_aba': setor,
                 'setor': setor_de(setor, funcao),        # setor do app (departamento)
                 'periodos': [],
+                'notas': [],
             }
             pessoas.append(atual)
         if atual is None:
@@ -140,6 +170,13 @@ def parse_aba(ws, setor):
         if rev:
             per['revisar'] = [{'linha': r, 'texto': x} for x in rev]
         atual['periodos'].append(per)
+        # notas de regra de negócio (col contábil-aviso e col de gozo/texto livre)
+        for col in (8, 11):
+            for nt in extrai_notas(ws.cell(r, col).value):
+                nt = {**nt, 'periodo_inicio': ini}
+                if not any(n['categoria'] == nt['categoria'] and n['texto'] == nt['texto']
+                           and n.get('periodo_inicio') == ini for n in atual['notas']):
+                    atual['notas'].append(nt)
     return pessoas
 
 def main():
@@ -203,8 +240,9 @@ def main():
     nper = sum(len(p['periodos']) for p in todas)
     nfer = sum(len(x['ferias']) for p in todas for x in p['periodos'])
     nfol = sum(len(x['folgas']) for p in todas for x in p['periodos'])
+    nnot = sum(len(p.get('notas', [])) for p in todas)
     print(f"Colaboradores a ENVIAR: {len(todas)}")
-    print(f"  períodos: {nper}   férias contábeis: {nfer}   folgas: {nfol}")
+    print(f"  períodos: {nper}   férias contábeis: {nfer}   folgas: {nfol}   notas: {nnot}")
     print(f"Pendentes (sem admissão, NÃO enviados): {len(pendentes)}")
     print(f"Folgas a revisar (à mão): {total_rev}")
     print(f"\nSaídas em: {saida}/  (dados.json, PENDENTES.txt, REVISAR.txt)")

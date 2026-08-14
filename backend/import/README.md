@@ -48,8 +48,10 @@ py enviar_para_api.py saida/dados.json \
 - `empresa` (setor da planilha) vira `departamento`; `unidade`/`regime` usam padrões
   ajustáveis no topo do script.
 
-> As **folgas do REVISAR.txt** (venda pela MP, licença, banco de horas) **não** são
-> enviadas — lance à mão no app depois da decisão do RH.
+> **Notas de RH** (venda pela MP, licença, pandemia/banco de horas) são extraídas
+> automaticamente do texto livre e **enviadas** como Notas do colaborador (aba Notas
+> na ficha, vinculadas ao período). Editáveis/excluíveis no app. Os demais itens do
+> **REVISAR.txt** (inconsistências de data, casos ambíguos) seguem para revisão à mão.
 
 ### Backend legado (PostgREST em `backend/sql/`) — só se ainda usar aquele
 O `inserts.sql` gerado é para o schema `api.` do PostgREST **antigo**, e **não**

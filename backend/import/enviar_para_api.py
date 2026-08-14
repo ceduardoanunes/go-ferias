@@ -76,7 +76,7 @@ def main():
         existentes = {c["nome"].strip().upper() for c in (atuais or [])}
         print(f"{len(existentes)} colaborador(es) já no sistema (serão pulados se repetirem).")
 
-    criados = pulados = nper = nfer = nfol = 0
+    criados = pulados = nper = nfer = nfol = nnot = 0
     for p in pessoas:
         nome = p["nome"].strip()
         if nome.upper() in existentes:
@@ -97,13 +97,15 @@ def main():
         if a.dry_run:
             tot_f = sum(len(x["ferias"]) for x in p["periodos"])
             tot_g = sum(len(x["folgas"]) for x in p["periodos"])
-            print(f"  + {nome}  (períodos:{len(p['periodos'])} férias:{tot_f} folgas:{tot_g})")
+            tot_n = len(p.get("notas", []))
+            print(f"  + {nome}  (períodos:{len(p['periodos'])} férias:{tot_f} folgas:{tot_g} notas:{tot_n})")
             criados += 1
             continue
 
         _, colab = http(f"{base}/colaboradores", token=token, method="POST", body=payload_colab)
         cid = colab["id"]
         criados += 1
+        per_ids = {}                              # inicio -> id do período criado (p/ vincular notas)
         for per in p["periodos"]:
             if per.get("pular"):                 # período degenerado/duplicado marcado no parse
                 continue
@@ -113,6 +115,7 @@ def main():
                 "situacao": per.get("situacao") or "acumulando",
             })
             pid = pr["id"]; nper += 1
+            per_ids[per["inicio"]] = pid
             for fx in per["ferias"]:
                 http(f"{base}/ferias_oficiais", token=token, method="POST", body={
                     "periodo_id": pid, "inicio": fx["inicio"], "fim": fx["fim"],
@@ -123,12 +126,20 @@ def main():
                     "periodo_id": pid, "inicio": fg["inicio"], "fim": fg["fim"],
                     "dias": fg["dias"], "obs": fg.get("obs", ""),
                 }); nfol += 1
-        print(f"  OK {nome}  ->  periodos:{len(p['periodos'])}")
+        for nt in p.get("notas", []):            # notas de RH (venda MP, licença, pandemia…)
+            http(f"{base}/notas", token=token, method="POST", body={
+                "colaborador_id": cid,
+                "periodo_id": per_ids.get(nt.get("periodo_inicio")),
+                "categoria": nt.get("categoria") or "outro",
+                "texto": nt.get("texto") or "",
+                "data": nt.get("data"),
+            }); nnot += 1
+        print(f"  OK {nome}  ->  periodos:{len(p['periodos'])}  notas:{len(p.get('notas', []))}")
 
     print("\nResumo:")
     print(f"  colaboradores criados: {criados}   pulados: {pulados}")
     if not a.dry_run:
-        print(f"  periodos: {nper}   ferias: {nfer}   folgas: {nfol}")
+        print(f"  periodos: {nper}   ferias: {nfer}   folgas: {nfol}   notas: {nnot}")
     print("\ni) Folgas com regra de negocio ficaram no REVISAR.txt - lancar a mao no app.")
 
 if __name__ == "__main__":
