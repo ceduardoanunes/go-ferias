@@ -3856,9 +3856,9 @@ const UI = {
           </div>
           <div class="saldos saldos-row">
             <div class="saldo contabil">
-              <div class="saldo-lab">Férias Contábeis<b>${r.saldoContabil} dias disponíveis</b></div>
+              <div class="saldo-lab">Férias Contábeis<b>${r.gozavel ? r.saldoContabil+' dias disponíveis' : 'Em aquisição'}</b></div>
               <div class="meter"><i style="width:${pctC*100}%"></i></div>
-              <div class="saldo-hint">${r.gozavel ? 'Período '+fmtCurto(r.gozavel.inicio)+' – '+fmtCurto(r.gozavel.fim)+'/'+pd(r.gozavel.fim).getFullYear() : 'Nenhum período vencido'}</div>
+              <div class="saldo-hint">${r.gozavel ? 'Período '+fmtCurto(r.gozavel.inicio)+' – '+fmtCurto(r.gozavel.fim)+'/'+pd(r.gozavel.fim).getFullYear() : (r.atual ? 'Período em aquisição: '+fmtCurto(r.atual.inicio)+' – '+fmtCurto(r.atual.fim)+'/'+pd(r.atual.fim).getFullYear() : 'Nenhum período vencido')}</div>
             </div>
             <div class="saldo folgas">
               <div class="saldo-lab">Folgas<b>${Math.max(r.saldoFolgas,0)} dias disponíveis</b></div>
