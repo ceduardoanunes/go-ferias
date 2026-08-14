@@ -657,7 +657,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .saldo.folgas .meter i{background:var(--teal)}
 .saldo-hint{font-size:11.5px;color:var(--faint);margin-top:8px}
 /* Notas (observações de RH) */
-.notas-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:2px 2px 16px;flex-wrap:wrap}
+.notas-head{display:flex;align-items:center;justify-content:center;gap:16px;margin:18px 2px 2px;flex-wrap:wrap}
 .notas-desc{font-size:12.5px;color:var(--muted);max-width:64%;line-height:1.45}
 .nota-card{border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:11px;background:var(--card)}
 .nota-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px}
@@ -4059,10 +4059,10 @@ const UI = {
         </div>`;
       };
       body.innerHTML = `
+        ${notas.length ? notas.map(cardNota).join('') : '<div class="none-yet">Nenhuma nota registrada.</div>'}
         <div class="notas-head">
           ${podeEd?`<button class="btn btn-primary" style="padding:9px 16px" onclick="Modals.novaNota('${cid}')">+ Nova nota</button>`:''}
-        </div>
-        ${notas.length ? notas.map(cardNota).join('') : '<div class="none-yet">Nenhuma nota registrada.</div>'}`;
+        </div>`;
     }
 
     if(this.tabAtual==='cal'){
