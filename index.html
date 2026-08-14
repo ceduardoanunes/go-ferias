@@ -3770,9 +3770,8 @@ const UI = {
     const anosAniv = hoje().getFullYear() - pd(c.admissao).getFullYear();
     const isAnivRedondo = anosAniv>0 && anosAniv%5===0;
     const CORES_ANIV = {5:'b-aniv-silver', 10:'b-aniv-gold', 15:'b-aniv-bronze'};
-    // barra enche só conforme os dias efetivamente gozados (vazia quando nada foi tirado)
-    const gozadosC = r.gozavel ? Dom.diasFerias(r.gozavel.id)
-                   : (pers.some(p=>p.situacao!=='acumulando' && Dom.diasFerias(p.id)>=REGRAS.DIAS_CONTABEIS) ? REGRAS.DIAS_CONTABEIS : 0);
+    // barra reflete só o gozo do período gozável em aberto (vazia quando não há período vencido)
+    const gozadosC = r.gozavel ? Dom.diasFerias(r.gozavel.id) : 0;
     const pctC=Math.max(0,Math.min(1, gozadosC/REGRAS.DIAS_CONTABEIS));
     const pctF=Math.max(0,Math.min(1,r.usadasFolgas/r.baseFolgas));
     const nAlertReal = alertas.filter(a=>a.tipo!=='green').length;
