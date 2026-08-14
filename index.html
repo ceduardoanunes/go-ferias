@@ -4195,7 +4195,9 @@ const Modals = {
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     if(!c) return;
     const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(x=>x.departamento)])];
-    const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(x=>x.unidade)])].filter(Boolean).sort();
+    const ORDEM_UNI=['Quintas da Avenida','Granbery','Home Office'];
+    const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(x=>x.unidade)])].filter(Boolean)
+      .sort((a,b)=>{const ia=ORDEM_UNI.indexOf(a),ib=ORDEM_UNI.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b);});
     const regimes=['CLT','PJ','Estágio'];
     this.open(`
       <h3>Editar colaborador</h3>
