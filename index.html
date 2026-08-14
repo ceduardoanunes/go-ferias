@@ -3540,18 +3540,22 @@ const Dom = {
   resumo(cid){
     const pers = this.periodosDe(cid);
     const atual = pers[0] || null;                       // acumulando
+    const anterior = pers[1] || null;                    // período anterior
     const gozavel = pers.find(p=>p.situacao!=='acumulando' && this.diasFerias(p.id) < REGRAS.DIAS_CONTABEIS) || null;
     const saldoContabil = gozavel ? REGRAS.DIAS_CONTABEIS - this.diasFerias(gozavel.id)
                         : (pers[1] ? 0 : REGRAS.DIAS_CONTABEIS);
-    const usadasFolgas = atual ? this.diasFolgas(atual.id) : 0;
-    const saldoFolgas = REGRAS.DIAS_FOLGAS - usadasFolgas;
+    const folgasAtual = atual ? this.diasFolgas(atual.id) : 0;
+    const folgasAnterior = anterior ? this.diasFolgas(anterior.id) : 0;
+    const usadasFolgas = folgasAtual + folgasAnterior;   // soma os 2 períodos no gráfico
+    const baseFolgas = REGRAS.DIAS_FOLGAS * (anterior ? 2 : 1); // acumulou 2 períodos → 44
+    const saldoFolgas = baseFolgas - usadasFolgas;
     // prazo legal: gozo deve terminar até 12 meses após o fim do aquisitivo
     let limite=null, diasParaLimite=null;
     if(gozavel){
       limite = iso(addM(pd(gozavel.fim),12));
       diasParaLimite = diffD(hoje(), pd(limite));
     }
-    return {atual, gozavel, saldoContabil, usadasFolgas, saldoFolgas, limite, diasParaLimite};
+    return {atual, anterior, gozavel, saldoContabil, folgasAtual, folgasAnterior, usadasFolgas, baseFolgas, saldoFolgas, limite, diasParaLimite};
   },
 
   emGozoHoje(cid){
@@ -3616,7 +3620,7 @@ const Dom = {
     if(r.gozavel && r.saldoContabil>0 && r.gozavel.situacao!=='programado' && (r.diasParaLimite===null || r.diasParaLimite>REGRAS.ALERTA_VENC_DIAS))
       out.push({tipo:'amber', t:'Férias sem agendamento', d:`${r.saldoContabil} dias contábeis do período ${fmt(r.gozavel.inicio)} – ${fmt(r.gozavel.fim)} ainda sem data marcada.`});
     if(r.saldoFolgas<0)
-      out.push({tipo:'amber', t:'Folgas acima do limite', d:`Foram usadas ${r.usadasFolgas} de ${REGRAS.DIAS_FOLGAS} folgas do período atual (${Math.abs(r.saldoFolgas)} além do previsto).`});
+      out.push({tipo:'amber', t:'Folgas acima do limite', d:`Foram usadas ${r.usadasFolgas} de ${r.baseFolgas} folgas${r.anterior?' (período atual + anterior)':''} (${Math.abs(r.saldoFolgas)} além do previsto).`});
     if(out.length===0)
       out.push({tipo:'green', t:'Tudo em dia', d:'Nenhuma pendência para este colaborador.'});
     return out;
@@ -3767,7 +3771,7 @@ const UI = {
     const gozadosC = r.gozavel ? Dom.diasFerias(r.gozavel.id)
                    : (pers.some(p=>p.situacao!=='acumulando' && Dom.diasFerias(p.id)>=REGRAS.DIAS_CONTABEIS) ? REGRAS.DIAS_CONTABEIS : 0);
     const pctC=Math.max(0,Math.min(1, gozadosC/REGRAS.DIAS_CONTABEIS));
-    const pctF=Math.max(0,Math.min(1,r.usadasFolgas/REGRAS.DIAS_FOLGAS));
+    const pctF=Math.max(0,Math.min(1,r.usadasFolgas/r.baseFolgas));
     const nAlertReal = alertas.filter(a=>a.tipo!=='green').length;
 
     const proxima = Dom.proximaMarcacao(cid);
@@ -3857,7 +3861,7 @@ const UI = {
             <div class="saldo folgas">
               <div class="saldo-lab">Folgas<b>${Math.max(r.saldoFolgas,0)} dias disponíveis</b></div>
               <div class="meter"><i style="width:${pctF*100}%"></i></div>
-              <div class="saldo-hint">${r.usadasFolgas} usadas no período atual${r.saldoFolgas<0?' · <b style="color:var(--amber)">'+Math.abs(r.saldoFolgas)+' além</b>':''}</div>
+              <div class="saldo-hint">Período Atual: ${r.folgasAtual}${r.anterior?' · Período Anterior: '+r.folgasAnterior:''}${r.saldoFolgas<0?' · <b style="color:var(--amber)">'+Math.abs(r.saldoFolgas)+' além</b>':''}</div>
             </div>
           </div>
           <div class="panel">
