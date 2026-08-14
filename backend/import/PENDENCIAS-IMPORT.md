@@ -67,7 +67,7 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
   - **Troca de CNPJ / readmissão** → períodos duplicados ou com mesmo início → reconciliar no app.
   - **Datas invertidas** na planilha (fim antes do início) → folga vai pro REVISAR.
   - **Contagem incompatível** com o intervalo → vai pro REVISAR.
-  - **Folga idêntica a uma férias** → removida (evita dupla contagem).
+  - **Folga coincidente com férias** → MANTIDA. Férias contábeis e folga são independentes (na férias contábil a pessoa trabalha normal, sem bater ponto); não é dupla contagem.
 
 ---
 

@@ -241,8 +241,8 @@ def _valida_folga(ini, fim, dias):
 
 def revisar_incoerencias(p):
     """Checagens CRUZADAS por pessoa: move p/ 'revisar' o que não dá pra confiar,
-    em vez de importar lixo (período degenerado/duplicado; folga idêntica a uma
-    férias do mesmo período — possível dupla contagem).
+    em vez de importar lixo (período degenerado/duplicado). Férias contábeis e
+    folga são independentes — folga coincidente com férias NÃO é removida.
 
     NÃO comparamos folga com a admissão: no grupo há troca de CNPJ (readmissão),
     então períodos/folgas legítimos podem ser anteriores à admissão atual."""
@@ -267,14 +267,9 @@ def revisar_incoerencias(p):
             per['revisar'].append({'linha': 0, 'texto': f"período com mesmo início de outro ({per['inicio']}) — conferir no app"})
         vistos.add(chave)
         inicios.add(per['inicio'])
-        fer_set = {(f['inicio'], f['fim']) for f in per['ferias']}
-        ok = []
-        for f in per['folgas']:
-            if (f['inicio'], f['fim']) in fer_set:
-                per['revisar'].append({'linha': 0, 'texto': f"{f['inicio']}..{f['fim']} ({f['dias']}d) [folga idêntica a uma férias]"})
-            else:
-                ok.append(f)
-        per['folgas'] = ok
+        # Férias contábeis e folga são INDEPENDENTES (na férias contábil a pessoa trabalha
+        # normal, sem bater ponto). Uma folga coincidente com férias NÃO é dupla contagem —
+        # mantemos ambas.
 
 def parse_planilha(caminho):
     wb = openpyxl.load_workbook(caminho, data_only=True)

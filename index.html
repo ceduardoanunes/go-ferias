@@ -4468,10 +4468,15 @@ const Actions = {
     return true;
   },
   // valida sobreposição com qualquer ausência existente do colaborador (férias ou folga)
-  conflitoDatas(cid, ini, fim, ignorarId){
+  // Férias contábeis e folga são independentes (na férias contábil a pessoa trabalha normal),
+  // então só há conflito dentro do MESMO tipo. Sem `tipo`, compara os dois (compatibilidade).
+  conflitoDatas(cid, ini, fim, ignorarId, tipo){
     const pers = Dom.periodosDe(cid);
     for(const p of pers){
-      for(const r of [...Dom.feriasDe(p.id), ...Dom.folgasDe(p.id)]){
+      const lista = tipo==='ferias' ? Dom.feriasDe(p.id)
+                  : (tipo==='folga'||tipo==='folgas') ? Dom.folgasDe(p.id)
+                  : [...Dom.feriasDe(p.id), ...Dom.folgasDe(p.id)];
+      for(const r of lista){
         if(ignorarId && r.id===ignorarId) continue;
         if(r.inicio <= fim && r.fim >= ini) return r;
       }
@@ -4485,8 +4490,8 @@ const Actions = {
           status=$('#mStatus')?.value || 'programado';
     if(!ini||!fim||fim<ini){ toast('Confira as datas de início e fim.'); return; }
     if(!dias||dias<1){ toast('Informe a quantidade de dias.'); return; }
-    const conflito = this.conflitoDatas(cid, ini, fim);
-    if(conflito){ toast(`Conflito: já existe uma ausência de ${fmt(conflito.inicio)} a ${fmt(conflito.fim)}.`); return; }
+    const conflito = this.conflitoDatas(cid, ini, fim, null, tipo);
+    if(conflito){ toast(`Conflito: já existe ${tipo==='ferias'?'férias':'folga'} de ${fmt(conflito.inicio)} a ${fmt(conflito.fim)}.`); return; }
     const table = tipo==='ferias'?'ferias':'folgas';
     const cap_ = tipo==='ferias'?REGRAS.DIAS_CONTABEIS:REGRAS.DIAS_FOLGAS;
     const usado = tipo==='ferias'?Dom.diasFerias(perId):Dom.diasFolgas(perId);
@@ -4636,8 +4641,8 @@ const Actions = {
           dias=Number($('#eDias').value), obs=$('#eObs').value.trim();
     if(!ini||!fim||fim<ini){ toast('Confira as datas de início e fim.'); return; }
     if(!dias||dias<1){ toast('Informe a quantidade de dias.'); return; }
-    const conflito = this.conflitoDatas(cid, ini, fim, id);
-    if(conflito){ toast(`Conflito: já existe uma ausência de ${fmt(conflito.inicio)} a ${fmt(conflito.fim)}.`); return; }
+    const conflito = this.conflitoDatas(cid, ini, fim, id, table);
+    if(conflito){ toast(`Conflito: já existe ${table==='ferias'?'férias':'folga'} de ${fmt(conflito.inicio)} a ${fmt(conflito.fim)}.`); return; }
     const r = Store.data[table].find(x=>x.id===id);
     const perId = r.periodo_id;
     const usadoSem = (table==='ferias'?Dom.diasFerias(perId):Dom.diasFolgas(perId)) - r.dias;
@@ -5834,12 +5839,13 @@ UI.renderAgenda = function(){
     </div>`;
   const emFerias = ausMes.filter(p=>p.tipo==='ferias');
   const emFolga = ausMes.filter(p=>p.tipo==='folga');
-  const setoresAfetados = new Set(ausMes.map(p=>{ const c=Store.data.colaboradores.find(x=>x.nome===p.nome); return c?c.departamento:null; }).filter(Boolean));
+  // ausência real = só folga (na férias contábil a pessoa trabalha)
+  const setoresAfetados = new Set(emFolga.map(p=>{ const c=Store.data.colaboradores.find(x=>x.nome===p.nome); return c?c.departamento:null; }).filter(Boolean));
   const totalSetores = new Set(Store.data.colaboradores.map(c=>c.departamento)).size;
   const nSolic = (Store.data.solicitacoes||[]).filter(s=>s.status==='pendente').length;
   $('#agKpis').innerHTML =
     statAg('violet', ICOag.solic,   'Solicitações',     nSolic?'aguardando RH':'nada pendente', nSolic, 'Modals.solicitacoes()') +
-    statAg('amber',  ICOag.ausentes,'Ausentes no Mês',  ausMes.length?'férias + folgas':'ninguém no mês', ausMes.length) +
+    statAg('amber',  ICOag.ausentes,'Ausentes no Mês',  emFolga.length?'só folgas (ausência real)':'ninguém no mês', emFolga.length) +
     statAg('red',    ICOag.sol,     'Férias Contábeis', emFerias.length?`${MESES[mes]} ${ano}`:'ninguém no mês', emFerias.length) +
     statAg('teal',   ICOag.folga,   'Folgas',           emFolga.length?`${MESES[mes]} ${ano}`:'ninguém no mês', emFolga.length) +
     statAg('blue',   ICOag.setores, 'Setores',          setoresAfetados.size?`${MESES[mes]} ${ano}`:'nenhum setor', setoresAfetados.size);
@@ -5941,9 +5947,11 @@ UI.renderDash = function(){
   const diaSemana = DIAS_EXT[hj.getDay()];
   $('#dxHeroData').textContent = `${diaSemana[0].toUpperCase()+diaSemana.slice(1)}, ${hj.getDate()} de ${MESES[mesAtual]} de ${ano}`;
   $('#dxHeroTitulo').textContent = `${saud}, ${Auth.user.nome.split(' ')[0]}!`;
-  $('#dxHeroMsg').textContent = ausHoje.length
-    ? `Você tem ${ausHoje.length} ${ausHoje.length===1?'pessoa ausente':'pessoas ausentes'} hoje e ${vencendo.length} ${vencendo.length===1?'férias a vencer':'férias a vencer'}.`
-    : `Ninguém está de folga ou férias contábeis hoje. A equipe está completa.`;
+  // ausência real = só folga (na férias contábil a pessoa trabalha normal)
+  const nFolgaHoje = ausHoje.filter(p=>p.tipo==='folga').length;
+  $('#dxHeroMsg').textContent = nFolgaHoje
+    ? `Você tem ${nFolgaHoje} ${nFolgaHoje===1?'pessoa de folga':'pessoas de folga'} hoje e ${vencendo.length} ${vencendo.length===1?'férias a vencer':'férias a vencer'}.`
+    : `Ninguém está de folga hoje. A equipe está completa.`;
   // cor do banner conforme o horário
   const periodo = ehNoite ? 'noite' : hora < 12 ? 'manha' : 'tarde';
   const heroEl = $('#dxHero');
@@ -6227,8 +6235,8 @@ UI.decidirSolic = async function(id, aprovar){
   // no modo node, o servidor faz tudo (lança a folga + status + e-mail) em /decidir
   if(Store.driver==='node'){
     if(aprovar){
-      const conflito = Actions.conflitoDatas(s.colaborador_id, s.inicio, s.fim);
-      if(conflito){ toast(`Conflito: já existe ausência de ${fmt(conflito.inicio)} a ${fmt(conflito.fim)}.`); return; }
+      const conflito = Actions.conflitoDatas(s.colaborador_id, s.inicio, s.fim, null, s.tipo);
+      if(conflito){ toast(`Conflito: já existe ${s.tipo==='ferias'?'férias':'folga'} de ${fmt(conflito.inicio)} a ${fmt(conflito.fim)}.`); return; }
     }
     try{
       await Store.apiFetch(`/solicitacoes/${id}/decidir`, {method:'POST', headers:Store.apiHeaders(), body:JSON.stringify({aprovar})});
@@ -6238,8 +6246,8 @@ UI.decidirSolic = async function(id, aprovar){
     UI.renderSolic(); UI.renderAgenda(); return;
   }
   if(aprovar){
-    const conflito = Actions.conflitoDatas(s.colaborador_id, s.inicio, s.fim);
-    if(conflito){ toast(`Conflito: já existe ausência de ${fmt(conflito.inicio)} a ${fmt(conflito.fim)}.`); return; }
+    const conflito = Actions.conflitoDatas(s.colaborador_id, s.inicio, s.fim, null, s.tipo);
+    if(conflito){ toast(`Conflito: já existe ${s.tipo==='ferias'?'férias':'folga'} de ${fmt(conflito.inicio)} a ${fmt(conflito.fim)}.`); return; }
     const pers = Dom.periodosDe(s.colaborador_id);
     const per = pers.find(p=>p.inicio<=s.inicio && p.fim>=s.inicio) || pers[pers.length-1] || pers[0];
     if(!per){ toast('Colaborador sem período aquisitivo — não foi possível lançar.'); return; }
