@@ -12,7 +12,8 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 ## ✅ Concluído
 
 ### 4ª inserção — aba INBOUND (8 colaboradores)
-- Todos → setor **Inbound**: Ana Carolina Oliveira Mendes, Darlan, Francine da Silva Vieira, Leony de Paula, Vitor de Souza Rodrigues, Gabriel Campos, Bruna Assis, Luan Oliveira. Gravados: **32 períodos, 20 férias, 117 folgas**. 0 pulados.
+- Todos → setor **Inbound**: Ana Carolina Oliveira Mendes, Darlan, Francine da Silva Vieira, Leony de Paula, Vitor de Souza Rodrigues, Gabriel Campos, ~~Bruna Assis~~, Luan Oliveira. Gravados: **32 períodos, 20 férias, 117 folgas**. 0 pulados.
+- **Bruna Assis EXCLUÍDA** (`excluir_colab.py`): era **ex-funcionária** numa linha de resquício na aba de ativos (função "GOOGLE", único período de 2022, sem situação/gozo). Restam **7 ativos** do Inbound. ⚠️ Ficar de olho em outras linhas de ex-funcionário perdidas nas abas de ativos das próximas levas.
 - **Decisão RH: manter TODO o histórico** — os 5 que **trocaram de CNPJ** (Darlan, Francine, Leony, Vitor, Gabriel · empresa "RCT - DIGITAL ON") entraram com os períodos antigos (2021→2024) preservados.
 - **Reconciliar à mão no app** nesses 5: a **admissão** ficou como a data do CNPJ novo (ex.: Francine 25/11/2025) enquanto os períodos vêm de ~2021 → ajustar p/ o tempo de casa refletir o histórico; remover o **período-stub de 1 dia** da readmissão.
 - Períodos/folgas com data inválida (fim < início, stub) foram **rejeitados pela API** (já estavam no REVISAR) — 36→32 períodos, 120→117 folgas.
