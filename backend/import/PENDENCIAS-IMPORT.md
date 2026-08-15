@@ -11,6 +11,13 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 
 ## ✅ Concluído
 
+### 4ª inserção — aba INBOUND (8 colaboradores)
+- Todos → setor **Inbound**: Ana Carolina Oliveira Mendes, Darlan, Francine da Silva Vieira, Leony de Paula, Vitor de Souza Rodrigues, Gabriel Campos, Bruna Assis, Luan Oliveira. Gravados: **32 períodos, 20 férias, 117 folgas**. 0 pulados.
+- **Decisão RH: manter TODO o histórico** — os 5 que **trocaram de CNPJ** (Darlan, Francine, Leony, Vitor, Gabriel · empresa "RCT - DIGITAL ON") entraram com os períodos antigos (2021→2024) preservados.
+- **Reconciliar à mão no app** nesses 5: a **admissão** ficou como a data do CNPJ novo (ex.: Francine 25/11/2025) enquanto os períodos vêm de ~2021 → ajustar p/ o tempo de casa refletir o histórico; remover o **período-stub de 1 dia** da readmissão.
+- Períodos/folgas com data inválida (fim < início, stub) foram **rejeitados pela API** (já estavam no REVISAR) — 36→32 períodos, 120→117 folgas.
+- **72 folgas** no REVISAR (Francine 20, Leony 18, Darlan 12, Vitor 10, Gabriel 9, Ana 2, Bruna 1). Nome **"Darlan"** sem sobrenome → conferir.
+
 ### 3ª inserção — aba REDAÇÃO-REVISÃO (5 colaboradores)
 - Split por função funcionou: **Matheus Pereira Soares**, **Maryane Almeida**, **Vitória Beatriz** → **Redação**; **Flávia Revisora**, **Michele Fabiene** → **Revisão**. Total: 25 períodos, 15 férias, 56 folgas, 2 notas (Flávia — banco de horas). 0 pulados.
 - **30 folgas** ficaram no `REVISAR.txt` (fim antes do início, contagem incompatível, "VER BH", "8 DIAS FDS") — lançar à mão no app.
@@ -39,14 +46,13 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 
 ---
 
-## ⏳ Abas ainda NÃO importadas (7)
+## ⏳ Abas ainda NÃO importadas (6)
 
 | Aba | Setor do app | A enviar | Períodos | Férias | Folgas | Revisar |
 |---|---|--:|--:|--:|--:|--:|
 | ADM | Administrativo | 9 | 25 | 12 | 88 | 4 |
 | ATENDIMENTO CORPORATIVO | Corporativo | 9 | 34 | 31 | 123 | 7 |
 | SUPERVISÃO | Coordenação | 8 | 42 | 32 | 149 | 21 |
-| INBOUND | Inbound | 8 | 36 | 20 | 171 | 17 |
 | CRIAÇÃO | Criação | 26 | 77 | 65 | 313 | 25 |
 | ESTAGIÁRIOS | Estagiários | 11 | 19 | 0 | 15 | 4 |
 | ATEND. SOCIAL MIDIA | Digital | 17 | 52 | 21 | 169 | 12 |
@@ -84,8 +90,8 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 ---
 
 ## Próximo passo
-Escolher a próxima aba entre as 7 restantes (ADM, Atendimento Corporativo, Supervisão,
-Inbound, Criação, Estagiários, Social Mídia). Fluxo: gerar `dados.json` da aba → conferir
+Escolher a próxima aba entre as 6 restantes (ADM, Atendimento Corporativo, Supervisão,
+Criação, Estagiários, Social Mídia). Fluxo: gerar `dados.json` da aba → conferir
 REVISAR → enviar → conferir no app. Deixar **Social Mídia (→ Digital)** por último (troca de CNPJ).
 
 > Lembrete: rodar o envio com `SSL_CERT_FILE=$(python3 -m certifi) python3 enviar_para_api.py saida/dados.json --url https://goferias.onrender.com --senha demo`.
