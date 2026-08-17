@@ -11,6 +11,12 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 
 ## ✅ Concluído
 
+### 5ª inserção — aba ESTAGIÁRIOS (11 colaboradores)
+- Todos → setor **Estagiários**: Ana Luiza Chaves Souza, Cassiano Fernandes Augusto Pires, Eric Oliviera Quintella, Jessica da Silva Xavier, Luan Carlos Esteves Oliveira, Luiz Fernando Assis Rangel, Mariana Paiva Dabés, Mateus Costa, Nathalia de Sousa Ferreira, Victoria Werneck, Vinicius Silva. Gravados: **19 períodos, 0 férias, 9 folgas, 0 notas**. 0 pulados. Total no app: **19 → 30 colaboradores**.
+- **Clara Alves NÃO entrou** — sem admissão válida (API exige). Está no `PENDENTES.txt` (função "Estágio/atendimento", 2 períodos) → **lançar à mão no app**.
+- **10 folgas no REVISAR** (à mão): Vinicius (fim antes do início `26/12 a 05/01`, + "2 dias num intervalo de 1"), Mateus/Mariana/Victoria (pares "29 e 30/12" etc. contados como 2 num intervalo de 1), Jessica/Ana Luiza (data solta), e **Luiz Fernando** com **"PAGO EM RCT"** (regra de negócio — a outra folga dele entrou normal).
+- Estagiários **não têm férias contábeis** (esperado — 0 gozos de 30 dias na aba).
+
 ### 4ª inserção — aba INBOUND (8 colaboradores)
 - Todos → setor **Inbound**: Ana Carolina Oliveira Mendes, Darlan, Francine da Silva Vieira, Leony de Paula, Vitor de Souza Rodrigues, Gabriel Campos, ~~Bruna Assis~~, Luan Oliveira. Gravados: **32 períodos, 20 férias, 117 folgas**. 0 pulados.
 - **Bruna Assis EXCLUÍDA** (`excluir_colab.py`): era **ex-funcionária** numa linha de resquício na aba de ativos (função "GOOGLE", único período de 2022, sem situação/gozo). Restam **7 ativos** do Inbound. ⚠️ Ficar de olho em outras linhas de ex-funcionário perdidas nas abas de ativos das próximas levas.
@@ -47,7 +53,7 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 
 ---
 
-## ⏳ Abas ainda NÃO importadas (6)
+## ⏳ Abas ainda NÃO importadas (5)
 
 | Aba | Setor do app | A enviar | Períodos | Férias | Folgas | Revisar |
 |---|---|--:|--:|--:|--:|--:|
@@ -55,7 +61,6 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 | ATENDIMENTO CORPORATIVO | Corporativo | 9 | 34 | 31 | 123 | 7 |
 | SUPERVISÃO | Coordenação | 8 | 42 | 32 | 149 | 21 |
 | CRIAÇÃO | Criação | 26 | 77 | 65 | 313 | 25 |
-| ESTAGIÁRIOS | Estagiários | 11 | 19 | 0 | 15 | 4 |
 | ATEND. SOCIAL MIDIA | Digital | 17 | 52 | 21 | 169 | 12 |
 
 - **Sugestão de ordem:** começar pelas menores/limpas (**Atendimento OFF**, **ADM**) e deixar **SOCIAL MÍDIA (→ Digital)** por último — teve **migração de CNPJ em 2025**, então terá muitos períodos duplicados/readmissão pra reconciliar.
@@ -66,7 +71,7 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 ## ⏳ Pendências de dados (padrões, sem nomes)
 
 ### 1. Pessoas sem admissão (NÃO entram — API exige admissão; lançar à mão)
-- **3 pessoas** no arquivo completo: Criação ×2, Estagiários ×1. Nomes no `PENDENTES.txt` gerado no import.
+- **Estagiários:** Clara Alves (pendência ativa, ver 5ª inserção). Ainda por vir nas abas não importadas: **Criação ×2**. Nomes no `PENDENTES.txt` gerado a cada import.
 
 ### 2. Folgas a revisar (não entram no automático — ~106 no arquivo completo)
 - **~59 recuperáveis**: têm dia/mês mas **falta o ano** (ex.: `20/04 (1)`). Dá pra deduzir o ano do período aquisitivo — **melhoria de parser ainda não feita**.
@@ -91,8 +96,8 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 ---
 
 ## Próximo passo
-Escolher a próxima aba entre as 6 restantes (ADM, Atendimento Corporativo, Supervisão,
-Criação, Estagiários, Social Mídia). Fluxo: gerar `dados.json` da aba → conferir
+Escolher a próxima aba entre as 5 restantes (ADM, Atendimento Corporativo, Supervisão,
+Criação, Social Mídia). Fluxo: gerar `dados.json` da aba → conferir
 REVISAR → enviar → conferir no app. Deixar **Social Mídia (→ Digital)** por último (troca de CNPJ).
 
 > Lembrete: rodar o envio com `SSL_CERT_FILE=$(python3 -m certifi) python3 enviar_para_api.py saida/dados.json --url https://goferias.onrender.com --senha demo`.
