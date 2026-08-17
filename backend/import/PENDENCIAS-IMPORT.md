@@ -11,11 +11,10 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 
 ## ✅ Concluído
 
-### 5ª inserção — aba ESTAGIÁRIOS (11 colaboradores)
-- Todos → setor **Estagiários**: Ana Luiza Chaves Souza, Cassiano Fernandes Augusto Pires, Eric Oliviera Quintella, Jessica da Silva Xavier, Luan Carlos Esteves Oliveira, Luiz Fernando Assis Rangel, Mariana Paiva Dabés, Mateus Costa, Nathalia de Sousa Ferreira, Victoria Werneck, Vinicius Silva. Gravados: **19 períodos, 0 férias, 9 folgas, 0 notas**. 0 pulados. Total no app: **19 → 30 colaboradores**.
-- **Clara Alves NÃO entrou** — sem admissão válida (API exige). Está no `PENDENTES.txt` (função "Estágio/atendimento", 2 períodos) → **lançar à mão no app**.
-- **10 folgas no REVISAR** (à mão): Vinicius (fim antes do início `26/12 a 05/01`, + "2 dias num intervalo de 1"), Mateus/Mariana/Victoria (pares "29 e 30/12" etc. contados como 2 num intervalo de 1), Jessica/Ana Luiza (data solta), e **Luiz Fernando** com **"PAGO EM RCT"** (regra de negócio — a outra folga dele entrou normal).
-- Estagiários **não têm férias contábeis** (esperado — 0 gozos de 30 dias na aba).
+### ⛔ REGRA: aba ESTAGIÁRIOS NÃO entra no controle CLT
+- **Estagiário é regido pela Lei 11.788/2008, não pela CLT** → não tem férias/folgas CLT. A aba **ESTAGIÁRIOS não deve ser migrada** com períodos aquisitivos/férias/folgas.
+- ⚠️ **Erro corrigido:** a 5ª inserção subiu os 11 por engano (19 períodos + 9 folgas). **Revertido** com `scratchpad/zerar_periodos.py --setor "Estagiários"` — os **11 cadastros foram MANTIDOS** (Ana Luiza Chaves Souza, Cassiano Fernandes Augusto Pires, Eric Oliviera Quintella, Jessica da Silva Xavier, Luan Carlos Esteves Oliveira, Luiz Fernando Assis Rangel, Mariana Paiva Dabés, Mateus Costa, Nathalia de Sousa Ferreira, Victoria Werneck, Vinicius Silva), mas **períodos/férias/folgas removidos** (9 folgas + 21 períodos apagados — 2 períodos extras eram auto-abertos pelo app). Conferido: 11 estagiários, 0 períodos.
+- Se no futuro o RH quiser controlar **recesso de estagiário** (30 dias a cada 12 meses de estágio, Lei 11.788), é regra **à parte** do fluxo CLT — decidir modelagem antes.
 
 ### 4ª inserção — aba INBOUND (8 colaboradores)
 - Todos → setor **Inbound**: Ana Carolina Oliveira Mendes, Darlan, Francine da Silva Vieira, Leony de Paula, Vitor de Souza Rodrigues, Gabriel Campos, ~~Bruna Assis~~, Luan Oliveira. Gravados: **32 períodos, 20 férias, 117 folgas**. 0 pulados.
@@ -71,7 +70,7 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 ## ⏳ Pendências de dados (padrões, sem nomes)
 
 ### 1. Pessoas sem admissão (NÃO entram — API exige admissão; lançar à mão)
-- **Estagiários:** Clara Alves (pendência ativa, ver 5ª inserção). Ainda por vir nas abas não importadas: **Criação ×2**. Nomes no `PENDENTES.txt` gerado a cada import.
+- **Estagiários:** N/A — aba fora do escopo CLT (ver regra acima). Ainda por vir nas abas não importadas: **Criação ×2**. Nomes no `PENDENTES.txt` gerado a cada import.
 
 ### 2. Folgas a revisar (não entram no automático — ~106 no arquivo completo)
 - **~59 recuperáveis**: têm dia/mês mas **falta o ano** (ex.: `20/04 (1)`). Dá pra deduzir o ano do período aquisitivo — **melhoria de parser ainda não feita**.
