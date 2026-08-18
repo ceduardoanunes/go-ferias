@@ -11,6 +11,40 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 
 ## ✅ Concluído
 
+### 8ª–10ª inserção — CORPORATIVO, ADM, CRIAÇÃO (últimas 3 abas) → migração de abas COMPLETA
+Sistema **72 → 96** colaboradores. Todas as abas de setor ativo foram importadas.
+
+**Corporativo → Coordenação/Corporativo (8 criados, 1 pulado):** Adrielly Dandara Silva Leao, Alice Teixeira Oliveira, Ana Carolina Mendes Martins Maia, Clara Freguglia Roque, Clarice Abreu, Darlene Christiny Santos Moura, Júlia Fernandes Baptista Oliveira, Sarah Daibert Couri. 33 períodos, 31 férias, 90 folgas.
+- **Eric Oliviera Quintella PULADO** — já existia como **estagiário efetivado** (ver abaixo).
+- Reconciliar: **Sarah Daibert Couri** (CNPJ, hist desde 2021-08-17 / adm 2026-03-24). Sem função: **Darlene** e **Júlia** (ambas sem empresa também). **Júlia** tem 2 períodos **sobrepostos** (2023-07-14 e 2023-09-13) — conferir/apagar espúrio.
+
+**ADM → Administrativo (9 criados):** Amanda Lima, Augusto Pires, Clara Teixeira Evangelista, Fabiana Morais, Valéria Leão Marins, Victoria Camarinha, Clarisse da Silva de Oliveira, Danielle de Souza Resende, Renata Marcon. 24 períodos, 12 férias, 71 folgas.
+- **Amanda Lima** tinha stub 0/1 dia (2026-07-24) rejeitado (7→6 períodos). Reconciliar CNPJ: **Victoria Camarinha** (2025-11-24) e **Danielle de Souza Resende** (2023-03-03).
+
+**Criação → Criação (24 criados, 1 pulado):** Bruna Labanca, Caio Alves, Carlos Eduardo Nunes, Carlos Eduardo Fregulia, Caik de Souza Sene, Edimar da Costa Silva, Gabriel Fernandes Delarue, Guilherme Pereira, Gustavo Martins Esteves, Maria Carolina Miranda e Silva, Maria Vitoria Freitas Lima, Nathalia Garcia Rodrigues, Oliver Baio, Rafael Cardoso Dias Silva, Roberto Martins Gonçalves, Victor Bosich Rezende, Daniel Marcos de Assis e Oliveira, Felipe Antonio Rodrigues, Gustavo Augusto Alves, Jordan Christian Portes Martins de Melo, Júlio Cesar de Sousa Vieira, Melissa Gilberto Marques, Osmar Parma Junior, Paola Fidelis Freitas. 75 períodos, 65 férias, 214 folgas, **3 notas** (Fregulia 2× venda MP, Jordan banco de horas).
+- **Nathalia de Sousa Ferreira PULADA** — estagiária efetivada (ver abaixo). ⚠️ Distinta de **Nathalia Garcia Rodrigues** (entrou normal).
+- **Paola Fidelis Freitas**: parser quebrou em 2 linhas (2 aquisitivos) → **mescladas à mão** no dados.json antes do envio (1 pessoa, 2 períodos). Sem função/empresa.
+- Reconciliar CNPJ: **Carlos Eduardo Fregulia** (2019-01-28), **Victor Bosich Rezende** (2020-02-23), **Jordan Christian Portes** (2022-04-06), **Felipe Antonio Rodrigues** (2023-04-05). Sem função: **Guilherme Pereira**.
+- **Denis Fernando de Oliveira Ribeiro (Bahamas)** e **Sara Efigenia de Oliveira Magalhaes** NÃO entraram (sem admissão) → lançar à mão.
+- 124 folgas no REVISAR.
+
+> ⚠️ **NOVO — Estagiários efetivados (nome colidiu → PULADOS pelo envio):** **Eric Oliviera Quintella** (→ Corporativo, adm 2026-02-02, 1 período) e **Nathalia de Sousa Ferreira** (→ Criação, adm 2026-06-25, 1 período) já existiam como estagiários (0 períodos). O cadastro CLT novo **não** foi criado. **Converter à mão no app:** mudar setor de Estagiários → Corporativo/Criação, ajustar admissão e lançar o período aquisitivo.
+
+### 7ª inserção — aba ATEND. SOCIAL MÍDIA (17 colaboradores → Digital) 💣 troca de CNPJ
+- Maria Eduarda Oliveira Agreli, Ana Clara Souza David, Eliton de Jesus Souza, Ester dos Anjos Rocha, Fabrício Alves Correa, Gabriel Almeida de Oliveira, João Francisco Beghelli, Larissa Costa Cardoso e Silva, Maria Eduarda Robusti Barbosa, Mariana Marcato Oliveira, Matheus Pereira Pires, Pablo Amaro Reis da Silva, Pedro Guimarães, Pedro Henrique Portes, Raphaela Morena Borges, Tamiris Toroa Procopio, Victor Saggioro de Oliveira. Gravados: **46 períodos, 21 férias, 129 folgas**. 0 pulados. Sistema 38 → 55.
+- **6 períodos-stub de 0/1 dia** (Eliton, Gabriel, Mariana, Matheus P. Pires, Pablo, Pedro H. Portes) rejeitados pela API → 52 → 46 períodos. Esperado.
+- **Decisão RH (igual Inbound): manter TODO o histórico.** ~11 pessoas migraram de CNPJ (RCT-DIGITAL / REC) em 2025/2026 → `admissão` ficou como a data do CNPJ novo, mas com períodos vindos de 2022-2024. **Reconciliar a admissão à mão** p/ o tempo de casa refletir o histórico. Mais antigos: **João Francisco Beghelli** e **Victor Saggioro** (desde 2022), **Maria Eduarda Robusti Barbosa** (desde 2020).
+- ⚠️ **Maria Eduarda Robusti Barbosa**: função + empresa **em branco** na planilha e **buraco no histórico** (2020→2022, pula p/ 2025 — faltam 2023/2024). Provável saída+readmissão. Conferir tudo à mão.
+- ⚠️ **Gabriel Almeida**: dois períodos com **mesmo início** (2025-02-03) — duplicata do corte de CNPJ (parser flagou "conferir no app").
+- ⚠️ **Duas Marias Eduardas distintas**: Agreli (Atendimento/EDITORAÇÃO) e Robusti Barbosa. Ambas entraram.
+- **59 folgas no REVISAR** (padrões conhecidos: listas de dias, datas viradas, "direito a X dias").
+
+### 6ª inserção — aba SUPERVISÃO (8 colaboradores → Coordenação)
+- Brênio Peters Ribeiro, Cintia de Freitas Guimaraes, Luzya Marxiellen Montan Oliveira, Danilo dos Santos Bispo, Dhafni Esteves Maciel, Eduardo Moreira Valente Junior, Kim Menini Arimathea, Maria Eduarda Mendonça. Gravados: **40 períodos, 32 férias, 106 folgas**. 0 pulados. Sistema 30 → 38 colaboradores.
+- Parser atual mais conservador que a estimativa antiga do doc (era 149 folgas/21 revisar → ficou 106 folgas + **66 no REVISAR**). Padrões conhecidos: venda MP ("10/30 DIAS VENDIDOS MP", "direito a X dias"), listas de dias não fatiadas ("20,23/02 (2)"), ranges com "fim antes do início" (viradas de ano).
+- **2 períodos-stub de 0/1 dia** (readmissão de Eduardo e Kim) rejeitados pela API → 42 → 40 períodos. Esperado.
+- **Reconciliar à mão no app:** Danilo dos Santos Bispo tem **"Bahamas"** (empresa/CNPJ) grudado na função → limpar (mesma pendência do Mateus/Bahamas). Maria Eduarda Mendonça está **sem função** na planilha.
+
 ### ⛔ REGRA: aba ESTAGIÁRIOS NÃO entra no controle CLT
 - **Estagiário é regido pela Lei 11.788/2008, não pela CLT** → não tem férias/folgas CLT. A aba **ESTAGIÁRIOS não deve ser migrada** com períodos aquisitivos/férias/folgas.
 - ⚠️ **Erro corrigido:** a 5ª inserção subiu os 11 por engano (19 períodos + 9 folgas). **Revertido** com `scratchpad/zerar_periodos.py --setor "Estagiários"` — os **11 cadastros foram MANTIDOS** (Ana Luiza Chaves Souza, Cassiano Fernandes Augusto Pires, Eric Oliviera Quintella, Jessica da Silva Xavier, Luan Carlos Esteves Oliveira, Luiz Fernando Assis Rangel, Mariana Paiva Dabés, Mateus Costa, Nathalia de Sousa Ferreira, Victoria Werneck, Vinicius Silva), mas **períodos/férias/folgas removidos** (9 folgas + 21 períodos apagados — 2 períodos extras eram auto-abertos pelo app). Conferido: 11 estagiários, 0 períodos.
@@ -52,18 +86,10 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 
 ---
 
-## ⏳ Abas ainda NÃO importadas (5)
-
-| Aba | Setor do app | A enviar | Períodos | Férias | Folgas | Revisar |
-|---|---|--:|--:|--:|--:|--:|
-| ADM | Administrativo | 9 | 25 | 12 | 88 | 4 |
-| ATENDIMENTO CORPORATIVO | Corporativo | 9 | 34 | 31 | 123 | 7 |
-| SUPERVISÃO | Coordenação | 8 | 42 | 32 | 149 | 21 |
-| CRIAÇÃO | Criação | 26 | 77 | 65 | 313 | 25 |
-| ATEND. SOCIAL MIDIA | Digital | 17 | 52 | 21 | 169 | 12 |
-
-- **Sugestão de ordem:** começar pelas menores/limpas (**Atendimento OFF**, **ADM**) e deixar **SOCIAL MÍDIA (→ Digital)** por último — teve **migração de CNPJ em 2025**, então terá muitos períodos duplicados/readmissão pra reconciliar.
-- `BAYER, NEXA E NISSAN` está vazia → **ignorada** (aba de cliente/nota).
+## ✅ Abas — TODAS importadas
+Todas as 12 abas de setor ativo foram migradas (Vídeo, Atendimento OFF, Redação-Revisão,
+Inbound, Estagiários, Supervisão, Digital, Corporativo, ADM, Criação). `BAYER, NEXA E NISSAN`
+estava vazia → ignorada. Restam só as pendências **por colaborador** abaixo (à mão no app).
 
 ---
 
@@ -94,9 +120,13 @@ Ambiente: Render `https://goferias.onrender.com` · admin `admin@goegrow.com.br`
 
 ---
 
-## Próximo passo
-Escolher a próxima aba entre as 5 restantes (ADM, Atendimento Corporativo, Supervisão,
-Criação, Social Mídia). Fluxo: gerar `dados.json` da aba → conferir
-REVISAR → enviar → conferir no app. Deixar **Social Mídia (→ Digital)** por último (troca de CNPJ).
+## Próximo passo — reconciliação à mão no app (import de abas encerrado)
+Migração automática das abas concluída (96 colaboradores). Falta o trabalho manual no app:
+1. **Estagiários efetivados:** converter **Eric Oliviera Quintella** (→ Corporativo) e **Nathalia de Sousa Ferreira** (→ Criação) — setor, admissão e período.
+2. **Reconciliar admissão (CNPJ):** Digital (~11), Inbound (5), Criação (4), ADM (2), Corporativo (1), Vídeo/Atend. OFF (Isaac, André). Ver seções por inserção.
+3. **Lançar sem-admissão à mão:** Denis Fernando de Oliveira Ribeiro (Bahamas) e Sara Efigenia de Oliveira Magalhaes (Criação).
+4. **Campos:** limpar "Bahamas" de nomes/funções; preencher funções vazias (Darlene, Júlia, Guilherme, Paola, Maria Eduarda Robusti/Mendonça); Flávia Revisora, Darlan (sobrenome).
+5. **Períodos duplicados/sobrepostos:** Júlia (Corporativo), Gabriel Almeida (Digital), Isaac (Vídeo).
+6. **Folgas do REVISAR** de cada aba (à mão).
 
 > Lembrete: rodar o envio com `SSL_CERT_FILE=$(python3 -m certifi) python3 enviar_para_api.py saida/dados.json --url https://goferias.onrender.com --senha demo`.
