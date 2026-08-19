@@ -5910,16 +5910,19 @@ UI.renderAgenda = function(){
     statAg('blue',   ICOag.setores, 'Setores',          setoresAfetados.size?`${MESES[mes]} ${ano}`:'nenhum setor', setoresAfetados.size);
 
   // ---------- lista do mês, agrupada por setor ----------
+  // no mês corrente, some quem já encerrou (não polui com o que já passou);
+  // em meses passados/futuros continua mostrando tudo (histórico completo)
+  const mesEhAtual = ano===hj.getFullYear() && mes===hj.getMonth();
   const registrosDoMes = () => {
     const out=[];
     Store.data.colaboradores.filter(c=>c.ativo!==false).forEach(c=>{
       Dom.periodosDe(c.id).forEach(p=>{
         Dom.feriasDe(p.id).forEach(r=>{
-          if(pd(r.inicio) <= fimMes && pd(r.fim) >= inicioMes)
+          if(pd(r.inicio) <= fimMes && pd(r.fim) >= inicioMes && (!mesEhAtual || pd(r.fim) >= hj))
             out.push({id:c.id, nome:c.nome, foto:c.foto||null, departamento:c.departamento, inicio:r.inicio, fim:r.fim, dias:r.dias, tipo:'ferias'});
         });
         Dom.folgasDe(p.id).forEach(r=>{
-          if(pd(r.inicio) <= fimMes && pd(r.fim) >= inicioMes)
+          if(pd(r.inicio) <= fimMes && pd(r.fim) >= inicioMes && (!mesEhAtual || pd(r.fim) >= hj))
             out.push({id:c.id, nome:c.nome, foto:c.foto||null, departamento:c.departamento, inicio:r.inicio, fim:r.fim, dias:r.dias, tipo:'folga'});
         });
       });
