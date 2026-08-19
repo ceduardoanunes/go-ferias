@@ -6548,7 +6548,7 @@ UI.renderGraficos = function(){
           backgroundColor:['#4FA891','#D6B15C','#D65C6E','#6FB1CC'],
           hoverBackgroundColor:['#408976','#AF914B','#AF4B5A','#5B91A7'], borderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
-        responsive:true, maintainAspectRatio:false, cutout:'68%',
+        responsive:true, maintainAspectRatio:false, cutout:'68%', layout:{padding:8},
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:{family:"'DM Sans', sans-serif", size:10.5}, boxWidth:8, boxHeight:8, padding:9, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
       }
     });
@@ -6569,7 +6569,7 @@ UI.renderGraficos = function(){
           backgroundColor:['#D65C6E','#D6B15C','#4FA891'],
           hoverBackgroundColor:['#AF4B5A','#AF914B','#408976'], borderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
-        responsive:true, maintainAspectRatio:false, cutout:'68%',
+        responsive:true, maintainAspectRatio:false, cutout:'68%', layout:{padding:8},
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:14, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
       }
     });
@@ -6592,7 +6592,7 @@ UI.renderGraficos = function(){
           backgroundColor:['#D65C6E','#E39A6B','#4FA891'],
           hoverBackgroundColor:['#AF4B5A','#BA7E57','#408976'], borderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
-        responsive:true, maintainAspectRatio:false, cutout:'68%',
+        responsive:true, maintainAspectRatio:false, cutout:'68%', layout:{padding:8},
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:14, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
       }
     });
@@ -6612,7 +6612,7 @@ UI.renderGraficos = function(){
           backgroundColor:['#3E8C79','#6FB6A3','#A9D4C8'],
           hoverBackgroundColor:['#327263','#5B9585','#8AADA4'], borderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
-        responsive:true, maintainAspectRatio:false, cutout:'68%',
+        responsive:true, maintainAspectRatio:false, cutout:'68%', layout:{padding:8},
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:14, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
       }
     });
@@ -6663,7 +6663,7 @@ UI.renderPessoas = function(){
       type:'doughnut',
       data:{ labels:['Granbery','Quintas da Avenida'], datasets:[{ data:[nGran,nQuin], backgroundColor:['#CBCBCB','#D65C6E'], hoverBackgroundColor:['#B5B5B5','#C15363'], borderWidth:0, hoverBorderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
-        responsive:true, maintainAspectRatio:false, cutout:'68%',
+        responsive:true, maintainAspectRatio:false, cutout:'68%', layout:{padding:8},
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:26, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
       }
     });
@@ -6679,7 +6679,7 @@ UI.renderPessoas = function(){
       type:'doughnut',
       data:{ labels:regimeKeys.map(regimeLabel), datasets:[{ data:regimeKeys.map(k=>porRegime[k]), backgroundColor:regimeKeys.map((_,i)=>CORES_REGIME[i%CORES_REGIME.length]), hoverBackgroundColor:regimeKeys.map((_,i)=>CORES_REGIME_HOVER[i%CORES_REGIME_HOVER.length]), borderWidth:0, hoverBorderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
-        responsive:true, maintainAspectRatio:false, cutout:'68%',
+        responsive:true, maintainAspectRatio:false, cutout:'68%', layout:{padding:8},
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:26, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
       }
     });
