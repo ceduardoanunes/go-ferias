@@ -1595,7 +1595,8 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .padrao-mes{
   background:var(--gray-soft);border-radius:14px;padding:16px 18px;min-height:88px;
 }
-.padrao-mes.tem{background:rgba(18,131,106,.07)}
+.padrao-mes.tem{background:rgba(18,131,106,.07);cursor:pointer;transition:transform .12s,box-shadow .12s}
+.padrao-mes.tem:hover{transform:translateY(-2px);box-shadow:var(--shadow-card)}
 .padrao-mes-nome{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);text-transform:capitalize;margin-bottom:10px}
 .padrao-avs{display:flex;flex-wrap:wrap;gap:6px}
 .padrao-vazio{color:var(--faint);font-size:12px}
@@ -6460,12 +6461,31 @@ UI.renderGraficos = function(){
       if(vezes >= 2) porMesPadrao[+mesTop].push({nome:c.nome, foto:c.foto||null, vezes});
     });
     $('#padroesFolgas').innerHTML = MESES.map((m,i)=>`
-      <div class="padrao-mes${porMesPadrao[i].length?' tem':''}">
+      <div class="padrao-mes${porMesPadrao[i].length?' tem':''}" data-mes="${i}">
         <div class="padrao-mes-nome">${m}</div>
         ${porMesPadrao[i].length
           ? `<div class="padrao-avs">${porMesPadrao[i].map(p=>`<div class="mini-av" title="${esc(p.nome)} · ${p.vezes}x">${avatarInner({nome:p.nome,foto:p.foto})}</div>`).join('')}</div>`
           : `<div class="padrao-vazio">—</div>`}
       </div>`).join('');
+    $$('#padroesFolgas .padrao-mes.tem').forEach(el=>{
+      const i = +el.dataset.mes;
+      el.onclick = ()=>{
+        const lista = porMesPadrao[i].slice().sort((a,b)=>b.vezes-a.vezes || a.nome.localeCompare(b.nome,'pt-BR'));
+        Modals.open(`
+          <h3>${MESES[i][0].toUpperCase()+MESES[i].slice(1)}</h3>
+          <p class="msub">${lista.length} ${lista.length===1?'colaborador costuma':'colaboradores costumam'} tirar folga nesse mês</p>
+          <div class="day-list">
+            ${lista.map(p=>`
+              <div class="day-person">
+                <div class="avatar">${avatarInner(p)}</div>
+                <div class="day-person-info"><b>${esc(p.nome)}</b></div>
+                <span class="badge b-folga" style="background:var(--teal-soft);color:var(--teal)">${p.vezes}x</span>
+              </div>`).join('')}
+          </div>
+          <div class="modal-actions"><button class="btn btn-soft" onclick="Modals.close()">Fechar</button></div>
+        `);
+      };
+    });
     return;
   }
 
