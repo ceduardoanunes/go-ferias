@@ -5904,7 +5904,7 @@ UI.renderAgenda = function(){
   const nSolic = (Store.data.solicitacoes||[]).filter(s=>s.status==='pendente').length;
   $('#agKpis').innerHTML =
     statAg('violet', ICOag.solic,   'Solicitações',     nSolic?'aguardando RH':'nada pendente', nSolic, 'Modals.solicitacoes()') +
-    statAg('amber',  ICOag.ausentes,'Ausentes no Mês',  emFolga.length?'só folgas (ausência real)':'ninguém no mês', emFolga.length) +
+    statAg('amber',  ICOag.ausentes,'Ausentes no Mês',  emFolga.length?'Colaboradores de Folga':'ninguém no mês', emFolga.length) +
     statAg('red',    ICOag.aviao,   'Férias Contábeis', emFerias.length?`${MESES[mes]} ${ano}`:'ninguém no mês', emFerias.length) +
     statAg('teal',   ICOag.folga,   'Folgas',           emFolga.length?`${MESES[mes]} ${ano}`:'ninguém no mês', emFolga.length) +
     statAg('blue',   ICOag.setores, 'Setores',          setoresAfetados.size?`${MESES[mes]} ${ano}`:'nenhum setor', setoresAfetados.size);
