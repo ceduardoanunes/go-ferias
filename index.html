@@ -1513,7 +1513,8 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 @media(max-width:640px){.casa-top3-card.rank1,.casa-top3-card.rank2,.casa-top3-card.rank3,.casa-top3-card.rank4,.casa-top3-card.rank5{order:0}.casa-top3-card{flex-basis:100%;max-width:none}}
 
 /* tempo de casa — aniversários de empresa: painel com número em marca d'água, igual ao "Hoje" do dashboard */
-.casa-aniv-panels{display:flex;flex-wrap:nowrap;column-gap:24px;align-items:flex-start;overflow-x:auto;padding-top:40px;margin-top:-40px}
+.casa-aniv-panels{display:flex;flex-wrap:nowrap;column-gap:24px;align-items:flex-start;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;padding-top:40px;margin-top:-40px}
+.casa-aniv-panels::-webkit-scrollbar{display:none}
 .casa-aniv-panel{position:relative;overflow:visible;padding:14px 0;flex:none}
 .casa-aniv-wm{
   position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:0;pointer-events:none;
@@ -1543,7 +1544,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .timeline-mes-lab{font-size:12.5px;font-weight:700;color:var(--muted);text-transform:capitalize}
 .timeline-avs{display:flex;flex-wrap:wrap;gap:4px}
 .casa-row{
-  display:grid;grid-template-columns:38px 1.9fr 1.15fr 2fr .9fr 2.1fr;
+  display:grid;grid-template-columns:38px 1.9fr 1.15fr 1.7fr .9fr 2.3fr;
   align-items:center;gap:14px;padding:11px 10px;border-radius:12px;
   transition:background .12s ease;
 }
