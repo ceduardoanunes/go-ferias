@@ -74,15 +74,22 @@
                       não é mais página/rota própria (era #/solicitacoes).
                       Dados em Store.data.solicitacoes.
     Agenda .......... 5 cards .dx-stat (o 5º, "Solicitações", abre o modal
-                      acima) + a lista por setor (a "agenda" propriamente
-                      dita). NÃO há mais visão temporal/calendário
-                      embaixo: em 27/07/2026 o autor decidiu tirar tudo e deixar
-                      só a lista com os cards. Antes existiu, na sequência do dia,
-                      um calendário-escala (.ag-cal2-*), tentativas de timeline
-                      (.ag-tl-*) e a grade semanal (.ag-week-*/.ag-cell-*) — todos
-                      removidos. O card "Ausentes no mês" (.ag-mes-*/.ag-insta-*)
-                      também saiu. TODO esse CSS ficou órfão e deve ser MANTIDO
-                      (não limpar), pedido do autor — pode voltar a precisar.
+                      acima) + calendário do mês em grade de quadrados por dia
+                      (#agTl, reaproveitando CSS .ag-tl-*) + a lista por setor
+                      (a "agenda" propriamente dita). Em 27/07/2026 o autor
+                      tinha tirado toda visão temporal/calendário e deixado só
+                      a lista com os cards (havia existido um calendário-escala
+                      .ag-cal2-*, tentativas de timeline .ag-tl-* com barra
+                      colorida, e a grade semanal .ag-week-*/.ag-cell-*).
+                      Em 19/08/2026 o autor pediu de volta um calendário no
+                      estilo do .ag-cal2 só que SEM a barra colorida por
+                      período — em vez disso, um quadrado preenchido por dia
+                      (.ag-tl-day, cor por tipo: vermelho=férias, teal=folga,
+                      cinza=feriado, cinza claro=fim de semana), agrupado por
+                      setor, pro mês selecionado nas pills do topo (#agMesPills).
+                      .ag-cal2-* (calendário-escala com barra) e .ag-week-*/
+                      .ag-cell-* (grade semanal) continuam órfãos — MANTER,
+                      não limpar, podem voltar a precisar.
                       O mount #agSemanas não existe mais no HTML da Agenda.
     Calendário ...... anual, abas Férias e Folga, heatmap por dia.
     Colaboradores ... diretório com busca, filtros e exportação PDF.
@@ -1024,15 +1031,18 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .ag-tl-dot{width:11px;height:11px;border-radius:4px;flex:none}
 .ag-tl-dot.tipo-ferias{background:var(--red)}
 .ag-tl-dot.tipo-folga{background:var(--teal)}
+.ag-tl-dot.feriado{background:rgba(28,27,26,.35)}
+.ag-tl-dot.wknd{background:rgba(28,27,26,.1)}
 .ag-tl-scroll{overflow-x:auto}
-.ag-tl{min-width:540px;--tl-name-w:136px}
+.ag-tl{min-width:620px;--tl-name-w:136px}
 @media(max-width:600px){.ag-tl{--tl-name-w:104px}}
-.ag-tl-axis{display:flex;align-items:flex-end;margin-bottom:8px}
+.ag-tl-axis{display:flex;align-items:flex-end;margin-bottom:10px}
 .ag-tl-axis-spacer{width:var(--tl-name-w);flex:none}
-.ag-tl-axis-track{position:relative;flex:1;height:18px;border-bottom:1px solid var(--line)}
-.ag-tl-tick{position:absolute;bottom:4px;transform:translateX(-50%);font-size:10.5px;font-weight:800;letter-spacing:.4px;color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap}
-.ag-tl-tick:first-child{transform:none}
-.ag-tl-tick:last-child{transform:translateX(-100%)}
+.ag-tl-axis-track{display:grid;gap:3px;flex:1}
+.ag-tl-axis-day{display:flex;flex-direction:column;align-items:center;gap:3px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+.ag-tl-axis-dow{font-size:8.5px;font-weight:700;letter-spacing:.3px;color:var(--faint);text-transform:uppercase}
+.ag-tl-axis-num{font-size:10.5px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:50%}
+.ag-tl-axis-day.hoje .ag-tl-axis-num{background:var(--graphite);color:#fff}
 .ag-tl-group{margin-top:16px}
 .ag-tl-group:first-of-type{margin-top:0}
 .ag-tl-group-head{display:flex;align-items:center;gap:9px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
@@ -1041,16 +1051,15 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .ag-tl-name{width:var(--tl-name-w);flex:none;display:flex;align-items:center;gap:9px;padding-right:12px;overflow:hidden}
 .ag-tl-name .mini-av{width:26px;height:26px;font-size:10px;flex:none}
 .ag-tl-nome{font-size:12.5px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ag-tl-track{position:relative;flex:1;height:26px;border-radius:7px;background:#FAFAF8;
-  background-image:repeating-linear-gradient(90deg,var(--line-soft) 0,var(--line-soft) 1px,transparent 1px,transparent var(--tl-step));
-}
-.ag-tl-bar{position:absolute;top:3px;height:20px;min-width:9px;border-radius:6px;display:flex;align-items:center;padding:0 7px;box-sizing:border-box;color:#fff;overflow:hidden;box-shadow:0 2px 6px -2px rgba(28,27,26,.35);transition:transform .12s}
-.ag-tl-bar:hover{transform:translateY(-1px)}
-.ag-tl-bar.tipo-ferias{background:var(--red)}
-.ag-tl-bar.tipo-folga{background:var(--teal)}
-.ag-tl-bar-lab{font-size:10.5px;font-weight:800;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums}
-.ag-tl-today{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--red);opacity:.5;border-radius:2px;pointer-events:none;z-index:2}
-@media(prefers-reduced-motion:reduce){.ag-tl-bar{transition:none}.ag-tl-bar:hover{transform:none}}
+.ag-tl-track{display:grid;gap:3px;flex:1;height:26px}
+.ag-tl-day{border-radius:6px;background:var(--gray-soft);transition:transform .1s}
+.ag-tl-day.wknd{background:rgba(28,27,26,.05)}
+.ag-tl-day.feriado{background:rgba(28,27,26,.16)}
+.ag-tl-day.tipo-ferias{background:var(--red);cursor:pointer}
+.ag-tl-day.tipo-folga{background:var(--teal);cursor:pointer}
+.ag-tl-day.tipo-ferias:hover,.ag-tl-day.tipo-folga:hover{transform:scale(1.18)}
+.ag-tl-day.hoje{box-shadow:0 0 0 2px var(--graphite) inset}
+@media(prefers-reduced-motion:reduce){.ag-tl-day{transition:none}.ag-tl-day.tipo-ferias:hover,.ag-tl-day.tipo-folga:hover{transform:none}}
 
 /* ---------- calendário de ausências do mês (escala: linha por pessoa, coluna por dia) ---------- */
 .ag-cal2-panel{padding:26px 28px 24px}
@@ -2373,6 +2382,19 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
     </div>
 
     <div class="ag-stats" id="agKpis"></div>
+
+    <div class="dash-card ag-tl-panel" style="margin-bottom:32px">
+      <div class="ag-tl-head">
+        <span class="ag-week-title" id="agTlTitulo"></span>
+        <div class="ag-tl-legend">
+          <span class="ag-tl-leg"><i class="ag-tl-dot tipo-ferias"></i>Férias (contábil)</span>
+          <span class="ag-tl-leg"><i class="ag-tl-dot tipo-folga"></i>Folga (não contábil)</span>
+          <span class="ag-tl-leg"><i class="ag-tl-dot feriado"></i>Feriado</span>
+          <span class="ag-tl-leg"><i class="ag-tl-dot wknd"></i>Fim de semana</span>
+        </div>
+      </div>
+      <div class="ag-tl-scroll"><div class="ag-tl" id="agTl"></div></div>
+    </div>
 
     <div class="ag-board-head">
       <div class="tabs-track ag-tipo-track" id="agTipoCtrl" role="tablist" aria-label="Tipo de ausência">
@@ -5882,6 +5904,58 @@ UI.renderAgenda = function(){
   const inicioMes = new Date(ano, mes, 1);
   const fimMes = new Date(ano, mes+1, 0);
   const ausMes = unicosNoIntervalo(inicioMes, fimMes);
+
+  // ---------- calendário do mês (grade de quadrados por dia, por colaborador) ----------
+  const diasNoMes = fimMes.getDate();
+  const DOW1 = ['D','S','T','Q','Q','S','S'];
+  $('#agTlTitulo').textContent = `${cap(MESES[mes])} ${ano}`;
+  const gridCols = `grid-template-columns:repeat(${diasNoMes},1fr)`;
+  let axisHtml = '';
+  for(let d=1; d<=diasNoMes; d++){
+    const dt = new Date(ano, mes, d), di = iso(dt);
+    axisHtml += `<div class="ag-tl-axis-day${di===hjIso?' hoje':''}"><span class="ag-tl-axis-dow">${DOW1[dt.getDay()]}</span><span class="ag-tl-axis-num">${d}</span></div>`;
+  }
+  const csAtivosTl = Store.data.colaboradores.filter(c=>c.ativo!==false);
+  const porSetorTl = {};
+  csAtivosTl.forEach(c=>{ (porSetorTl[c.departamento]=porSetorTl[c.departamento]||[]).push(c); });
+  const setoresTl = SETORES_BRAND.map(s=>s.nome).filter(d=>porSetorTl[d]&&porSetorTl[d].length);
+  const diaCelTl = (c, dt, di) => {
+    const feriado = feriados.get(di);
+    const wknd = ehFimDeSemana(dt);
+    const rec = map[di];
+    let tipo = null;
+    if(rec){
+      if(rec.fer.some(p=>p.nome===c.nome)) tipo='ferias';
+      else if(rec.fol.some(p=>p.nome===c.nome)) tipo='folga';
+    }
+    const cls = tipo ? `tipo-${tipo}` : feriado ? 'feriado' : wknd ? 'wknd' : '';
+    const title = tipo ? `${c.nome} · ${tipo==='ferias'?'Férias':'Folga'} · ${fmt(di)}` : feriado ? `${feriado.nome} · ${fmt(di)}` : fmt(di);
+    return `<div class="ag-tl-day ${cls}${di===hjIso?' hoje':''}" title="${esc(title)}"></div>`;
+  };
+  let corpoTl = '';
+  setoresTl.forEach(dep=>{
+    const listaTl = porSetorTl[dep].slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+    corpoTl += `<div class="ag-tl-group">
+      <div class="ag-tl-group-head">${esc(dep)}<span class="ag-tl-group-n">${listaTl.length}</span></div>
+      ${listaTl.map(c=>{
+        let diasHtml='';
+        for(let d=1; d<=diasNoMes; d++){
+          const dt = new Date(ano, mes, d), di = iso(dt);
+          diasHtml += diaCelTl(c, dt, di);
+        }
+        return `<div class="ag-tl-row">
+          <div class="ag-tl-name"><div class="mini-av">${avatarInner({nome:c.nome, foto:c.foto})}</div><span class="ag-tl-nome">${esc(c.nome)}</span></div>
+          <div class="ag-tl-track" style="${gridCols}">${diasHtml}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+  $('#agTl').innerHTML = `
+    <div class="ag-tl-axis">
+      <div class="ag-tl-axis-spacer"></div>
+      <div class="ag-tl-axis-track" style="${gridCols}">${axisHtml}</div>
+    </div>
+    ${corpoTl}`;
 
   // ---------- stats do mês (mesmo componente .dx-stat do dashboard) ----------
   const ICOag = {
