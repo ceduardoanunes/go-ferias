@@ -6674,12 +6674,19 @@ UI.renderPessoas = function(){
     const porRegime = {};
     cs.forEach(c=>{ const r = c.regime||'Não informado'; porRegime[r] = (porRegime[r]||0)+1; });
     const regimeKeys = Object.keys(porRegime).sort((a,b)=>porRegime[b]-porRegime[a]);
-    const CORES_REGIME = ['#CBCBCB','#D65C6E','#D6B15C','#A98FD2','#8FC7A0'];
-    const CORES_REGIME_HOVER = ['#B5B5B5','#C15363','#AF914B','#8E72B5','#6FA382'];
+    // cor fixa por regime (não por posição), CLT sempre em vermelho
+    const CORES_REGIME_FIXA = { CLT:'#D65C6E' };
+    const CORES_REGIME_FIXA_HOVER = { CLT:'#C15363' };
+    const CORES_REGIME_OUTRAS = ['#CBCBCB','#D6B15C','#A98FD2','#8FC7A0'];
+    const CORES_REGIME_OUTRAS_HOVER = ['#B5B5B5','#AF914B','#8E72B5','#6FA382'];
+    let iCorRegime = 0;
+    const coresRegime = regimeKeys.map(k => CORES_REGIME_FIXA[k] || CORES_REGIME_OUTRAS[iCorRegime++ % CORES_REGIME_OUTRAS.length]);
+    let iCorRegimeH = 0;
+    const coresRegimeHover = regimeKeys.map(k => CORES_REGIME_FIXA_HOVER[k] || CORES_REGIME_OUTRAS_HOVER[iCorRegimeH++ % CORES_REGIME_OUTRAS_HOVER.length]);
     destroyChart('regime');
     UI.chartInstances.regime = new Chart($('#chartRegime'), {
       type:'doughnut',
-      data:{ labels:regimeKeys.map(regimeLabel), datasets:[{ data:regimeKeys.map(k=>porRegime[k]), backgroundColor:regimeKeys.map((_,i)=>CORES_REGIME[i%CORES_REGIME.length]), hoverBackgroundColor:regimeKeys.map((_,i)=>CORES_REGIME_HOVER[i%CORES_REGIME_HOVER.length]), borderWidth:0, hoverBorderWidth:0, hoverOffset:6, spacing:3 }] },
+      data:{ labels:regimeKeys.map(regimeLabel), datasets:[{ data:regimeKeys.map(k=>porRegime[k]), backgroundColor:coresRegime, hoverBackgroundColor:coresRegimeHover, borderWidth:0, hoverBorderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%', layout:{padding:{top:8,left:8,right:8,bottom:0}},
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:26, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
