@@ -1441,7 +1441,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .chart-wrap{position:relative;width:100%;height:320px}
 .chart-wrap-sm{height:360px}
 .chart-wrap-donut{height:320px;max-width:340px;margin:0 auto}
-.chart-wrap-donut:has(#chartDuracao){max-width:420px}
+.chart-wrap-donut:has(#chartDuracao),.chart-wrap-donut:has(#chartUnidades){max-width:420px}
 .html-legend{display:flex;gap:20px;margin-bottom:20px}
 .html-legend-dot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:middle}
 .html-legend span{display:inline-flex;align-items:center;font-size:12.5px;color:var(--muted)}
@@ -6659,10 +6659,11 @@ UI.renderPessoas = function(){
     // ---------- colaboradores por unidade ----------
     const nGran = cs.filter(c=>c.unidade==='Granbery').length;
     const nQuin = cs.filter(c=>c.unidade==='Quintas da Avenida').length;
+    const nHome = cs.filter(c=>c.unidade==='Home Office').length;
     destroyChart('unidades');
     UI.chartInstances.unidades = new Chart($('#chartUnidades'), {
       type:'doughnut',
-      data:{ labels:['Granbery','Quintas da Avenida'], datasets:[{ data:[nGran,nQuin], backgroundColor:['#CBCBCB','#D65C6E'], hoverBackgroundColor:['#B5B5B5','#C15363'], borderWidth:0, hoverBorderWidth:0, hoverOffset:6, spacing:3 }] },
+      data:{ labels:['Granbery','Quintas da Avenida','Home Office'], datasets:[{ data:[nGran,nQuin,nHome], backgroundColor:['#CBCBCB','#D65C6E','#6FB1CC'], hoverBackgroundColor:['#B5B5B5','#C15363','#5B91A7'], borderWidth:0, hoverBorderWidth:0, hoverOffset:6, spacing:3 }] },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'68%', layout:{padding:{top:8,left:8,right:8,bottom:0}},
         plugins:{ legend:{position:'bottom', labels:{color:'#6E6C68', font:CHART_FONT, boxWidth:9, boxHeight:9, padding:26, usePointStyle:true, pointStyle:'circle'}}, tooltip:CHART_TOOLTIP }
@@ -6686,7 +6687,6 @@ UI.renderPessoas = function(){
     });
 
     // ---------- card grande de colaboradores ----------
-    const nHome = cs.filter(c=>c.unidade==='Home Office').length;
     const icoUsers = '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>';
     const icoPin = '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>';
     const icoHome = '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/>';
