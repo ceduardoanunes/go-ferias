@@ -1874,6 +1874,8 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 
 /* modal do dia */
 .day-list{display:grid;gap:2px;max-height:340px;overflow:auto;margin-top:4px}
+.day-dept{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);padding:14px 4px 6px;border-top:1px solid var(--line-soft)}
+.day-dept:first-child{padding-top:0;border-top:none}
 .day-person{
   display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line);
 }
@@ -5609,7 +5611,7 @@ UI.diaMap = function(ano, filtro){
     return true;
   });
   cs.forEach(c=>{
-    const pessoa = {nome:c.nome, unidade:c.unidade, funcao:c.funcao, foto:c.foto||null};
+    const pessoa = {nome:c.nome, unidade:c.unidade, funcao:c.funcao, departamento:c.departamento, foto:c.foto||null};
     Dom.periodosDe(c.id).forEach(p=>{
       Dom.feriasDe(p.id).forEach(f=>{
         let d=pd(f.inicio); const fim=pd(f.fim);
@@ -5728,16 +5730,31 @@ UI.abrirDia = function(di, rec, filtro){
   if(filtro!=='folga') rec.fer.forEach(p=>{ if(!nomes.has(p.nome)) nomes.set(p.nome,{...p, tipo:'ferias'}); });
   if(filtro!=='ferias') rec.fol.forEach(p=>{ if(!nomes.has(p.nome)) nomes.set(p.nome,{...p, tipo: nomes.has(p.nome)?nomes.get(p.nome).tipo:'folga'}); });
   const list = [...nomes.values()].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+  const ORDEM_DEPTO = SETORES_BRAND.map(s=>s.nome);
+  const porDepto = new Map();
+  list.forEach(p=>{
+    const dep = p.departamento || 'Outros';
+    (porDepto.get(dep) || porDepto.set(dep, []).get(dep)).push(p);
+  });
+  const deps = [...porDepto.keys()].sort((a,b)=>{
+    const ia=ORDEM_DEPTO.indexOf(a), ib=ORDEM_DEPTO.indexOf(b);
+    if(ia===-1 && ib===-1) return a.localeCompare(b,'pt-BR');
+    if(ia===-1) return 1;
+    if(ib===-1) return -1;
+    return ia-ib;
+  });
   Modals.open(`
     <h3>${fmt(di)}</h3>
     <p class="msub">${list.length} ${list.length===1?'colaborador fora':'colaboradores fora'} nesta data</p>
     <div class="day-list">
-      ${list.map(p=>`
+      ${deps.map(dep=>`
+        <div class="day-dept">${esc(dep)}</div>
+        ${porDepto.get(dep).map(p=>`
         <div class="day-person">
           <div class="avatar">${avatarInner(p)}</div>
-          <div class="day-person-info"><b>${esc(p.nome)}</b><span>${esc(p.funcao)} · ${esc(p.unidade)}</span></div>
+          <div class="day-person-info"><b>${esc(p.nome)}</b><span>${esc(p.funcao)}</span></div>
           <span class="badge ${p.tipo==='ferias'?'b-vencendo':'b-folga'}" style="background:${p.tipo==='ferias'?'var(--red-soft)':'var(--teal-soft)'};color:${p.tipo==='ferias'?'var(--red)':'var(--teal)'}">${p.tipo==='ferias'?'Férias':'Folga'}</span>
-        </div>`).join('')}
+        </div>`).join('')}`).join('')}
     </div>
     <div class="modal-actions"><button class="btn btn-soft" onclick="Modals.close()">Fechar</button></div>
   `);
