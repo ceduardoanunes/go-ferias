@@ -3992,7 +3992,7 @@ const UI = {
                 <button class="tab ${this.tabAtual==='folgas'?'on':''}" data-tab="folgas">Folgas</button>
                 <button class="tab ${this.tabAtual==='cal'?'on':''}" data-tab="cal">Calendário</button>
                 <button class="tab ${this.tabAtual==='notas'?'on':''}" data-tab="notas">Notas ${(()=>{const n=Dom.notasDe(cid).length;return n?`<span class="cnt">${n}</span>`:'';})()}</button>
-                <button class="tab ${this.tabAtual==='solic'?'on':''}" data-tab="solic">Solicitações ${(()=>{const n=(Store.data.solicitacoes||[]).filter(s=>s.colaborador_id===cid&&s.status==='pendente').length;return n?`<span class="cnt">${n}</span>`:'';})()}</button>
+                <button class="tab ${this.tabAtual==='solic'?'on':''}" data-tab="solic">Solicitações</button>
                 <button class="tab ${this.tabAtual==='pend'?'on':''}" data-tab="pend">Pendências ${nAlertReal?`<span class="cnt">${nAlertReal}</span>`:''}</button>
               </div>
             </div>
@@ -4152,7 +4152,7 @@ const UI = {
           <div class="tk-grid">
             <div class="tk-f"><div class="k">Período</div><div class="v">${per}</div></div>
             <div class="tk-f"><div class="k">Dias Úteis</div><div class="v">${s.dias} ${s.dias==1?'dia':'dias'}</div></div>
-            <div class="tk-f"><div class="k">Aval. do Coordenador</div><div class="v">${s.aval_coordenador?'Sim':'Não'}</div></div>
+            <div class="tk-f"><div class="k">Aval do Coordenador</div><div class="v">${s.aval_coordenador?'Sim':'Não'}</div></div>
             <div class="tk-f" style="grid-column:1/-1"><div class="k">Motivo</div><div class="v">${s.motivo?esc(s.motivo):'—'}</div></div>
           </div>
           ${s.status!=='pendente'&&(s.decidido_por||s.decidido_em)?`<div class="tk-decisao"><b>${s.status==='aprovada'?'Aprovada':'Recusada'}</b> por ${esc(s.decidido_por||'—')}${s.decidido_em?' em '+fmtDT(s.decidido_em):''}</div>`:''}
