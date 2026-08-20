@@ -5948,7 +5948,7 @@ UI.renderAgenda = function(){
           diasHtml += diaCelTl(c, dt, di);
         }
         return `<div class="ag-tl-row">
-          <div class="ag-tl-name"><div class="mini-av">${avatarInner({nome:c.nome, foto:c.foto})}</div><span class="ag-tl-nome">${esc(c.nome)}</span></div>
+          <div class="ag-tl-name"><div class="mini-av">${avatarInner({nome:c.nome, foto:c.foto})}</div><span class="ag-tl-nome" title="${esc(c.nome)}">${esc(c.nome.split(' ').slice(0,2).join(' '))}</span></div>
           <div class="ag-tl-track" style="${gridCols}">${diasHtml}</div>
         </div>`;
       }).join('')}
