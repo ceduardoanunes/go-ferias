@@ -3151,6 +3151,9 @@ const REGRAS = { DIAS_CONTABEIS: 30, DIAS_FOLGAS: 22, ALERTA_VENC_DIAS: 120 };
 // rótulo amigável do regime (valor guardado continua 'CLT'/'PJ' p/ compatibilidade com dados existentes)
 const REGIME_LABEL = { CLT:'Celetista', PJ:'Pessoa Jurídica', 'Estágio':'Estágio', 'Sócio':'Sócio' };
 const regimeLabel = r => REGIME_LABEL[r] || r || 'Não informado';
+// fontes únicas — evitam listas duplicadas/divergentes entre modais e telas
+const REGIMES = ['CLT','PJ','Estágio','Sócio'];                       // ordem canônica dos regimes
+const ORDEM_UNI = ['Quintas da Avenida','Granbery','Home Office'];    // ordem canônica das unidades
 
 // categorias das Notas (observações de RH que vêm da planilha: venda pela MP, licença, pandemia…)
 const CATEGORIAS_NOTA = [
@@ -3785,8 +3788,8 @@ const UI = {
     const baseParaUnidade = cs.filter(c => matchQ(c) && matchPend(c) && (!this.filtro.depto || c.departamento===this.filtro.depto));
     const baseParaPend = cs.filter(c => matchQ(c) && (!this.filtro.depto || c.departamento===this.filtro.depto) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
 
-    // chips de departamento — ordem fixa institucional; desconhecidos vão pro fim, em ordem alfabética
-    const ORDEM_DEPTO = ['Direção','Coordenação','Administrativo','Corporativo','Atendimento OFF','Digital','Inbound','Criação','Vídeo','TI','Redação','Revisão','Estagiários'];
+    // chips de departamento — ordem fixa institucional (fonte única SETORES_BRAND); desconhecidos vão pro fim, em ordem alfabética
+    const ORDEM_DEPTO = SETORES_BRAND.map(s=>s.nome);
     const deps = {};
     ORDEM_DEPTO.forEach(d=>deps[d]=0); // setores da marca sempre aparecem como pill, mesmo vazios
     baseParaDepto.forEach(c=>deps[c.departamento]=(deps[c.departamento]||0)+1);
@@ -4335,7 +4338,6 @@ const Modals = {
     if(!Auth.podeAdministrar()){ toast('Apenas administradores cadastram colaboradores.'); return; }
     // "Estagiários" não é setor de cadastro — estagiário é regime; o setor deve ser a área real
     const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(c=>c.departamento)])].filter(d=>d!=='Estagiários');
-    const ORDEM_UNI=['Quintas da Avenida','Granbery','Home Office'];
     const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(c=>c.unidade)])].filter(Boolean)
       .sort((a,b)=>{const ia=ORDEM_UNI.indexOf(a),ib=ORDEM_UNI.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b);});
     this.open(`
@@ -4362,7 +4364,7 @@ const Modals = {
       </div>
       <div class="field-row">
         <div class="field"><label>Regime</label>
-          <select id="nRegime"><option value="CLT">Celetista</option><option value="PJ">Pessoa Jurídica</option><option value="Estágio">Estágio</option><option value="Sócio">Sócio</option></select></div>
+          <select id="nRegime">${REGIMES.map(r=>`<option value="${r}">${regimeLabel(r)}</option>`).join('')}</select></div>
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${iso(hoje())}"></div>
       </div>
       <div class="modal-actions">
@@ -4406,10 +4408,8 @@ const Modals = {
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     if(!c) return;
     const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(x=>x.departamento)])];
-    const ORDEM_UNI=['Quintas da Avenida','Granbery','Home Office'];
     const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(x=>x.unidade)])].filter(Boolean)
       .sort((a,b)=>{const ia=ORDEM_UNI.indexOf(a),ib=ORDEM_UNI.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b);});
-    const regimes=['CLT','PJ','Estágio','Sócio'];
     this.open(`
       <h3>Editar colaborador</h3>
       <p class="msub">Alterações nos dados cadastrais de ${esc(c.nome)}.</p>
@@ -4434,7 +4434,7 @@ const Modals = {
       </div>
       <div class="field-row">
         <div class="field"><label>Regime</label>
-          <select id="nRegime">${regimes.map(r=>`<option value="${r}"${r===c.regime?' selected':''}>${regimeLabel(r)}</option>`).join('')}</select></div>
+          <select id="nRegime">${REGIMES.map(r=>`<option value="${r}"${r===c.regime?' selected':''}>${regimeLabel(r)}</option>`).join('')}</select></div>
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${c.admissao}"></div>
       </div>
       <div class="modal-actions">
