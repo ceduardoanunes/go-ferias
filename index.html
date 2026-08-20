@@ -3696,9 +3696,10 @@ const Dom = {
   proximaMarcacao(cid){
     const h = iso(hoje());
     const pers = this.periodosDe(cid);
+    const semFer = this.semFerias(cid);   // sócio/PJ/estagiário: ignora férias (só folgas contam)
     let candidatos = [];
     pers.forEach(p=>{
-      this.feriasDe(p.id).forEach(f=>{ if(f.inicio>h) candidatos.push({tipo:'ferias', ...f}); });
+      if(!semFer) this.feriasDe(p.id).forEach(f=>{ if(f.inicio>h) candidatos.push({tipo:'ferias', ...f}); });
       this.folgasDe(p.id).forEach(f=>{ if(f.inicio>h) candidatos.push({tipo:'folga', ...f}); });
     });
     candidatos.sort((a,b)=>a.inicio.localeCompare(b.inicio));
@@ -3734,11 +3735,11 @@ const Dom = {
     return {k:'acumulando', cls:'b-acumulando', dot:'var(--faint)', lab:'Em aquisição'};
   },
 
-  // regimes sem férias contábeis (sócio e estagiário): usado em ficha, alertas e agregados
+  // regimes sem férias contábeis (sócio, PJ e estagiário): usado em ficha, alertas e agregados
   semFerias(cOrId){
     const c = typeof cOrId==='string' ? Store.data.colaboradores.find(x=>x.id===cOrId) : cOrId;
     if(!c) return false;
-    return c.regime==='Sócio' || c.regime==='Estágio' || c.departamento==='Estagiários' || /estagi/i.test(c.funcao||'');
+    return c.regime==='Sócio' || c.regime==='PJ' || c.regime==='Estágio' || c.departamento==='Estagiários' || /estagi/i.test(c.funcao||'');
   },
   alertas(cid){
     const out=[]; const r=this.resumo(cid);
@@ -3894,8 +3895,9 @@ const UI = {
   renderProfile(cid){
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     if(!c){ location.hash='#/colaboradores'; return; }
-    const isSocio = c.regime==='Sócio';           // p/ escolher o texto do hero (🤝 sócio vs 🎓 estagiário)
-    const semFerias = Dom.semFerias(c);           // sócio ou estagiário: sem férias contábeis
+    const isSocio = c.regime==='Sócio';           // p/ escolher o texto do hero
+    const isPJ = c.regime==='PJ';
+    const semFerias = Dom.semFerias(c);           // sócio, PJ ou estagiário: sem férias contábeis
     if(semFerias && this.tabAtual==='oficiais') this.tabAtual='folgas';
     const st=Dom.status(cid), r=Dom.resumo(cid), alertas=Dom.alertas(cid);
     const pers=Dom.periodosDe(cid);
@@ -3924,9 +3926,11 @@ const UI = {
       const rotulo = proxima.tipo==='ferias' ? 'Próximas férias' : 'Próxima folga';
       heroMsg = `${rotulo}: <b>${fmt(proxima.inicio)}${proxima.inicio!==proxima.fim?' a '+fmt(proxima.fim):''}</b> (${proxima.dias} ${proxima.dias==1?'dia':'dias'}).`;
     } else if(semFerias){
-      heroEmoji = isSocio ? '🤝' : '🎓';
+      heroEmoji = isSocio ? '🤝' : isPJ ? '📄' : '🎓';
       heroMsg = isSocio
         ? `Sócio — sem controle de férias contábeis. Acompanhe as folgas abaixo.`
+        : isPJ
+        ? `Pessoa Jurídica — sem férias contábeis (contrato PJ). Acompanhe as folgas abaixo.`
         : `Estagiário — sem férias contábeis (Lei 11.788). Acompanhe as folgas abaixo.`;
     } else {
       heroEmoji = '🫠';
