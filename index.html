@@ -4324,7 +4324,8 @@ const Modals = {
 
   novoColab(){
     if(!Auth.podeAdministrar()){ toast('Apenas administradores cadastram colaboradores.'); return; }
-    const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(c=>c.departamento)])];
+    // "Estagiários" não é setor de cadastro — estagiário é regime; o setor deve ser a área real
+    const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(c=>c.departamento)])].filter(d=>d!=='Estagiários');
     const ORDEM_UNI=['Quintas da Avenida','Granbery','Home Office'];
     const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(c=>c.unidade)])].filter(Boolean)
       .sort((a,b)=>{const ia=ORDEM_UNI.indexOf(a),ib=ORDEM_UNI.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b);});
