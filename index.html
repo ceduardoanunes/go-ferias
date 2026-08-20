@@ -2994,6 +2994,9 @@ const iso = d => d.toISOString().slice(0,10);
 const pd  = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
 const fmt = s => { if(!s) return '—'; const d=pd(s); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); };
 const fmtCurto = s => { const d=pd(s); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'); };
+// data + hora (aceita timestamp ISO completo; fmt/pd só entendem AAAA-MM-DD)
+const fmtDT = s => { if(!s) return '—'; const d=new Date(s); if(isNaN(d)) return '—';
+  return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()+' às '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
 const addM = (d,n) => { const x=new Date(d); x.setMonth(x.getMonth()+n); return x; };
 const addD = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
 const diffD = (a,b) => Math.round((b-a)/864e5);
@@ -3731,10 +3734,15 @@ const Dom = {
     return {k:'acumulando', cls:'b-acumulando', dot:'var(--faint)', lab:'Em aquisição'};
   },
 
+  // regimes sem férias contábeis (sócio e estagiário): usado em ficha, alertas e agregados
+  semFerias(cOrId){
+    const c = typeof cOrId==='string' ? Store.data.colaboradores.find(x=>x.id===cOrId) : cOrId;
+    if(!c) return false;
+    return c.regime==='Sócio' || c.regime==='Estágio' || c.departamento==='Estagiários' || /estagi/i.test(c.funcao||'');
+  },
   alertas(cid){
     const out=[]; const r=this.resumo(cid);
-    const cAl = Store.data.colaboradores.find(x=>x.id===cid);
-    const semFeriasAl = cAl && (cAl.regime==='Sócio' || cAl.regime==='Estágio' || cAl.departamento==='Estagiários' || /estagi/i.test(cAl.funcao||''));
+    const semFeriasAl = this.semFerias(cid);
     if(!semFeriasAl && r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null){
       if(r.diasParaLimite<0)
         out.push({tipo:'red', t:'Férias vencidas', d:`O prazo legal para usufruto terminou em ${fmt(r.limite)}. Restam ${r.saldoContabil} dias contábeis do período ${fmt(r.gozavel.inicio)} – ${fmt(r.gozavel.fim)}. Regularize com urgência (risco de dobra, art. 137 CLT).`});
@@ -3886,9 +3894,8 @@ const UI = {
   renderProfile(cid){
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     if(!c){ location.hash='#/colaboradores'; return; }
-    const isSocio = c.regime==='Sócio';           // sócio não tem férias contábeis (CLT)
-    const isEstagiario = c.regime==='Estágio' || c.departamento==='Estagiários' || /estagi/i.test(c.funcao||'');
-    const semFerias = isSocio || isEstagiario;    // regimes sem férias contábeis
+    const isSocio = c.regime==='Sócio';           // p/ escolher o texto do hero (🤝 sócio vs 🎓 estagiário)
+    const semFerias = Dom.semFerias(c);           // sócio ou estagiário: sem férias contábeis
     if(semFerias && this.tabAtual==='oficiais') this.tabAtual='folgas';
     const st=Dom.status(cid), r=Dom.resumo(cid), alertas=Dom.alertas(cid);
     const pers=Dom.periodosDe(cid);
@@ -4148,8 +4155,6 @@ const UI = {
 
     if(this.tabAtual==='solic'){
       const icoCafe='<svg viewBox="0 0 24 24"><path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg>';
-      const fmtDT=s=>{ if(!s) return '—'; const d=new Date(s); if(isNaN(d)) return '—';
-        return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()+' às '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
       const badge=s=>({pendente:'<span class="sol-badge pend">Pendente</span>',aprovada:'<span class="sol-badge aprov">Aprovada</span>',recusada:'<span class="sol-badge recus">Recusada</span>'}[s.status]||'');
       const solics=(Store.data.solicitacoes||[]).filter(s=>s.colaborador_id===cid)
         .sort((a,b)=>(b.criado_em||'').localeCompare(a.criado_em||''));
@@ -4936,7 +4941,7 @@ const Actions = {
     const linhas = lista.map(c=>{
       const r = Dom.resumo(c.id);
       return [c.nome, c.funcao, c.departamento, c.unidade, fmt(c.admissao), tempoDeCasa(c.admissao),
-        `${r.saldoContabil} dias`, `${r.saldoFolgas} dias`];
+        Dom.semFerias(c) ? '—' : `${r.saldoContabil} dias`, `${r.saldoFolgas} dias`];
     });
     doc.autoTable({
       ...base,
@@ -4997,6 +5002,7 @@ const Actions = {
     pdfUsarDMSans(doc);
     const hj = hoje();
     const r = Dom.resumo(c.id);
+    const semFeriasColab = Dom.semFerias(c);
     // cabeçalho da marca repetido em cada página gerada pelas tabelas
     const base = { margin:{top:30, bottom:20}, didDrawPage:()=>this.pdfHeader(doc) };
 
@@ -5057,32 +5063,45 @@ const Actions = {
       const frac = Math.max(0, Math.min(1, val/max));
       if(frac>0){ doc.setFillColor(cor[0],cor[1],cor[2]); doc.roundedRect(x, barY, Math.max(half*frac,5), 5, 2.5, 2.5, 'F'); }
     };
-    drawStat(14,         'FÉRIAS A USUFRUIR', r.saldoContabil,           REGRAS.DIAS_CONTABEIS, [196,25,59]);
-    drawStat(14+half+10, 'FOLGAS DISPONÍVEIS', Math.max(r.saldoFolgas,0), REGRAS.DIAS_FOLGAS,    [18,131,106]);
+    // sócios/estagiários não têm férias contábeis: mostra só Folgas
+    if(semFeriasColab){
+      drawStat(14, 'FOLGAS DISPONÍVEIS', Math.max(r.saldoFolgas,0), REGRAS.DIAS_FOLGAS, [18,131,106]);
+    } else {
+      drawStat(14,         'FÉRIAS A USUFRUIR', r.saldoContabil,           REGRAS.DIAS_CONTABEIS, [196,25,59]);
+      drawStat(14+half+10, 'FOLGAS DISPONÍVEIS', Math.max(r.saldoFolgas,0), REGRAS.DIAS_FOLGAS,    [18,131,106]);
 
-    const feriasLinhas = [];
-    Dom.periodosDe(c.id).forEach(p=>Dom.feriasDe(p.id).forEach(f=>
-      feriasLinhas.push([fmt(f.inicio), fmt(f.fim), `${f.dias} dias`, f.obs||'—'])));
-    this.pdfTituloKerned(doc, 'Férias contábeis', 14, cy + 36, 15, [28,27,26], -0.2);
-    doc.autoTable({
-      ...base,
-      startY: cy + 43,
-      head: [['Início','Fim',{content:'Dias', styles:{halign:'center'}},{content:'Observação', styles:{halign:'center'}}]],
-      body: feriasLinhas.length ? feriasLinhas : [['—','—','—','Nenhum lançamento']],
-      styles: {font: pdfFont(doc), fontSize:9, cellPadding:2.5},
-      headStyles: {fillColor:[196,25,59], textColor:255, fontStyle:'bold'},
-      alternateRowStyles: {fillColor:[250,240,242]},
-      columnStyles: {2:{halign:'center'}, 3:{halign:'center'}},
-    });
+      const feriasLinhas = [];
+      Dom.periodosDe(c.id).forEach(p=>Dom.feriasDe(p.id).forEach(f=>
+        feriasLinhas.push([fmt(f.inicio), fmt(f.fim), `${f.dias} dias`, f.obs||'—'])));
+      this.pdfTituloKerned(doc, 'Férias contábeis', 14, cy + 36, 15, [28,27,26], -0.2);
+      doc.autoTable({
+        ...base,
+        startY: cy + 43,
+        head: [['Início','Fim',{content:'Dias', styles:{halign:'center'}},{content:'Observação', styles:{halign:'center'}}]],
+        body: feriasLinhas.length ? feriasLinhas : [['—','—','—','Nenhum lançamento']],
+        styles: {font: pdfFont(doc), fontSize:9, cellPadding:2.5},
+        headStyles: {fillColor:[196,25,59], textColor:255, fontStyle:'bold'},
+        alternateRowStyles: {fillColor:[250,240,242]},
+        columnStyles: {2:{halign:'center'}, 3:{halign:'center'}},
+      });
+    }
 
     const folgasLinhas = [];
     Dom.periodosDe(c.id).forEach(p=>Dom.folgasDe(p.id).forEach(f=>
       folgasLinhas.push([fmt(f.inicio), fmt(f.fim), `${f.dias} dias`, f.obs||'—'])));
-    doc.addPage(); // folgas sempre começam em página nova
-    this.pdfTituloKerned(doc, 'Folgas', 14, 34, 15, [28,27,26], -0.2);
+    // sem férias antes: folgas seguem na mesma página, logo abaixo dos stats
+    let folgasStartY;
+    if(semFeriasColab){
+      this.pdfTituloKerned(doc, 'Folgas', 14, cy + 36, 15, [28,27,26], -0.2);
+      folgasStartY = cy + 43;
+    } else {
+      doc.addPage(); // folgas começam em página nova
+      this.pdfTituloKerned(doc, 'Folgas', 14, 34, 15, [28,27,26], -0.2);
+      folgasStartY = 42;
+    }
     doc.autoTable({
       ...base,
-      startY: 42,
+      startY: folgasStartY,
       head: [['Início','Fim',{content:'Dias', styles:{halign:'center'}},{content:'Observação', styles:{halign:'center'}}]],
       body: folgasLinhas.length ? folgasLinhas : [['—','—','—','Nenhum lançamento']],
       styles: {font: pdfFont(doc), fontSize:9, cellPadding:2.5},
@@ -5278,6 +5297,7 @@ const Actions = {
     const coberturaFeria = cs.length ? Math.round(feriasPorColab.filter(x=>x.dias>0).length/cs.length*100) : 0;
     const picoIdxFeria = porMes.reduce((best,x,i)=> x.fer.size>porMes[best].fer.size ? i : best, 0);
     const emRiscoFeria = cs.filter(c=>{
+      if(Dom.semFerias(c)) return false;
       const r = Dom.resumo(c.id);
       return r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null && r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS;
     }).length;
@@ -5305,6 +5325,7 @@ const Actions = {
 
     // ---------- pendências: mesmo cálculo do card "Férias Vencendo" da tela ----------
     const pendentes = cs
+      .filter(c=>!Dom.semFerias(c))
       .map(c=>({nome:c.nome, r:Dom.resumo(c.id)}))
       .filter(x=>x.r.gozavel && x.r.saldoContabil>0 && x.r.diasParaLimite!==null && x.r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS);
     const vencidas = pendentes.filter(x=>x.r.diasParaLimite<0).sort((a,b)=>a.r.diasParaLimite-b.r.diasParaLimite);
@@ -5349,6 +5370,7 @@ const Actions = {
     });
     const venc = {vencidas:0, vencendo:0, prazo:0};
     cs.forEach(c=>{
+      if(Dom.semFerias(c)) return;
       const r = Dom.resumo(c.id);
       if(r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null){
         if(r.diasParaLimite<0) venc.vencidas++;
@@ -6205,7 +6227,7 @@ UI.renderDash = function(){
   // totais contábeis da equipe
   let totalSaldo = 0, totalFolgas = 0;
   cs.forEach(c=>{
-    totalSaldo += Number(Dom.resumo(c.id).saldoContabil || 0);
+    if(!Dom.semFerias(c)) totalSaldo += Number(Dom.resumo(c.id).saldoContabil || 0);
     Dom.periodosDe(c.id).forEach(p=>Dom.folgasDe(p.id).forEach(f=>{
       if(pd(f.inicio).getFullYear()===ano) totalFolgas += Number(f.dias||0);
     }));
@@ -6411,7 +6433,7 @@ UI.renderSolic = function(){
           <div><b>Dias Úteis:</b> ${s.dias}</div>
           <div><b>Motivo:</b> ${s.motivo ? esc(s.motivo) : '—'}</div>
           <div><b>Aval do Coordenador:</b> ${s.aval_coordenador ? 'Sim' : 'Não'}</div>
-          ${s.status!=='pendente' && (s.decidido_por||s.decidido_em) ? `<div class="sol-decisao"><b>${s.status==='aprovada'?'Aprovada':'Recusada'} por:</b> ${esc(s.decidido_por||'—')} <b>em:</b> ${s.decidido_em?fmt(s.decidido_em):'—'}</div>` : ''}
+          ${s.status!=='pendente' && (s.decidido_por||s.decidido_em) ? `<div class="sol-decisao"><b>${s.status==='aprovada'?'Aprovada':'Recusada'} por:</b> ${esc(s.decidido_por||'—')} <b>em:</b> ${s.decidido_em?fmtDT(s.decidido_em):'—'}</div>` : ''}
         </div>
       </div>
       ${s.status==='pendente' && podeAgir ? `<div class="sol-actions">
@@ -6655,6 +6677,7 @@ UI.renderGraficos = function(){
     const coberturaFeria = cs.length ? Math.round(feriasPorColab.filter(x=>x.dias>0).length/cs.length*100) : 0;
     const picoIdxFeria = porMes.reduce((best,x,i)=> x.fer.size>porMes[best].fer.size ? i : best, 0);
     const emRiscoFeria = cs.filter(c=>{
+      if(Dom.semFerias(c)) return false;
       const r = Dom.resumo(c.id);
       return r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null && r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS;
     }).length;
@@ -6717,6 +6740,7 @@ UI.renderGraficos = function(){
     // ---------- férias por prazo de vencimento (donut) ----------
     const venc = {vencidas:0, vencendo:0, prazo:0};
     cs.forEach(c=>{
+      if(Dom.semFerias(c)) return;
       const r = Dom.resumo(c.id);
       if(r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null){
         if(r.diasParaLimite<0) venc.vencidas++;
