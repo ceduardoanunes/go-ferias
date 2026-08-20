@@ -2383,6 +2383,13 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 
     <div class="ag-stats" id="agKpis"></div>
 
+    <div class="ag-board-head">
+      <div class="tabs-track ag-tipo-track" id="agTipoCtrl" role="tablist" aria-label="Tipo de ausência">
+        <button class="tab" data-agtipo="folga" role="tab">Folgas</button>
+        <button class="tab" data-agtipo="ferias" role="tab">Férias Contábeis</button>
+      </div>
+    </div>
+
     <div class="dash-card ag-tl-panel" style="margin-bottom:32px">
       <div class="ag-tl-head">
         <span class="ag-week-title" id="agTlTitulo"></span>
@@ -2396,12 +2403,6 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
       <div class="ag-tl-scroll"><div class="ag-tl" id="agTl"></div></div>
     </div>
 
-    <div class="ag-board-head">
-      <div class="tabs-track ag-tipo-track" id="agTipoCtrl" role="tablist" aria-label="Tipo de ausência">
-        <button class="tab" data-agtipo="folga" role="tab">Folgas</button>
-        <button class="tab" data-agtipo="ferias" role="tab">Férias Contábeis</button>
-      </div>
-    </div>
     <div id="agPorSetor"></div>
   </section>
 
@@ -5915,7 +5916,9 @@ UI.renderAgenda = function(){
     const dt = new Date(ano, mes, d), di = iso(dt);
     axisHtml += `<div class="ag-tl-axis-day${di===hjIso?' hoje':''}"><span class="ag-tl-axis-dow">${DOW1[dt.getDay()]}</span><span class="ag-tl-axis-num">${d}</span></div>`;
   }
-  const nomesComAusTl = new Set(ausMes.map(p=>p.nome));
+  const chaveTipoTl = this.agTipo==='ferias' ? 'fer' : 'fol';
+  const nomesComAusTl = new Set();
+  { let d = new Date(inicioMes); while(d <= fimMes){ const rec = map[iso(d)]; if(rec) rec[chaveTipoTl].forEach(p=>nomesComAusTl.add(p.nome)); d = addD(d,1); } }
   const csAtivosTl = Store.data.colaboradores.filter(c=>c.ativo!==false && nomesComAusTl.has(c.nome));
   const porSetorTl = {};
   csAtivosTl.forEach(c=>{ (porSetorTl[c.departamento]=porSetorTl[c.departamento]||[]).push(c); });
@@ -5956,7 +5959,7 @@ UI.renderAgenda = function(){
       <div class="ag-tl-axis-spacer"></div>
       <div class="ag-tl-axis-track" style="${gridCols}">${axisHtml}</div>
     </div>
-    ${corpoTl || '<div class="ag-vazio">Nenhuma férias ou folga agendada neste mês.</div>'}`;
+    ${corpoTl || `<div class="ag-vazio">${this.agTipo==='folga' ? 'Nenhuma folga no mês.' : 'Nenhuma férias contábil no mês.'}</div>`}`;
 
   // ---------- stats do mês (mesmo componente .dx-stat do dashboard) ----------
   const ICOag = {
