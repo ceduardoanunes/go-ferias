@@ -4325,7 +4325,9 @@ const Modals = {
   novoColab(){
     if(!Auth.podeAdministrar()){ toast('Apenas administradores cadastram colaboradores.'); return; }
     const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(c=>c.departamento)])];
-    const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(c=>c.unidade)])].filter(Boolean).sort();
+    const ORDEM_UNI=['Quintas da Avenida','Granbery','Home Office'];
+    const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(c=>c.unidade)])].filter(Boolean)
+      .sort((a,b)=>{const ia=ORDEM_UNI.indexOf(a),ib=ORDEM_UNI.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b);});
     this.open(`
       <h3>Novo colaborador</h3>
       <p class="msub">O período aquisitivo inicial é criado automaticamente a partir da admissão.</p>
@@ -4346,8 +4348,7 @@ const Modals = {
         <div class="field"><label>Setor</label>
           <select id="nDepto">${deps.map(d=>`<option>${esc(d)}</option>`).join('')}</select></div>
         <div class="field"><label>Unidade</label>
-          <input id="nUni" list="uniList" placeholder="ex.: Granbery" autocomplete="off">
-          <datalist id="uniList">${unis.filter(Boolean).map(u=>`<option value="${esc(u)}"></option>`).join('')}</datalist></div>
+          <select id="nUni">${unis.map(u=>`<option>${esc(u)}</option>`).join('')}</select></div>
       </div>
       <div class="field-row">
         <div class="field"><label>Regime</label>
