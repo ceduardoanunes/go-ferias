@@ -3945,8 +3945,8 @@ const UI = {
               <div class="fact"><span>Regime</span><b>${esc(regimeLabel(c.regime))}</b></div>
               <div class="fact"><span>Admissão</span><b>${fmt(c.admissao)}</b></div>
               <div class="fact"><span>Tempo de casa</span><b>${tempoDeCasa(c.admissao)}</b></div>
-              <div class="fact"><span>Período aquisitivo</span><b>${r.atual?fmtCurto(r.atual.inicio)+' – '+fmt(r.atual.fim):'—'}</b></div>
-              <div class="fact"><span>Status</span><b>${st.lab}</b></div>
+              ${isSocio?'':`<div class="fact"><span>Período aquisitivo</span><b>${r.atual?fmtCurto(r.atual.inicio)+' – '+fmt(r.atual.fim):'—'}</b></div>`}
+              ${isSocio?'':`<div class="fact"><span>Status</span><b>${st.lab}</b></div>`}
             </div>
             <div class="pcard-actions">
               <div class="pcard-actions-row">
