@@ -74,22 +74,28 @@
                       não é mais página/rota própria (era #/solicitacoes).
                       Dados em Store.data.solicitacoes.
     Agenda .......... 5 cards .dx-stat (o 5º, "Solicitações", abre o modal
-                      acima) + calendário do mês em grade de quadrados por dia
-                      (#agTl, reaproveitando CSS .ag-tl-*) + a lista por setor
-                      (a "agenda" propriamente dita). Em 27/07/2026 o autor
-                      tinha tirado toda visão temporal/calendário e deixado só
-                      a lista com os cards (havia existido um calendário-escala
-                      .ag-cal2-*, tentativas de timeline .ag-tl-* com barra
-                      colorida, e a grade semanal .ag-week-*/.ag-cell-*).
-                      Em 19/08/2026 o autor pediu de volta um calendário no
-                      estilo do .ag-cal2 só que SEM a barra colorida por
-                      período — em vez disso, um quadrado preenchido por dia
-                      (.ag-tl-day, cor por tipo: vermelho=férias, teal=folga,
-                      cinza=feriado, cinza claro=fim de semana), agrupado por
-                      setor, pro mês selecionado nas pills do topo (#agMesPills).
-                      .ag-cal2-* (calendário-escala com barra) e .ag-week-*/
-                      .ag-cell-* (grade semanal) continuam órfãos — MANTER,
-                      não limpar, podem voltar a precisar.
+                      acima) + a lista por setor (a "agenda" propriamente dita)
+                      + calendário do mês em grade de quadrados por dia (#agTl,
+                      abaixo da lista, reaproveitando CSS .ag-tl-*). Em
+                      27/07/2026 o autor tinha tirado toda visão temporal/
+                      calendário e deixado só a lista com os cards (havia
+                      existido um calendário-escala .ag-cal2-*, tentativas de
+                      timeline .ag-tl-* com barra colorida, e a grade semanal
+                      .ag-week-*/.ag-cell-*). Em 19/08/2026 o autor pediu de
+                      volta um calendário no estilo do .ag-cal2 só que SEM a
+                      barra colorida por período — em vez disso, um quadrado
+                      preenchido por dia (.ag-tl-day, cor por tipo:
+                      vermelho=férias, teal=folga, cinza=feriado, cinza
+                      claro=fim de semana), agrupado por setor, pro mês
+                      selecionado nas pills do topo (#agMesPills), juntando
+                      férias e folga (não segue mais a aba Folgas/Férias
+                      Contábeis, que filtra só a lista). No mesmo dia, achou
+                      "demais" e pediu pra ESCONDER de novo (não remover): o
+                      painel #agTl está com display:none inline no HTML —
+                      JS/CSS continuam funcionando, só tirar o display:none
+                      pra reativar. .ag-cal2-* e .ag-week-*/.ag-cell-*
+                      continuam órfãos — MANTER, não limpar, podem voltar a
+                      precisar.
                       O mount #agSemanas não existe mais no HTML da Agenda.
     Calendário ...... anual, abas Férias e Folga, heatmap por dia.
     Colaboradores ... diretório com busca, filtros e exportação PDF.
@@ -2393,7 +2399,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 
     <div id="agPorSetor"></div>
 
-    <div class="dash-card ag-tl-panel" style="margin-top:32px">
+    <div class="dash-card ag-tl-panel" style="margin-top:32px;display:none">
       <div class="ag-tl-head">
         <span class="ag-week-title" id="agTlTitulo"></span>
         <div class="ag-tl-legend">
