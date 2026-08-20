@@ -654,6 +654,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
   display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0;margin-bottom:24px;
 }
 .saldos-row .saldo{background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow-card);padding:22px 24px}
+.saldos-row.saldos-solo{grid-template-columns:1fr}
 @media(max-width:640px){.saldos-row{grid-template-columns:1fr}}
 .saldo{
   background:rgba(28,27,26,.03);border:1px solid var(--line-soft);
@@ -3732,13 +3733,15 @@ const Dom = {
 
   alertas(cid){
     const out=[]; const r=this.resumo(cid);
-    if(r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null){
+    const cAl = Store.data.colaboradores.find(x=>x.id===cid);
+    const isSocioAl = cAl && cAl.regime==='Sócio';
+    if(!isSocioAl && r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null){
       if(r.diasParaLimite<0)
         out.push({tipo:'red', t:'Férias vencidas', d:`O prazo legal para usufruto terminou em ${fmt(r.limite)}. Restam ${r.saldoContabil} dias contábeis do período ${fmt(r.gozavel.inicio)} – ${fmt(r.gozavel.fim)}. Regularize com urgência (risco de dobra, art. 137 CLT).`});
       else if(r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS)
         out.push({tipo:'red', t:'Férias vencendo', d:`${r.saldoContabil} dias contábeis precisam ser usufruídos até ${fmt(r.limite)} (${r.diasParaLimite} dias restantes).`});
     }
-    if(r.gozavel && r.saldoContabil>0 && r.gozavel.situacao!=='programado' && (r.diasParaLimite===null || r.diasParaLimite>REGRAS.ALERTA_VENC_DIAS))
+    if(!isSocioAl && r.gozavel && r.saldoContabil>0 && r.gozavel.situacao!=='programado' && (r.diasParaLimite===null || r.diasParaLimite>REGRAS.ALERTA_VENC_DIAS))
       out.push({tipo:'amber', t:'Férias sem agendamento', d:`${r.saldoContabil} dias contábeis do período ${fmt(r.gozavel.inicio)} – ${fmt(r.gozavel.fim)} ainda sem data marcada.`});
     if(r.saldoFolgas<0)
       out.push({tipo:'amber', t:'Folgas acima do limite', d:`Foram usadas ${r.usadasFolgas} de ${r.baseFolgas} folgas do período atual (${Math.abs(r.saldoFolgas)} além do previsto).`});
@@ -3883,6 +3886,8 @@ const UI = {
   renderProfile(cid){
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     if(!c){ location.hash='#/colaboradores'; return; }
+    const isSocio = c.regime==='Sócio';           // sócio não tem férias contábeis (CLT)
+    if(isSocio && this.tabAtual==='oficiais') this.tabAtual='folgas';
     const st=Dom.status(cid), r=Dom.resumo(cid), alertas=Dom.alertas(cid);
     const pers=Dom.periodosDe(cid);
     const anosAniv = hoje().getFullYear() - pd(c.admissao).getFullYear();
@@ -3909,6 +3914,9 @@ const UI = {
       heroEmoji = '🏖️';
       const rotulo = proxima.tipo==='ferias' ? 'Próximas férias' : 'Próxima folga';
       heroMsg = `${rotulo}: <b>${fmt(proxima.inicio)}${proxima.inicio!==proxima.fim?' a '+fmt(proxima.fim):''}</b> (${proxima.dias} ${proxima.dias==1?'dia':'dias'}).`;
+    } else if(isSocio){
+      heroEmoji = '🤝';
+      heroMsg = `Sócio — sem controle de férias contábeis. Acompanhe as folgas abaixo.`;
     } else {
       heroEmoji = '🫠';
       const ultima = Dom.ultimaFeria(cid);
@@ -3942,7 +3950,7 @@ const UI = {
             </div>
             <div class="pcard-actions">
               <div class="pcard-actions-row">
-                <button class="btn btn-primary" onclick="Modals.agendar('${c.id}','ferias')">Agendar Férias</button>
+                ${isSocio?'':`<button class="btn btn-primary" onclick="Modals.agendar('${c.id}','ferias')">Agendar Férias</button>`}
                 <button class="btn btn-primary" onclick="Modals.agendar('${c.id}','folga')">Agendar Folga</button>
               </div>
               <div class="pcard-icons">
@@ -3967,18 +3975,18 @@ const UI = {
           <div class="hero-strip">
             <p><span class="hero-emoji">${heroEmoji}</span>${heroMsg}</p>
             <div class="hero-alerts">
-              ${r.limite && r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS && r.saldoContabil>0 ? `
+              ${!isSocio && r.limite && r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS && r.saldoContabil>0 ? `
                 <span class="badge b-vencendo">⚠ usufruto até ${fmt(r.limite)}</span>
                 <button class="btn btn-primary" style="padding:9px 16px" onclick="Modals.agendar('${c.id}','ferias')">Planejar agora</button>
               ` : ''}
             </div>
           </div>
-          <div class="saldos saldos-row">
-            <div class="saldo contabil">
+          <div class="saldos saldos-row${isSocio?' saldos-solo':''}">
+            ${isSocio?'':`<div class="saldo contabil">
               <div class="saldo-lab">Férias Contábeis<b>${r.gozavel ? r.saldoContabil+' dias a usufruir' : 'Em aquisição'}</b></div>
               <div class="meter"><i style="width:${pctC*100}%"></i></div>
               <div class="saldo-hint">${r.gozavel ? 'Período '+fmtCurto(r.gozavel.inicio)+' – '+fmtCurto(r.gozavel.fim)+'/'+pd(r.gozavel.fim).getFullYear() : (r.atual ? 'Período em aquisição: '+fmtCurto(r.atual.inicio)+' – '+fmtCurto(r.atual.fim)+'/'+pd(r.atual.fim).getFullYear() : 'Nenhum período vencido')}</div>
-            </div>
+            </div>`}
             <div class="saldo folgas">
               <div class="saldo-lab">Folgas<b>${Math.max(r.saldoFolgas,0)} dias disponíveis</b></div>
               <div class="meter"><i style="width:${pctF*100}%"></i></div>
@@ -3988,7 +3996,7 @@ const UI = {
           <div class="panel">
             <div class="tabs">
               <div class="tabs-track">
-                <button class="tab ${this.tabAtual==='oficiais'?'on':''}" data-tab="oficiais">Férias Contábeis</button>
+                ${isSocio?'':`<button class="tab ${this.tabAtual==='oficiais'?'on':''}" data-tab="oficiais">Férias Contábeis</button>`}
                 <button class="tab ${this.tabAtual==='folgas'?'on':''}" data-tab="folgas">Folgas</button>
                 <button class="tab ${this.tabAtual==='cal'?'on':''}" data-tab="cal">Calendário</button>
                 <button class="tab ${this.tabAtual==='notas'?'on':''}" data-tab="notas">Notas ${(()=>{const n=Dom.notasDe(cid).length;return n?`<span class="cnt">${n}</span>`:'';})()}</button>
@@ -6800,8 +6808,8 @@ UI.renderPessoas = function(){
     cs.forEach(c=>{ const r = c.regime||'Não informado'; porRegime[r] = (porRegime[r]||0)+1; });
     const regimeKeys = Object.keys(porRegime).sort((a,b)=>porRegime[b]-porRegime[a]);
     // cor fixa por regime (não por posição), CLT sempre em vermelho
-    const CORES_REGIME_FIXA = { CLT:'#D65C6E' };
-    const CORES_REGIME_FIXA_HOVER = { CLT:'#C15363' };
+    const CORES_REGIME_FIXA = { CLT:'#D65C6E', 'Sócio':'#A98FD2' };
+    const CORES_REGIME_FIXA_HOVER = { CLT:'#C15363', 'Sócio':'#8E72B5' };
     const CORES_REGIME_OUTRAS = ['#CBCBCB','#D6B15C','#A98FD2','#8FC7A0'];
     const CORES_REGIME_OUTRAS_HOVER = ['#B5B5B5','#AF914B','#8E72B5','#6FA382'];
     let iCorRegime = 0;
