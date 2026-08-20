@@ -3145,7 +3145,7 @@ const SS = safeStorage('sessionStorage');
    ================================================================ */
 const REGRAS = { DIAS_CONTABEIS: 30, DIAS_FOLGAS: 22, ALERTA_VENC_DIAS: 120 };
 // rótulo amigável do regime (valor guardado continua 'CLT'/'PJ' p/ compatibilidade com dados existentes)
-const REGIME_LABEL = { CLT:'Celetista', PJ:'Pessoa Jurídica', 'Estágio':'Estágio' };
+const REGIME_LABEL = { CLT:'Celetista', PJ:'Pessoa Jurídica', 'Estágio':'Estágio', 'Sócio':'Sócio' };
 const regimeLabel = r => REGIME_LABEL[r] || r || 'Não informado';
 
 // categorias das Notas (observações de RH que vêm da planilha: venda pela MP, licença, pandemia…)
@@ -4339,7 +4339,7 @@ const Modals = {
       </div>
       <div class="field-row">
         <div class="field"><label>Regime</label>
-          <select id="nRegime"><option value="CLT">Celetista</option><option value="PJ">Pessoa Jurídica</option><option value="Estágio">Estágio</option></select></div>
+          <select id="nRegime"><option value="CLT">Celetista</option><option value="PJ">Pessoa Jurídica</option><option value="Estágio">Estágio</option><option value="Sócio">Sócio</option></select></div>
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${iso(hoje())}"></div>
       </div>
       <div class="modal-actions">
@@ -4386,7 +4386,7 @@ const Modals = {
     const ORDEM_UNI=['Quintas da Avenida','Granbery','Home Office'];
     const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(x=>x.unidade)])].filter(Boolean)
       .sort((a,b)=>{const ia=ORDEM_UNI.indexOf(a),ib=ORDEM_UNI.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b);});
-    const regimes=['CLT','PJ','Estágio'];
+    const regimes=['CLT','PJ','Estágio','Sócio'];
     this.open(`
       <h3>Editar colaborador</h3>
       <p class="msub">Alterações nos dados cadastrais de ${esc(c.nome)}.</p>
