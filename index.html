@@ -1270,6 +1270,19 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .sol-badge.pend{background:rgba(210,134,15,.14);color:#C67F0D}
 .sol-badge.aprov{background:rgba(18,131,106,.14);color:var(--teal)}
 .sol-badge.recus{background:rgba(196,25,59,.12);color:var(--red)}
+/* tickets de solicitação — cards na aba da ficha do colaborador */
+.tk-card{border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px;background:var(--card)}
+.tk-head{display:flex;align-items:center;gap:11px;margin-bottom:14px;flex-wrap:wrap}
+.tk-ico{width:34px;height:34px;flex:none;border-radius:11px;display:grid;place-items:center;background:var(--teal-soft);color:var(--teal)}
+.tk-ico svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tk-tit{font-weight:700;font-size:14.5px;color:var(--ink);line-height:1.25}
+.tk-tit small{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:1px}
+.tk-head .sol-badge{margin-left:auto}
+.tk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px 22px}
+.tk-f .k{font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
+.tk-f .v{font-size:13.5px;font-weight:600;color:var(--ink);margin-top:2px}
+.tk-decisao{margin-top:13px;padding-top:11px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--muted)}
+.tk-decisao b{color:var(--ink);font-weight:700}
 .sol-link{display:inline-block;margin-top:6px;font-size:13px;font-weight:700;color:var(--accent);text-decoration:none}
 .sol-ac{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-pop);margin-top:6px;max-height:244px;overflow-y:auto;display:none}
 .sol-ac.on{display:block}
@@ -3979,6 +3992,7 @@ const UI = {
                 <button class="tab ${this.tabAtual==='folgas'?'on':''}" data-tab="folgas">Folgas</button>
                 <button class="tab ${this.tabAtual==='cal'?'on':''}" data-tab="cal">Calendário</button>
                 <button class="tab ${this.tabAtual==='notas'?'on':''}" data-tab="notas">Notas ${(()=>{const n=Dom.notasDe(cid).length;return n?`<span class="cnt">${n}</span>`:'';})()}</button>
+                <button class="tab ${this.tabAtual==='solic'?'on':''}" data-tab="solic">Solicitações ${(()=>{const n=(Store.data.solicitacoes||[]).filter(s=>s.colaborador_id===cid&&s.status==='pendente').length;return n?`<span class="cnt">${n}</span>`:'';})()}</button>
                 <button class="tab ${this.tabAtual==='pend'?'on':''}" data-tab="pend">Pendências ${nAlertReal?`<span class="cnt">${nAlertReal}</span>`:''}</button>
               </div>
             </div>
@@ -4118,6 +4132,33 @@ const UI = {
       };
       body.innerHTML = Dom.alertas(cid).map(a=>
         `<div class="alert ${a.tipo}">${icons[a.tipo]||''}<div><b>${esc(a.t)}</b>${esc(a.d)}</div></div>`).join('');
+    }
+
+    if(this.tabAtual==='solic'){
+      const icoCafe='<svg viewBox="0 0 24 24"><path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg>';
+      const fmtDT=s=>{ if(!s) return '—'; const d=new Date(s); if(isNaN(d)) return '—';
+        return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()+' às '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+      const badge=s=>({pendente:'<span class="sol-badge pend">Pendente</span>',aprovada:'<span class="sol-badge aprov">Aprovada</span>',recusada:'<span class="sol-badge recus">Recusada</span>'}[s.status]||'');
+      const solics=(Store.data.solicitacoes||[]).filter(s=>s.colaborador_id===cid)
+        .sort((a,b)=>(b.criado_em||'').localeCompare(a.criado_em||''));
+      const card=s=>{
+        const per=s.inicio===s.fim?fmt(s.inicio):`${fmt(s.inicio)} – ${fmt(s.fim)}`;
+        return `<div class="tk-card">
+          <div class="tk-head">
+            <span class="tk-ico">${icoCafe}</span>
+            <div class="tk-tit">Solicitação de ${s.tipo==='ferias'?'Férias':'Folga'}<small>Pedido em ${fmtDT(s.criado_em)}</small></div>
+            ${badge(s)}
+          </div>
+          <div class="tk-grid">
+            <div class="tk-f"><div class="k">Período</div><div class="v">${per}</div></div>
+            <div class="tk-f"><div class="k">Dias Úteis</div><div class="v">${s.dias} ${s.dias==1?'dia':'dias'}</div></div>
+            <div class="tk-f"><div class="k">Aval. do Coordenador</div><div class="v">${s.aval_coordenador?'Sim':'Não'}</div></div>
+            <div class="tk-f" style="grid-column:1/-1"><div class="k">Motivo</div><div class="v">${s.motivo?esc(s.motivo):'—'}</div></div>
+          </div>
+          ${s.status!=='pendente'&&(s.decidido_por||s.decidido_em)?`<div class="tk-decisao"><b>${s.status==='aprovada'?'Aprovada':'Recusada'}</b> por ${esc(s.decidido_por||'—')}${s.decidido_em?' em '+fmtDT(s.decidido_em):''}</div>`:''}
+        </div>`;
+      };
+      body.innerHTML = solics.length ? solics.map(card).join('') : '<div class="none-yet">Nenhuma solicitação registrada.</div>';
     }
   },
 
