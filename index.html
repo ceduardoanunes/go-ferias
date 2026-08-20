@@ -5564,7 +5564,7 @@ const Actions = {
       ...base,
       startY: 42,
       head: [['Setor', 'Colaborador', {content:'Tempo de casa', styles:{halign:'center'}}]],
-      body: setoresCasa.map(dep=>{
+      body: setoresCasa.filter(dep=>dep!=='Estagiários').map(dep=>{
         const antigo = porSetorCasa[dep].slice().sort((a,b)=>a.admissao.localeCompare(b.admissao))[0];
         return [dep, antigo.nome, tempoDeCasa(antigo.admissao)];
       }),
@@ -6936,7 +6936,7 @@ UI.renderPessoas = function(){
       if(ia===-1&&ib===-1) return a.localeCompare(b,'pt-BR');
       if(ia===-1) return 1; if(ib===-1) return -1; return ia-ib;
     });
-    $('#casaPorSetor').innerHTML = setoresCasa.map(dep=>{
+    $('#casaPorSetor').innerHTML = setoresCasa.filter(dep=>dep!=='Estagiários').map(dep=>{
       const lista = porSetorCasa[dep].slice().sort((a,b)=>a.admissao.localeCompare(b.admissao));
       const antigo = lista[0];
       const setorInfo = SETORES_BRAND.find(s=>s.nome===dep)||{};
