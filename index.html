@@ -1043,16 +1043,17 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .ag-tl-axis-dow{font-size:8.5px;font-weight:700;letter-spacing:.3px;color:var(--faint);text-transform:uppercase}
 .ag-tl-axis-num{font-size:9.5px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;justify-content:center;min-width:15px;height:15px;border-radius:50%}
 .ag-tl-axis-day.hoje .ag-tl-axis-num{background:var(--graphite);color:#fff}
-.ag-tl-group{margin-top:16px}
+.ag-tl-group{margin-top:30px}
 .ag-tl-group:first-of-type{margin-top:0}
 .ag-tl-group-head{display:flex;align-items:center;gap:9px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .ag-tl-group-n{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--gray-soft);color:var(--muted);font-size:10.5px;font-weight:800}
-.ag-tl-row{display:flex;align-items:center;min-height:26px}
+.ag-tl-row{display:flex;align-items:center;min-height:34px;margin-bottom:6px}
+.ag-tl-row:last-child{margin-bottom:0}
 .ag-tl-name{width:var(--tl-name-w);flex:none;display:flex;align-items:center;gap:9px;padding-right:12px;overflow:hidden}
-.ag-tl-name .mini-av{width:22px;height:22px;font-size:9px;flex:none}
+.ag-tl-name .mini-av{width:26px;height:26px;font-size:10px;flex:none}
 .ag-tl-nome{font-size:12.5px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ag-tl-track{display:grid;gap:2px;flex:1;height:18px}
-.ag-tl-day{border-radius:4px;background:var(--gray-soft);transition:transform .1s}
+.ag-tl-track{display:grid;gap:2px;flex:1;height:26px}
+.ag-tl-day{border-radius:6px;background:var(--gray-soft);transition:transform .1s}
 .ag-tl-day.wknd{background:rgba(28,27,26,.05)}
 .ag-tl-day.feriado{background:rgba(28,27,26,.16)}
 .ag-tl-day.tipo-ferias{background:var(--red);cursor:pointer}
@@ -2390,7 +2391,9 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
       </div>
     </div>
 
-    <div class="dash-card ag-tl-panel" style="margin-bottom:32px">
+    <div id="agPorSetor"></div>
+
+    <div class="dash-card ag-tl-panel" style="margin-top:32px">
       <div class="ag-tl-head">
         <span class="ag-week-title" id="agTlTitulo"></span>
         <div class="ag-tl-legend">
@@ -2402,8 +2405,6 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
       </div>
       <div class="ag-tl-scroll"><div class="ag-tl" id="agTl"></div></div>
     </div>
-
-    <div id="agPorSetor"></div>
   </section>
 
   <!-- ============ MINHA CONTA (Usuários + Auditoria) ============ -->
@@ -5916,13 +5917,12 @@ UI.renderAgenda = function(){
     const dt = new Date(ano, mes, d), di = iso(dt);
     axisHtml += `<div class="ag-tl-axis-day${di===hjIso?' hoje':''}"><span class="ag-tl-axis-dow">${DOW1[dt.getDay()]}</span><span class="ag-tl-axis-num">${d}</span></div>`;
   }
-  const chaveTipoTl = this.agTipo==='ferias' ? 'fer' : 'fol';
-  const nomesComAusTl = new Set();
-  { let d = new Date(inicioMes); while(d <= fimMes){ const rec = map[iso(d)]; if(rec) rec[chaveTipoTl].forEach(p=>nomesComAusTl.add(p.nome)); d = addD(d,1); } }
+  const nomesComAusTl = new Set(ausMes.map(p=>p.nome));
   const csAtivosTl = Store.data.colaboradores.filter(c=>c.ativo!==false && nomesComAusTl.has(c.nome));
   const porSetorTl = {};
   csAtivosTl.forEach(c=>{ (porSetorTl[c.departamento]=porSetorTl[c.departamento]||[]).push(c); });
   const setoresTl = SETORES_BRAND.map(s=>s.nome).filter(d=>porSetorTl[d]&&porSetorTl[d].length);
+  const nomeCurtoTl = nome => { const partes = nome.trim().split(/\s+/); return partes.length>1 ? `${partes[0]} ${partes[partes.length-1]}` : partes[0]; };
   const diaCelTl = (c, dt, di) => {
     const feriado = feriados.get(di);
     const wknd = ehFimDeSemana(dt);
@@ -5948,7 +5948,7 @@ UI.renderAgenda = function(){
           diasHtml += diaCelTl(c, dt, di);
         }
         return `<div class="ag-tl-row">
-          <div class="ag-tl-name"><div class="mini-av">${avatarInner({nome:c.nome, foto:c.foto})}</div><span class="ag-tl-nome" title="${esc(c.nome)}">${esc(c.nome.split(' ').slice(0,2).join(' '))}</span></div>
+          <div class="ag-tl-name"><div class="mini-av">${avatarInner({nome:c.nome, foto:c.foto})}</div><span class="ag-tl-nome" title="${esc(c.nome)}">${esc(nomeCurtoTl(c.nome))}</span></div>
           <div class="ag-tl-track" style="${gridCols}">${diasHtml}</div>
         </div>`;
       }).join('')}
@@ -5959,7 +5959,7 @@ UI.renderAgenda = function(){
       <div class="ag-tl-axis-spacer"></div>
       <div class="ag-tl-axis-track" style="${gridCols}">${axisHtml}</div>
     </div>
-    ${corpoTl || `<div class="ag-vazio">${this.agTipo==='folga' ? 'Nenhuma folga no mês.' : 'Nenhuma férias contábil no mês.'}</div>`}`;
+    ${corpoTl || '<div class="ag-vazio">Nenhuma férias ou folga agendada neste mês.</div>'}`;
 
   // ---------- stats do mês (mesmo componente .dx-stat do dashboard) ----------
   const ICOag = {
