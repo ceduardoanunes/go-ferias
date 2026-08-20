@@ -3734,14 +3734,14 @@ const Dom = {
   alertas(cid){
     const out=[]; const r=this.resumo(cid);
     const cAl = Store.data.colaboradores.find(x=>x.id===cid);
-    const isSocioAl = cAl && cAl.regime==='Sócio';
-    if(!isSocioAl && r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null){
+    const semFeriasAl = cAl && (cAl.regime==='Sócio' || cAl.regime==='Estágio' || cAl.departamento==='Estagiários' || /estagi/i.test(cAl.funcao||''));
+    if(!semFeriasAl && r.gozavel && r.saldoContabil>0 && r.diasParaLimite!==null){
       if(r.diasParaLimite<0)
         out.push({tipo:'red', t:'Férias vencidas', d:`O prazo legal para usufruto terminou em ${fmt(r.limite)}. Restam ${r.saldoContabil} dias contábeis do período ${fmt(r.gozavel.inicio)} – ${fmt(r.gozavel.fim)}. Regularize com urgência (risco de dobra, art. 137 CLT).`});
       else if(r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS)
         out.push({tipo:'red', t:'Férias vencendo', d:`${r.saldoContabil} dias contábeis precisam ser usufruídos até ${fmt(r.limite)} (${r.diasParaLimite} dias restantes).`});
     }
-    if(!isSocioAl && r.gozavel && r.saldoContabil>0 && r.gozavel.situacao!=='programado' && (r.diasParaLimite===null || r.diasParaLimite>REGRAS.ALERTA_VENC_DIAS))
+    if(!semFeriasAl && r.gozavel && r.saldoContabil>0 && r.gozavel.situacao!=='programado' && (r.diasParaLimite===null || r.diasParaLimite>REGRAS.ALERTA_VENC_DIAS))
       out.push({tipo:'amber', t:'Férias sem agendamento', d:`${r.saldoContabil} dias contábeis do período ${fmt(r.gozavel.inicio)} – ${fmt(r.gozavel.fim)} ainda sem data marcada.`});
     if(r.saldoFolgas<0)
       out.push({tipo:'amber', t:'Folgas acima do limite', d:`Foram usadas ${r.usadasFolgas} de ${r.baseFolgas} folgas do período atual (${Math.abs(r.saldoFolgas)} além do previsto).`});
@@ -3887,7 +3887,9 @@ const UI = {
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     if(!c){ location.hash='#/colaboradores'; return; }
     const isSocio = c.regime==='Sócio';           // sócio não tem férias contábeis (CLT)
-    if(isSocio && this.tabAtual==='oficiais') this.tabAtual='folgas';
+    const isEstagiario = c.regime==='Estágio' || c.departamento==='Estagiários' || /estagi/i.test(c.funcao||'');
+    const semFerias = isSocio || isEstagiario;    // regimes sem férias contábeis
+    if(semFerias && this.tabAtual==='oficiais') this.tabAtual='folgas';
     const st=Dom.status(cid), r=Dom.resumo(cid), alertas=Dom.alertas(cid);
     const pers=Dom.periodosDe(cid);
     const anosAniv = hoje().getFullYear() - pd(c.admissao).getFullYear();
@@ -3914,9 +3916,11 @@ const UI = {
       heroEmoji = '🏖️';
       const rotulo = proxima.tipo==='ferias' ? 'Próximas férias' : 'Próxima folga';
       heroMsg = `${rotulo}: <b>${fmt(proxima.inicio)}${proxima.inicio!==proxima.fim?' a '+fmt(proxima.fim):''}</b> (${proxima.dias} ${proxima.dias==1?'dia':'dias'}).`;
-    } else if(isSocio){
-      heroEmoji = '🤝';
-      heroMsg = `Sócio — sem controle de férias contábeis. Acompanhe as folgas abaixo.`;
+    } else if(semFerias){
+      heroEmoji = isSocio ? '🤝' : '🎓';
+      heroMsg = isSocio
+        ? `Sócio — sem controle de férias contábeis. Acompanhe as folgas abaixo.`
+        : `Estagiário — sem férias contábeis (Lei 11.788). Acompanhe as folgas abaixo.`;
     } else {
       heroEmoji = '🫠';
       const ultima = Dom.ultimaFeria(cid);
@@ -3945,12 +3949,12 @@ const UI = {
               <div class="fact"><span>Regime</span><b>${esc(regimeLabel(c.regime))}</b></div>
               <div class="fact"><span>Admissão</span><b>${fmt(c.admissao)}</b></div>
               <div class="fact"><span>Tempo de casa</span><b>${tempoDeCasa(c.admissao)}</b></div>
-              ${isSocio?'':`<div class="fact"><span>Período aquisitivo</span><b>${r.atual?fmtCurto(r.atual.inicio)+' – '+fmt(r.atual.fim):'—'}</b></div>`}
-              ${isSocio?'':`<div class="fact"><span>Status</span><b>${st.lab}</b></div>`}
+              ${semFerias?'':`<div class="fact"><span>Período aquisitivo</span><b>${r.atual?fmtCurto(r.atual.inicio)+' – '+fmt(r.atual.fim):'—'}</b></div>`}
+              ${semFerias?'':`<div class="fact"><span>Status</span><b>${st.lab}</b></div>`}
             </div>
             <div class="pcard-actions">
               <div class="pcard-actions-row">
-                ${isSocio?'':`<button class="btn btn-primary" onclick="Modals.agendar('${c.id}','ferias')">Agendar Férias</button>`}
+                ${semFerias?'':`<button class="btn btn-primary" onclick="Modals.agendar('${c.id}','ferias')">Agendar Férias</button>`}
                 <button class="btn btn-primary" onclick="Modals.agendar('${c.id}','folga')">Agendar Folga</button>
               </div>
               <div class="pcard-icons">
@@ -3975,14 +3979,14 @@ const UI = {
           <div class="hero-strip">
             <p><span class="hero-emoji">${heroEmoji}</span>${heroMsg}</p>
             <div class="hero-alerts">
-              ${!isSocio && r.limite && r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS && r.saldoContabil>0 ? `
+              ${!semFerias && r.limite && r.diasParaLimite<=REGRAS.ALERTA_VENC_DIAS && r.saldoContabil>0 ? `
                 <span class="badge b-vencendo">⚠ usufruto até ${fmt(r.limite)}</span>
                 <button class="btn btn-primary" style="padding:9px 16px" onclick="Modals.agendar('${c.id}','ferias')">Planejar agora</button>
               ` : ''}
             </div>
           </div>
-          <div class="saldos saldos-row${isSocio?' saldos-solo':''}">
-            ${isSocio?'':`<div class="saldo contabil">
+          <div class="saldos saldos-row${semFerias?' saldos-solo':''}">
+            ${semFerias?'':`<div class="saldo contabil">
               <div class="saldo-lab">Férias Contábeis<b>${r.gozavel ? r.saldoContabil+' dias a usufruir' : 'Em aquisição'}</b></div>
               <div class="meter"><i style="width:${pctC*100}%"></i></div>
               <div class="saldo-hint">${r.gozavel ? 'Período '+fmtCurto(r.gozavel.inicio)+' – '+fmtCurto(r.gozavel.fim)+'/'+pd(r.gozavel.fim).getFullYear() : (r.atual ? 'Período em aquisição: '+fmtCurto(r.atual.inicio)+' – '+fmtCurto(r.atual.fim)+'/'+pd(r.atual.fim).getFullYear() : 'Nenhum período vencido')}</div>
@@ -3996,7 +4000,7 @@ const UI = {
           <div class="panel">
             <div class="tabs">
               <div class="tabs-track">
-                ${isSocio?'':`<button class="tab ${this.tabAtual==='oficiais'?'on':''}" data-tab="oficiais">Férias Contábeis</button>`}
+                ${semFerias?'':`<button class="tab ${this.tabAtual==='oficiais'?'on':''}" data-tab="oficiais">Férias Contábeis</button>`}
                 <button class="tab ${this.tabAtual==='folgas'?'on':''}" data-tab="folgas">Folgas</button>
                 <button class="tab ${this.tabAtual==='cal'?'on':''}" data-tab="cal">Calendário</button>
                 <button class="tab ${this.tabAtual==='notas'?'on':''}" data-tab="notas">Notas ${(()=>{const n=Dom.notasDe(cid).length;return n?`<span class="cnt">${n}</span>`:'';})()}</button>
