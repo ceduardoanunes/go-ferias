@@ -3087,6 +3087,8 @@ const regimeLabel = r => REGIME_LABEL[r] || r || 'Não informado';
 const isEstagiario = c => c.regime==='Estágio' || c.departamento==='Estagiários' || /estagi/i.test(c.funcao||'');
 // 1/3 constitucional: CLT e PJ (por contrato) recebem; estagiário não (Lei 11.788 não prevê o adicional)
 const temTercoConstitucional = c => !isEstagiario(c);
+// c.cnpj guarda "Nome — CNPJ"; na ficha mostramos só o nome, sem o número
+const nomeEmpresa = c => (c.cnpj||'').split(' — ')[0];
 // fontes únicas — evitam listas duplicadas/divergentes entre modais e telas
 const REGIMES = ['CLT','PJ','Estágio','Sócio'];                       // ordem canônica dos regimes
 const ORDEM_UNI = ['Quintas da Avenida','Granbery','Home Office'];    // ordem canônica das unidades
@@ -3931,10 +3933,10 @@ const UI = {
               ${c.ativo===false?'<span class="badge b-acumulando" style="margin-top:10px">● Inativo</span>':''}
             </div>
             <div class="pcard-facts">
+              ${c.cnpj?`<div class="fact"><span>Empresa</span><b>${esc(nomeEmpresa(c))}${c.cnpjDesde?' <small>(desde '+fmtCurto(c.cnpjDesde)+')</small>':''}</b></div>`:''}
               <div class="fact"><span>Unidade</span><b>${esc(c.unidade)}</b></div>
               <div class="fact"><span>Setor</span><b>${esc(c.departamento)}</b></div>
               <div class="fact"><span>Regime</span><b>${esc(regimeLabel(c.regime))}</b></div>
-              ${c.cnpj?`<div class="fact"><span>CNPJ</span><b>${esc(c.cnpj)}${c.cnpjDesde?' <small>(desde '+fmtCurto(c.cnpjDesde)+')</small>':''}</b></div>`:''}
               ${(c.regime==='PJ'||isEstagiario(c))?`<div class="fact"><span>1/3 constitucional</span><b>${temTercoConstitucional(c)?'Sim':'Não'}</b></div>`:''}
               <div class="fact"><span>Admissão</span><b>${fmt(c.admissao)}</b></div>
               ${c.desligamento?`<div class="fact"><span>Desligamento</span><b>${fmt(c.desligamento)}</b></div>`:''}
