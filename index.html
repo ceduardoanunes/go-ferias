@@ -3090,6 +3090,13 @@ const temTercoConstitucional = c => !isEstagiario(c);
 // fontes únicas — evitam listas duplicadas/divergentes entre modais e telas
 const REGIMES = ['CLT','PJ','Estágio','Sócio'];                       // ordem canônica dos regimes
 const ORDEM_UNI = ['Quintas da Avenida','Granbery','Home Office'];    // ordem canônica das unidades
+// empresas (CNPJ) do grupo — valor guardado no colaborador é "Nome — CNPJ" (mesmo padrão de unidade/regime: string legível direto)
+const EMPRESAS_GRUPO = [
+  'Go! Mídia — 05.565.646/0001-30',
+  'Go Editoração — 07.273.928/0001-99',
+  'On Digital — 61.734.337/0001-17',
+  'Go! Rec — 37.406.102/0001-11',
+];
 
 // categorias das Notas (observações de RH que vêm da planilha: venda pela MP, licença, pandemia…)
 const CATEGORIAS_NOTA = [
@@ -4339,6 +4346,7 @@ const Modals = {
     const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(c=>c.departamento)])].filter(d=>d!=='Estagiários');
     const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(c=>c.unidade)])].filter(Boolean)
       .sort((a,b)=>{const ia=ORDEM_UNI.indexOf(a),ib=ORDEM_UNI.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b);});
+    const cnpjs=[...new Set([...EMPRESAS_GRUPO, ...Store.data.colaboradores.map(c=>c.cnpj)])].filter(Boolean);
     this.open(`
       <h3>Novo colaborador</h3>
       <p class="msub">O período aquisitivo inicial é criado automaticamente a partir da admissão.</p>
@@ -4366,7 +4374,8 @@ const Modals = {
           <select id="nRegime">${REGIMES.map(r=>`<option value="${r}">${regimeLabel(r)}</option>`).join('')}</select></div>
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${iso(hoje())}"></div>
       </div>
-      <div class="field"><label>CNPJ (opcional)</label><input id="nCnpj" placeholder="empresa que emprega o colaborador"></div>
+      <div class="field"><label>CNPJ (opcional)</label>
+        <select id="nCnpj"><option value="">— Não informado —</option>${cnpjs.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('')}</select></div>
       <div class="modal-actions">
         <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
         <button class="btn btn-primary" onclick="Actions.salvarColab()">Cadastrar</button>
@@ -4410,6 +4419,7 @@ const Modals = {
     const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(x=>x.departamento)])];
     const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(x=>x.unidade)])].filter(Boolean)
       .sort((a,b)=>{const ia=ORDEM_UNI.indexOf(a),ib=ORDEM_UNI.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b);});
+    const cnpjs=[...new Set([...EMPRESAS_GRUPO, ...Store.data.colaboradores.map(x=>x.cnpj)])].filter(Boolean);
     this.open(`
       <h3>Editar colaborador</h3>
       <p class="msub">Alterações nos dados cadastrais de ${esc(c.nome)}.</p>
@@ -4437,8 +4447,9 @@ const Modals = {
           <select id="nRegime">${REGIMES.map(r=>`<option value="${r}"${r===c.regime?' selected':''}>${regimeLabel(r)}</option>`).join('')}</select></div>
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${c.admissao}"></div>
       </div>
-      <div class="field"><label>CNPJ (opcional)</label><input id="nCnpj" value="${esc(c.cnpj||'')}" placeholder="empresa que emprega o colaborador">
-        ${c.cnpjDesde?`<p class="msub">Neste CNPJ desde ${fmt(c.cnpjDesde)}. Trocar o valor abaixo marca uma nova data de corte.</p>`:''}
+      <div class="field"><label>CNPJ (opcional)</label>
+        <select id="nCnpj"><option value="">— Não informado —</option>${cnpjs.map(v=>`<option value="${esc(v)}"${v===c.cnpj?' selected':''}>${esc(v)}</option>`).join('')}</select>
+        ${c.cnpjDesde?`<p class="msub">Neste CNPJ desde ${fmt(c.cnpjDesde)}. Trocar o valor acima marca uma nova data de corte.</p>`:''}
       </div>
       <div class="modal-actions">
         <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
