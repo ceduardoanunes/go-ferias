@@ -4774,8 +4774,9 @@ const Actions = {
     const antes = {nome:c.nome, funcao:c.funcao, departamento:c.departamento, unidade:c.unidade, regime:c.regime, admissao:c.admissao, cnpj:c.cnpj||'', desligamento:c.desligamento||null};
     const depois = {nome, funcao, departamento, unidade, regime, admissao, cnpj, desligamento};
     const mudou = Object.keys(depois).filter(k=>antes[k]!==depois[k]);
-    // troca de CNPJ marca a data de corte, usada p/ dividir/ocultar o histórico anterior na ficha
-    if(mudou.includes('cnpj')) depois.cnpj_desde = cnpj ? iso(hoje()) : null;
+    // marca a data de corte só numa troca de fato (já tinha um CNPJ e virou outro) — primeiro
+    // preenchimento (backfill de dado histórico que faltava) não é "troca acontecendo hoje"
+    if(mudou.includes('cnpj')) depois.cnpj_desde = (antes.cnpj && cnpj) ? iso(hoje()) : null;
     // desligamento preenchido/limpo controla o "ativo" automaticamente, sem mexer se essa edição não tocou nele
     if(mudou.includes('desligamento')) depois.ativo = !desligamento;
     const fotoMudou = UI._fotoPendente!==undefined && (UI._fotoPendente||null)!==(c.foto||null);
