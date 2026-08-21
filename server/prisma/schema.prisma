@@ -56,6 +56,7 @@ model Colaborador {
   unidade      String
   regime       String
   admissao     DateTime            @db.Date
+  desligamento DateTime?           @db.Date // data de saída — quando preenchida, o colaborador é tratado como inativo
   foto         String?
   ativo        Boolean             @default(true)
   cnpj         String? // empresa (CNPJ) que emprega o colaborador — pode divergir da unidade física
