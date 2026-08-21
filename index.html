@@ -4086,7 +4086,9 @@ const UI = {
             : `<div class="none-yet">Nenhum gozo contábil lançado neste período.</div>`}
           </div>
         </div>`;
-      }).join('') + toggleHistHtml || '<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>';
+      }).join('') + toggleHistHtml || `<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>${
+        Auth.podeAdministrar() ? `<button class="btn btn-soft" style="margin-top:12px" onclick="Modals.novoPeriodo('${cid}')">Lançar período aquisitivo</button>` : ''
+      }`;
     }
 
     if(this.tabAtual==='folgas'){
@@ -4544,6 +4546,26 @@ const Modals = {
       </div>`);
   },
 
+  novoPeriodo(cid){
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores lançam período aquisitivo.'); return; }
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    if(!c) return;
+    const ini = c.admissao || iso(hoje());
+    this.open(`
+      <h3>Lançar período aquisitivo</h3>
+      <p class="msub">${esc(c.nome)} · uso excepcional — ex.: estagiário efetivado, readmissão após transição, cadastro sem período inicial.</p>
+      <div class="field-row">
+        <div class="field"><label>Início</label><input type="date" id="ePerIni" value="${ini}"></div>
+        <div class="field"><label>Fim</label><input type="date" id="ePerFim" value="${iso(addD(addM(pd(ini),12),-1))}"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
+        <button class="btn btn-primary" onclick="Actions.salvarNovoPeriodo('${cid}')">Lançar período</button>
+      </div>`);
+    const iniEl=$('#ePerIni'), fimEl=$('#ePerFim');
+    iniEl.onchange = ()=>{ if(iniEl.value) fimEl.value = iso(addD(addM(pd(iniEl.value),12),-1)); };
+  },
+
   novaNota(cid){ this._notaModal(cid, null); },
   editarNota(cid, nid){ const n=(Store.data.notas||[]).find(x=>x.id===nid); if(n) this._notaModal(cid, n); },
   _notaModal(cid, n){
@@ -4936,6 +4958,20 @@ const Actions = {
     Store.save();
     Store.logAudit('atualizar','periodos',perId,`Datas do período ajustadas — ${c?.nome} · ${antes} → ${fmt(ini)}–${fmt(fim)}`);
     toast('Período atualizado ✓');
+    Modals.close(); UI.renderProfile(cid); UI.renderDir();
+  },
+
+  async salvarNovoPeriodo(cid){
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores lançam período aquisitivo.'); return; }
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    if(!c) return;
+    const ini=$('#ePerIni').value, fim=$('#ePerFim').value;
+    if(!ini||!fim||fim<ini){ toast('Confira as datas de início e fim.'); return; }
+    const sobrepoe = Store.data.periodos.some(o=>o.colaborador_id===cid && ini<=o.fim && fim>=o.inicio);
+    if(sobrepoe){ toast('As datas se sobrepõem a outro período deste colaborador.'); return; }
+    await Store.insert('periodos', {colaborador_id:cid, inicio:ini, fim:fim, situacao:'acumulando'},
+      `Período aquisitivo lançado manualmente — ${c.nome} (${fmt(ini)} a ${fmt(fim)})`);
+    toast('Período aquisitivo lançado ✓');
     Modals.close(); UI.renderProfile(cid); UI.renderDir();
   },
 
