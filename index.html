@@ -3089,7 +3089,10 @@ const isEstagiario = c => c.regime==='Estágio' || c.departamento==='Estagiário
 const temTercoConstitucional = c => !isEstagiario(c);
 // cnpj é guardado como "Nome — CNPJ"; em listas/telas mostramos só o nome, sem o número
 const nomeDaEmpresa = v => (v||'').split(' — ')[0];
-const nomeEmpresa = c => nomeDaEmpresa(c.cnpj);
+// normaliza variações de grafia de um mesmo CNPJ já salvo (ex.: "On Digital" x "ON Digital")
+// comparando pelo número — assim dado legado passa a contar/exibir junto com o valor canônico atual
+const empresaCanonica = v => { if(!v) return v; const num=v.split(' — ')[1]; return EMPRESAS_GRUPO.find(e=>e.split(' — ')[1]===num) || v; };
+const nomeEmpresa = c => nomeDaEmpresa(empresaCanonica(c.cnpj));
 // fontes únicas — evitam listas duplicadas/divergentes entre modais e telas
 const REGIMES = ['CLT','PJ','Estágio','Sócio'];                       // ordem canônica dos regimes
 const ORDEM_UNI = ['Quintas da Avenida','Granbery','Home Office'];    // ordem canônica das unidades
@@ -3745,7 +3748,7 @@ const UI = {
     const matchQ = c => !q || normalizarBusca(c.nome).includes(q) || normalizarBusca(c.funcao).includes(q);
     const matchPend = c => !this.filtro.pendencias || Dom.alertas(c.id).some(a=>a.tipo!=='green');
 
-    const matchCnpj = c => !this.filtro.cnpj || c.cnpj===this.filtro.cnpj;
+    const matchCnpj = c => !this.filtro.cnpj || empresaCanonica(c.cnpj)===this.filtro.cnpj;
 
     // bases "ao vivo": cada grupo de chip é contado respeitando os OUTROS filtros já ativos
     const baseParaDepto = cs.filter(c => matchQ(c) && matchPend(c) && matchCnpj(c) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
@@ -3785,13 +3788,13 @@ const UI = {
     const chipInativo=$('#chipInativo'); if(chipInativo) chipInativo.onclick=()=>{ this.filtro.inativos=!this.filtro.inativos; this.renderDir(); };
 
     // CNPJs só aparecem como filtro quando pelo menos um colaborador tem o campo preenchido
-    const cnpjs=[...new Set(cs.map(c=>c.cnpj).filter(Boolean))].sort();
+    const cnpjs=[...new Set(cs.map(c=>empresaCanonica(c.cnpj)).filter(Boolean))].sort();
     const cnpjChips=$('#cnpjChips');
     if(cnpjs.length){
       cnpjChips.style.display='';
       cnpjChips.innerHTML = [`<button class="chip ${!this.filtro.cnpj?'on':''}" data-cnpj="">Todas as empresas<b>${baseParaCnpj.length}</b></button>`]
         .concat(cnpjs.map(v=>
-          `<button class="chip ${this.filtro.cnpj===v?'on':''}" data-cnpj="${esc(v)}">${esc(nomeDaEmpresa(v))}<b>${baseParaCnpj.filter(c=>c.cnpj===v).length}</b></button>`)).join('');
+          `<button class="chip ${this.filtro.cnpj===v?'on':''}" data-cnpj="${esc(v)}">${esc(nomeDaEmpresa(v))}<b>${baseParaCnpj.filter(c=>empresaCanonica(c.cnpj)===v).length}</b></button>`)).join('');
       $$('#cnpjChips .chip').forEach(ch=>ch.onclick=()=>{ this.filtro.cnpj = (this.filtro.cnpj===ch.dataset.cnpj && ch.dataset.cnpj) ? '' : ch.dataset.cnpj; this.renderDir(); });
     } else {
       cnpjChips.style.display='none';
@@ -4350,7 +4353,7 @@ const Modals = {
     const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(c=>c.departamento)])].filter(d=>d!=='Estagiários');
     const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(c=>c.unidade)])].filter(Boolean)
       .sort((a,b)=>{const ia=ORDEM_UNI.indexOf(a),ib=ORDEM_UNI.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b);});
-    const cnpjs=[...new Set([...EMPRESAS_GRUPO, ...Store.data.colaboradores.map(c=>c.cnpj)])].filter(Boolean);
+    const cnpjs=[...new Set([...EMPRESAS_GRUPO, ...Store.data.colaboradores.map(c=>empresaCanonica(c.cnpj))])].filter(Boolean);
     this.open(`
       <h3>Novo colaborador</h3>
       <p class="msub">O período aquisitivo inicial é criado automaticamente a partir da admissão.</p>
@@ -4426,7 +4429,7 @@ const Modals = {
     const deps=[...new Set([...SETORES_BRAND.map(s=>s.nome), ...Store.data.colaboradores.map(x=>x.departamento)])];
     const unis=[...new Set(['Granbery','Quintas da Avenida','Home Office',...Store.data.colaboradores.map(x=>x.unidade)])].filter(Boolean)
       .sort((a,b)=>{const ia=ORDEM_UNI.indexOf(a),ib=ORDEM_UNI.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b);});
-    const cnpjs=[...new Set([...EMPRESAS_GRUPO, ...Store.data.colaboradores.map(x=>x.cnpj)])].filter(Boolean);
+    const cnpjs=[...new Set([...EMPRESAS_GRUPO, ...Store.data.colaboradores.map(x=>empresaCanonica(x.cnpj))])].filter(Boolean);
     this.open(`
       <h3>Editar colaborador</h3>
       <p class="msub">Alterações nos dados cadastrais de ${esc(c.nome)}.</p>
@@ -4445,7 +4448,7 @@ const Modals = {
       <div class="field"><label>Função</label><input id="nFuncao" value="${esc(c.funcao)}"></div>
       <div class="field-row">
         <div class="field"><label>CNPJ</label>
-          <select id="nCnpj"><option value="">— Não informado —</option>${cnpjs.map(v=>`<option value="${esc(v)}"${v===c.cnpj?' selected':''}>${esc(nomeDaEmpresa(v))}</option>`).join('')}</select></div>
+          <select id="nCnpj"><option value="">— Não informado —</option>${cnpjs.map(v=>`<option value="${esc(v)}"${v===empresaCanonica(c.cnpj)?' selected':''}>${esc(nomeDaEmpresa(v))}</option>`).join('')}</select></div>
         <div class="field"><label>Unidade</label>
           <select id="nUni">${unis.map(u=>`<option${u===c.unidade?' selected':''}>${esc(u)}</option>`).join('')}</select></div>
       </div>
@@ -4771,7 +4774,7 @@ const Actions = {
           regime=$('#nRegime').value, admissao=$('#nAdm').value, cnpj=$('#nCnpj').value.trim(),
           desligamento=$('#nDeslig').value || null;
     if(!nome||!funcao||!admissao){ toast('Preencha nome, função e admissão.'); return; }
-    const antes = {nome:c.nome, funcao:c.funcao, departamento:c.departamento, unidade:c.unidade, regime:c.regime, admissao:c.admissao, cnpj:c.cnpj||'', desligamento:c.desligamento||null};
+    const antes = {nome:c.nome, funcao:c.funcao, departamento:c.departamento, unidade:c.unidade, regime:c.regime, admissao:c.admissao, cnpj:empresaCanonica(c.cnpj)||'', desligamento:c.desligamento||null};
     const depois = {nome, funcao, departamento, unidade, regime, admissao, cnpj, desligamento};
     const mudou = Object.keys(depois).filter(k=>antes[k]!==depois[k]);
     // marca a data de corte só numa troca de fato (já tinha um CNPJ e virou outro) — primeiro
