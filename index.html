@@ -4365,7 +4365,7 @@ const Modals = {
       <div class="field"><label>Nome completo</label><input id="nNome" placeholder="Nome do colaborador"></div>
       <div class="field"><label>Função</label><input id="nFuncao" placeholder="ex.: Designer Gráfico"></div>
       <div class="field-row">
-        <div class="field"><label>CNPJ (opcional)</label>
+        <div class="field"><label>CNPJ</label>
           <select id="nCnpj"><option value="">— Não informado —</option>${cnpjs.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('')}</select></div>
         <div class="field"><label>Unidade</label>
           <select id="nUni">${unis.map(u=>`<option>${esc(u)}</option>`).join('')}</select></div>
@@ -4378,7 +4378,7 @@ const Modals = {
       </div>
       <div class="field-row">
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${iso(hoje())}"></div>
-        <div class="field"><label>Desligamento (opcional)</label><input type="date" id="nDeslig"></div>
+        <div class="field"><label>Desligamento</label><input type="date" id="nDeslig"></div>
       </div>
       <div class="modal-actions">
         <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
@@ -4441,7 +4441,7 @@ const Modals = {
       <div class="field"><label>Nome completo</label><input id="nNome" value="${esc(c.nome)}"></div>
       <div class="field"><label>Função</label><input id="nFuncao" value="${esc(c.funcao)}"></div>
       <div class="field-row">
-        <div class="field"><label>CNPJ (opcional)</label>
+        <div class="field"><label>CNPJ</label>
           <select id="nCnpj"><option value="">— Não informado —</option>${cnpjs.map(v=>`<option value="${esc(v)}"${v===c.cnpj?' selected':''}>${esc(v)}</option>`).join('')}</select></div>
         <div class="field"><label>Unidade</label>
           <select id="nUni">${unis.map(u=>`<option${u===c.unidade?' selected':''}>${esc(u)}</option>`).join('')}</select></div>
@@ -4455,7 +4455,7 @@ const Modals = {
       </div>
       <div class="field-row">
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${c.admissao}"></div>
-        <div class="field"><label>Desligamento (opcional)</label><input type="date" id="nDeslig" value="${c.desligamento||''}"></div>
+        <div class="field"><label>Desligamento</label><input type="date" id="nDeslig" value="${c.desligamento||''}"></div>
       </div>
       <div class="modal-actions">
         <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
