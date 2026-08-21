@@ -513,8 +513,8 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .chip.on b{color:rgba(255,255,255,.65)}
 /* chips de filtro (Colaboradores): unidade e setor padronizadas, quebrando linha quando necessário */
 #unidChips .chip,#deptChips .chip,#cnpjChips .chip,#statusChips .chip{padding:7px 15px;font-size:12.5px;white-space:nowrap;flex:none}
-.chip-group{display:flex;flex-direction:column;gap:8px}
-.chip-group-title{font-size:11.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--faint)}
+.chip-group{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.chip-group-title{font-size:11.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--faint);flex:none}
 .chip-warn{border-color:transparent;background:var(--red-soft);color:var(--red)}
 .chip-warn b{color:var(--red)}
 .chip-warn:hover{border-color:#F0C7CF;color:var(--red)}
@@ -3810,7 +3810,7 @@ const UI = {
     const STATUS_LAB = {'vencidas':'Férias Vencidas','em-breve':'Férias em Breve','pendencia':'Pendência','inativos':'Inativos'};
     const nStatus = k => baseParaStatus.filter(c=>k?this.statusColab(c)===k:c.ativo!==false).length;
     const statusOpts = ['','vencidas','em-breve','pendencia'].concat(nInativos?['inativos']:[]);
-    const STATUS_CLS = {'vencidas':'chip-warn','em-breve':'chip-warn','inativos':'chip-inativo'};
+    const STATUS_CLS = {'vencidas':'chip-warn','em-breve':'chip-warn','pendencia':'chip-warn','inativos':'chip-inativo'};
     $('#statusChips').innerHTML = statusOpts.map(k=>
       `<button class="chip ${STATUS_CLS[k]||''} ${this.filtro.status===k?'on':''}" data-status="${k}">${k?STATUS_LAB[k]:'Todos'}<b>${nStatus(k)}</b></button>`
     ).join('');
@@ -3821,7 +3821,7 @@ const UI = {
     const cnpjGroup=$('#cnpjGroup');
     if(cnpjs.length){
       cnpjGroup.style.display='';
-      $('#cnpjChips').innerHTML = [`<button class="chip ${!this.filtro.cnpj?'on':''}" data-cnpj="">Todas as empresas<b>${baseParaCnpj.length}</b></button>`]
+      $('#cnpjChips').innerHTML = [`<button class="chip ${!this.filtro.cnpj?'on':''}" data-cnpj="">Todas<b>${baseParaCnpj.length}</b></button>`]
         .concat(cnpjs.map(v=>
           `<button class="chip ${this.filtro.cnpj===v?'on':''}" data-cnpj="${esc(v)}">${esc(nomeDaEmpresa(v))}<b>${baseParaCnpj.filter(c=>empresaCanonica(c.cnpj)===v).length}</b></button>`)).join('');
       $$('#cnpjChips .chip').forEach(ch=>ch.onclick=()=>{ this.filtro.cnpj = (this.filtro.cnpj===ch.dataset.cnpj && ch.dataset.cnpj) ? '' : ch.dataset.cnpj; this.renderDir(); });
