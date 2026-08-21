@@ -8,7 +8,9 @@ const ts = (d) => (d instanceof Date ? d.toISOString() : d || null); // data+hor
 const colaborador = (c) => c && ({
   id: c.id, nome: c.nome, email: c.email || null, funcao: c.funcao,
   departamento: c.departamento, unidade: c.unidade, regime: c.regime,
-  admissao: dia(c.admissao), foto: c.foto || null, ativo: c.ativo,
+  admissao: dia(c.admissao), desligamento: dia(c.desligamento),
+  foto: c.foto || null, ativo: c.ativo,
+  cnpj: c.cnpj || null, cnpj_desde: dia(c.cnpjDesde),
 });
 
 const periodo = (p) => p && ({
@@ -52,7 +54,9 @@ const paraPrisma = {
     nome: b.nome, email: b.email, funcao: b.funcao, departamento: b.departamento,
     unidade: b.unidade, regime: b.regime,
     admissao: b.admissao ? new Date(b.admissao) : undefined,
+    desligamento: b.desligamento ? new Date(b.desligamento) : (b.desligamento === null ? null : undefined),
     foto: b.foto, ativo: b.ativo,
+    cnpj: b.cnpj, cnpjDesde: b.cnpj_desde ? new Date(b.cnpj_desde) : (b.cnpj_desde === null ? null : undefined),
   }),
   periodos: (b) => ({
     colaboradorId: b.colaborador_id, inicio: b.inicio ? new Date(b.inicio) : undefined,
