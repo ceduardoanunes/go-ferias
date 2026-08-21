@@ -4084,7 +4084,7 @@ const UI = {
       aberto:'<span class="badge b-programado">Em aberto</span>',
       acumulando: Dom.emAquisicao(p)
         ? '<span class="badge b-acumulando">Em aquisição</span>'
-        : '<span class="badge b-programado">Saldo em aberto</span>'
+        : ''
     }[p.situacao]||'');
 
     if(this.tabAtual==='oficiais'){
