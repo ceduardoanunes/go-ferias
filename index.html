@@ -1913,6 +1913,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
       </div>
       <div class="chips" id="unidChips"></div>
       <div class="chips" id="deptChips"></div>
+      <div class="chips" id="cnpjChips" style="display:none"></div>
     </div>
     <div id="grid"></div>
   </section>
@@ -2905,8 +2906,21 @@ const fmtDT = s => { if(!s) return '—'; const d=new Date(s); if(isNaN(d)) retu
 const addM = (d,n) => { const x=new Date(d); x.setMonth(x.getMonth()+n); return x; };
 const addD = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
 const diffD = (a,b) => Math.round((b-a)/864e5);
-// dias úteis entre duas datas ISO (inclusive), pulando sábado/domingo — folgas não contam fim de semana
-const diasUteis = (a,b) => { let d=pd(a); const end=pd(b); let n=0; while(d<=end){ const wd=d.getDay(); if(wd!==0 && wd!==6) n++; d=addD(d,1); } return n; };
+// remove acentos p/ busca (ex.: "joao" encontra "João")
+const normalizarBusca = s => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+// dias úteis entre duas datas ISO (inclusive), pulando sábado/domingo e feriados — folgas não contam esses dias
+const diasUteis = (a,b) => {
+  let d=pd(a); const end=pd(b); let n=0;
+  const feriadosPorAno = {};
+  while(d<=end){
+    const wd=d.getDay();
+    const ano=d.getFullYear();
+    if(!feriadosPorAno[ano]) feriadosPorAno[ano]=feriadosDoAno(ano);
+    if(wd!==0 && wd!==6 && !feriadosPorAno[ano].has(iso(d))) n++;
+    d=addD(d,1);
+  }
+  return n;
+};
 const ehFimDeSemana = d => { const wd=d.getDay(); return wd===0 || wd===6; };
 const initials = n => n.split(' ').filter(Boolean).map(w=>w[0]).filter((_,i,a)=>i===0||i===a.length-1).join('').toUpperCase();
 const avatarInner = p => p.foto ? `<img src="${esc(p.foto)}" alt="${esc(p.nome)}" loading="lazy">` : initials(p.nome);
@@ -3053,9 +3067,26 @@ const SS = safeStorage('sessionStorage');
    Tabelas espelham o schema.sql que acompanha este arquivo.
    ================================================================ */
 const REGRAS = { DIAS_CONTABEIS: 30, DIAS_FOLGAS: 22, ALERTA_VENC_DIAS: 120 };
+// direito de férias de um período menor que 1 ano (ex.: rescisão antes de completar o aquisitivo):
+// CLT — 1/12 (2,5 dias) por mês completo trabalhado; mês com 15+ dias conta como completo. Período de ~1 ano mantém os 30 dias integrais.
+const diasProporcionaisPeriodo = p => {
+  const ini = pd(p.inicio), fim = pd(p.fim);
+  if(diffD(ini,fim)+1 >= 360) return REGRAS.DIAS_CONTABEIS;
+  let meses = 0, d = new Date(ini);
+  while(d <= fim){
+    const fimMes = addD(addM(d,1),-1);
+    const fimContagem = fimMes < fim ? fimMes : fim;
+    if(diffD(d,fimContagem)+1 >= 15) meses++;
+    d = addM(d,1);
+  }
+  return Math.min(REGRAS.DIAS_CONTABEIS, Math.round(meses*2.5));
+};
 // rótulo amigável do regime (valor guardado continua 'CLT'/'PJ' p/ compatibilidade com dados existentes)
 const REGIME_LABEL = { CLT:'Celetista', PJ:'Pessoa Jurídica', 'Estágio':'Estágio', 'Sócio':'Sócio' };
 const regimeLabel = r => REGIME_LABEL[r] || r || 'Não informado';
+const isEstagiario = c => c.regime==='Estágio' || c.departamento==='Estagiários' || /estagi/i.test(c.funcao||'');
+// 1/3 constitucional: CLT e PJ (por contrato) recebem; estagiário não (Lei 11.788 não prevê o adicional)
+const temTercoConstitucional = c => !isEstagiario(c);
 // fontes únicas — evitam listas duplicadas/divergentes entre modais e telas
 const REGIMES = ['CLT','PJ','Estágio','Sócio'];                       // ordem canônica dos regimes
 const ORDEM_UNI = ['Quintas da Avenida','Granbery','Home Office'];    // ordem canônica das unidades
@@ -3566,6 +3597,20 @@ const Dom = {
   diasFerias(pid){ return this.feriasDe(pid).reduce((s,f)=>s+Number(f.dias||0),0) },
   diasFolgas(pid){ return this.folgasDe(pid).reduce((s,f)=>s+Number(f.dias||0),0) },
 
+  // CLT Art. 134, §1º: até 3 períodos de gozo, nenhum menor que 5 dias, e pelo menos um com 14 dias ou mais.
+  // idExcluir: lançamento sendo editado (não conta contra si mesmo). Retorna {bloqueio} (impede salvar) e/ou {aviso} (confirma antes de salvar).
+  validarSplitFerias(perId, novosDias, idExcluir){
+    const existentes = this.feriasDe(perId).filter(f=>f.id!==idExcluir);
+    if(novosDias>0 && novosDias<5) return {bloqueio:'Pela CLT, nenhum período de gozo de férias pode ter menos de 5 dias.'};
+    if(existentes.length>=3) return {bloqueio:'Este período aquisitivo já tem 3 lançamentos de férias — a CLT permite no máximo 3 frações.'};
+    const totalComNovo = existentes.reduce((s,f)=>s+Number(f.dias||0),0) + novosDias;
+    const direito = diasProporcionaisPeriodo(Store.data.periodos.find(p=>p.id===perId) || {inicio:iso(hoje()),fim:iso(hoje())});
+    const temUmaDe14 = existentes.some(f=>Number(f.dias||0)>=14) || novosDias>=14;
+    if(totalComNovo>=direito && !temUmaDe14)
+      return {aviso:'Nenhuma das partes deste período tem 14 dias ou mais. A CLT exige isso quando as férias são fracionadas.'};
+    return {};
+  },
+
   // "em aquisição" só enquanto o período aquisitivo ainda não venceu; se o fim já passou, os 30 dias estão conquistados
   emAquisicao(p){ return p.situacao==='acumulando' && pd(p.fim) >= hoje() },
 
@@ -3604,7 +3649,7 @@ const Dom = {
   proximaMarcacao(cid){
     const h = iso(hoje());
     const pers = this.periodosDe(cid);
-    const semFer = this.semFerias(cid);   // sócio/PJ/estagiário: ignora férias (só folgas contam)
+    const semFer = this.semFerias(cid);   // só sócio: ignora férias (só folgas contam)
     let candidatos = [];
     pers.forEach(p=>{
       if(!semFer) this.feriasDe(p.id).forEach(f=>{ if(f.inicio>h) candidatos.push({tipo:'ferias', ...f}); });
@@ -3643,11 +3688,11 @@ const Dom = {
     return {k:'acumulando', cls:'b-acumulando', dot:'var(--faint)', lab:'Em aquisição'};
   },
 
-  // regimes sem férias contábeis (sócio, PJ e estagiário): usado em ficha, alertas e agregados
+  // regime sem férias contábeis: só sócio (PJ e estagiário têm direito a 30 dias/ano — ver temTercoConstitucional)
   semFerias(cOrId){
     const c = typeof cOrId==='string' ? Store.data.colaboradores.find(x=>x.id===cOrId) : cOrId;
     if(!c) return false;
-    return c.regime==='Sócio' || c.regime==='PJ' || c.regime==='Estágio' || c.departamento==='Estagiários' || /estagi/i.test(c.funcao||'');
+    return c.regime==='Sócio';
   },
   alertas(cid){
     const out=[]; const r=this.resumo(cid);
@@ -3674,9 +3719,11 @@ const Dom = {
    ================================================================ */
 
 const UI = {
-  filtro: {q:'', depto:'', unidade:'', pendencias:false, inativos:false},
+  filtro: {q:'', depto:'', unidade:'', cnpj:'', pendencias:false, inativos:false},
   anoPerfil: hoje().getFullYear(),
   tabAtual: 'oficiais',
+  histAberto: false,
+  _perfilAtual: null,
 
   renderDir(){
     const nInativos = Store.data.colaboradores.filter(c=>c.ativo===false).length;
@@ -3684,14 +3731,17 @@ const UI = {
     const cs = Store.data.colaboradores
       .filter(c => this.filtro.inativos ? c.ativo===false : c.ativo!==false)
       .slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
-    const q = this.filtro.q.toLowerCase();
-    const matchQ = c => !q || c.nome.toLowerCase().includes(q) || c.funcao.toLowerCase().includes(q);
+    const q = normalizarBusca(this.filtro.q);
+    const matchQ = c => !q || normalizarBusca(c.nome).includes(q) || normalizarBusca(c.funcao).includes(q);
     const matchPend = c => !this.filtro.pendencias || Dom.alertas(c.id).some(a=>a.tipo!=='green');
 
+    const matchCnpj = c => !this.filtro.cnpj || c.cnpj===this.filtro.cnpj;
+
     // bases "ao vivo": cada grupo de chip é contado respeitando os OUTROS filtros já ativos
-    const baseParaDepto = cs.filter(c => matchQ(c) && matchPend(c) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
-    const baseParaUnidade = cs.filter(c => matchQ(c) && matchPend(c) && (!this.filtro.depto || c.departamento===this.filtro.depto));
-    const baseParaPend = cs.filter(c => matchQ(c) && (!this.filtro.depto || c.departamento===this.filtro.depto) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
+    const baseParaDepto = cs.filter(c => matchQ(c) && matchPend(c) && matchCnpj(c) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
+    const baseParaUnidade = cs.filter(c => matchQ(c) && matchPend(c) && matchCnpj(c) && (!this.filtro.depto || c.departamento===this.filtro.depto));
+    const baseParaPend = cs.filter(c => matchQ(c) && matchCnpj(c) && (!this.filtro.depto || c.departamento===this.filtro.depto) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
+    const baseParaCnpj = cs.filter(c => matchQ(c) && matchPend(c) && (!this.filtro.depto || c.departamento===this.filtro.depto) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
 
     // chips de departamento — ordem fixa institucional (fonte única SETORES_BRAND); desconhecidos vão pro fim, em ordem alfabética
     const ORDEM_DEPTO = SETORES_BRAND.map(s=>s.nome);
@@ -3724,11 +3774,26 @@ const UI = {
     $('#chipPend').onclick=()=>{ this.filtro.pendencias=!this.filtro.pendencias; this.renderDir(); };
     const chipInativo=$('#chipInativo'); if(chipInativo) chipInativo.onclick=()=>{ this.filtro.inativos=!this.filtro.inativos; this.renderDir(); };
 
+    // CNPJs só aparecem como filtro quando pelo menos um colaborador tem o campo preenchido
+    const cnpjs=[...new Set(cs.map(c=>c.cnpj).filter(Boolean))].sort();
+    const cnpjChips=$('#cnpjChips');
+    if(cnpjs.length){
+      cnpjChips.style.display='';
+      cnpjChips.innerHTML = [`<button class="chip ${!this.filtro.cnpj?'on':''}" data-cnpj="">Todos os CNPJs<b>${baseParaCnpj.length}</b></button>`]
+        .concat(cnpjs.map(v=>
+          `<button class="chip ${this.filtro.cnpj===v?'on':''}" data-cnpj="${esc(v)}">${esc(v)}<b>${baseParaCnpj.filter(c=>c.cnpj===v).length}</b></button>`)).join('');
+      $$('#cnpjChips .chip').forEach(ch=>ch.onclick=()=>{ this.filtro.cnpj = (this.filtro.cnpj===ch.dataset.cnpj && ch.dataset.cnpj) ? '' : ch.dataset.cnpj; this.renderDir(); });
+    } else {
+      cnpjChips.style.display='none';
+      this.filtro.cnpj='';
+    }
+
     // filtro
     const list = cs.filter(c=>{
-      if(q && !(c.nome.toLowerCase().includes(q)||c.funcao.toLowerCase().includes(q))) return false;
+      if(q && !matchQ(c)) return false;
       if(this.filtro.depto && c.departamento!==this.filtro.depto) return false;
       if(this.filtro.unidade && c.unidade!==this.filtro.unidade) return false;
+      if(!matchCnpj(c)) return false;
       if(this.filtro.pendencias && !Dom.alertas(c.id).some(a=>a.tipo!=='green')) return false;
       return true;
     });
@@ -3803,9 +3868,9 @@ const UI = {
   renderProfile(cid){
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     if(!c){ location.hash='#/colaboradores'; return; }
+    if(this._perfilAtual!==cid){ this.histAberto=false; this._perfilAtual=cid; } // troca de colaborador reabre com histórico antigo oculto
     const isSocio = c.regime==='Sócio';           // p/ escolher o texto do hero
-    const isPJ = c.regime==='PJ';
-    const semFerias = Dom.semFerias(c);           // sócio, PJ ou estagiário: sem férias contábeis
+    const semFerias = Dom.semFerias(c);           // só sócio: sem férias contábeis (PJ/estagiário têm direito a 30 dias/ano)
     if(semFerias && this.tabAtual==='oficiais') this.tabAtual='folgas';
     const st=Dom.status(cid), r=Dom.resumo(cid), alertas=Dom.alertas(cid);
     const pers=Dom.periodosDe(cid);
@@ -3834,12 +3899,8 @@ const UI = {
       const rotulo = proxima.tipo==='ferias' ? 'Próximas férias' : 'Próxima folga';
       heroMsg = `${rotulo}: <b>${fmt(proxima.inicio)}${proxima.inicio!==proxima.fim?' a '+fmt(proxima.fim):''}</b> (${proxima.dias} ${proxima.dias==1?'dia':'dias'}).`;
     } else if(semFerias){
-      heroEmoji = isSocio ? '🤝' : isPJ ? '📄' : '🎓';
-      heroMsg = isSocio
-        ? `Sócio — sem controle de férias contábeis. Acompanhe as folgas abaixo.`
-        : isPJ
-        ? `Pessoa Jurídica — sem férias contábeis (contrato PJ). Acompanhe as folgas abaixo.`
-        : `Estagiário — sem férias contábeis (Lei 11.788). Acompanhe as folgas abaixo.`;
+      heroEmoji = '🤝';
+      heroMsg = `Sócio — sem controle de férias contábeis. Acompanhe as folgas abaixo.`;
     } else {
       heroEmoji = '🫠';
       const ultima = Dom.ultimaFeria(cid);
@@ -3866,6 +3927,8 @@ const UI = {
               <div class="fact"><span>Unidade</span><b>${esc(c.unidade)}</b></div>
               <div class="fact"><span>Setor</span><b>${esc(c.departamento)}</b></div>
               <div class="fact"><span>Regime</span><b>${esc(regimeLabel(c.regime))}</b></div>
+              ${c.cnpj?`<div class="fact"><span>CNPJ</span><b>${esc(c.cnpj)}${c.cnpjDesde?' <small>(desde '+fmtCurto(c.cnpjDesde)+')</small>':''}</b></div>`:''}
+              ${(c.regime==='PJ'||isEstagiario(c))?`<div class="fact"><span>1/3 constitucional</span><b>${temTercoConstitucional(c)?'Sim':'Não'}</b></div>`:''}
               <div class="fact"><span>Admissão</span><b>${fmt(c.admissao)}</b></div>
               <div class="fact"><span>Tempo de casa</span><b>${tempoDeCasa(c.admissao)}</b></div>
               ${semFerias?'':`<div class="fact"><span>Período aquisitivo</span><b>${r.atual?fmtCurto(r.atual.inicio)+' – '+fmt(r.atual.fim):'—'}</b></div>`}
@@ -3937,7 +4000,32 @@ const UI = {
   },
 
   renderTab(cid){
-    const body=$('#tabbody'); const pers=Dom.periodosDe(cid);
+    const body=$('#tabbody'); const todosPers=Dom.periodosDe(cid);
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    // histórico antigo fica oculto por padrão: no corte de CNPJ, ou (sem corte) quando há muitos períodos acumulados
+    const LIMIAR_HIST = 5;
+    const corteIdx = c?.cnpjDesde ? todosPers.findIndex(p=>p.fim<c.cnpjDesde) : (todosPers.length>LIMIAR_HIST ? LIMIAR_HIST : -1);
+    const temCorte = corteIdx>0 && corteIdx<todosPers.length;
+    const pers = (temCorte && !this.histAberto) ? todosPers.slice(0,corteIdx) : todosPers;
+    const nOcultos = todosPers.length - pers.length;
+    const toggleHistHtml = temCorte ? `
+      <button class="btn btn-soft" style="margin-top:12px" onclick="UI.histAberto=${!this.histAberto};UI.renderTab('${cid}')">
+        ${this.histAberto ? 'Ocultar histórico anterior' : `Ver histórico completo${c.cnpjDesde?' (antes da troca de CNPJ)':''} · +${nOcultos}`}
+      </button>` : '';
+
+    // Transição: gap grande entre o fim de um período e o início do seguinte — provável rescisão + readmissão
+    // (continuação normal encadeia sem intervalo; ver garantirPeriodosAtuais/salvarColab)
+    const GAP_TRANSICAO_DIAS = 30;
+    const transicaoAntesDe = {};
+    for(let i=0;i<todosPers.length-1;i++){
+      const atual=todosPers[i], anterior=todosPers[i+1]; // ordem desc: anterior é o período mais antigo
+      const gap = diffD(pd(anterior.fim), pd(atual.inicio)) - 1;
+      if(gap>GAP_TRANSICAO_DIAS) transicaoAntesDe[atual.id] = gap;
+    }
+    const transicaoHtml = p => transicaoAntesDe[p.id]!==undefined ? `
+      <div class="none-yet" style="text-align:center;margin:10px 0">
+        🔀 <b>Transição</b> — ${transicaoAntesDe[p.id]} dias sem período aquisitivo antes deste. Provável rescisão e readmissão (novo aquisitivo).
+      </div>` : '';
     const sitBadge = p => ({
       pago:`<span class="badge b-pago">Pago${p.pago_em?' · '+fmt(p.pago_em):''}</span>`,
       programado:'<span class="badge b-programado">Pagamento programado</span>',
@@ -3950,12 +4038,15 @@ const UI = {
     if(this.tabAtual==='oficiais'){
       body.innerHTML = pers.map((p,i)=>{
         const fer=Dom.feriasDe(p.id); const tot=Dom.diasFerias(p.id);
+        const direito = diasProporcionaisPeriodo(p);
+        const proporcional = direito < REGRAS.DIAS_CONTABEIS;
         return `
+        ${transicaoHtml(p)}
         <div class="periodo" data-per="${p.id}">
           <div class="periodo-head" onclick="this.parentElement.classList.toggle('open')">
             <div class="periodo-meta">
               <b>${fmt(p.inicio)} – ${fmt(p.fim)}</b>
-              <span>${tot}/${REGRAS.DIAS_CONTABEIS} dias contábeis${fer.length?' · '+fer.length+' lançamento(s)':''}</span>
+              <span>${tot}/${direito} dias contábeis${proporcional?' <small>(proporcional — período menor que 1 ano)</small>':''}${fer.length?' · '+fer.length+' lançamento(s)':''}</span>
             </div>
             <div class="periodo-right">${sitBadge(p)}
               ${p.situacao==='pago'
@@ -3963,6 +4054,7 @@ const UI = {
                 : (!Dom.emAquisicao(p) && fer.length
                     ? `<button class="per-pay" onclick="event.stopPropagation();Actions.marcarPago('${cid}','${p.id}')">Marcar como pago</button>`
                     : '')}
+              ${Auth.podeAdministrar()?`<button class="per-pay" title="Editar datas do período — uso excepcional (ex.: aquisitivo menor de 1 ano)" onclick="event.stopPropagation();Modals.editarPeriodo('${cid}','${p.id}')">Editar datas</button>`:''}
               <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
             </div>
           </div>
@@ -3980,15 +4072,17 @@ const UI = {
             : `<div class="none-yet">Nenhum gozo contábil lançado neste período.</div>`}
           </div>
         </div>`;
-      }).join('') || '<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>';
+      }).join('') + toggleHistHtml || '<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>';
     }
 
     if(this.tabAtual==='folgas'){
       body.innerHTML = pers.map((p,i)=>{
         const fol=Dom.folgasDe(p.id); const tot=Dom.diasFolgas(p.id);
-        if(!fol.length && i>1) return '';
+        const trans = transicaoHtml(p);
+        if(!fol.length && i>1) return trans;
         const acima = tot>REGRAS.DIAS_FOLGAS;
         return `
+        ${trans}
         <div class="periodo">
           <div class="periodo-head" onclick="this.parentElement.classList.toggle('open')">
             <div class="periodo-meta">
@@ -4014,7 +4108,7 @@ const UI = {
             : `<div class="none-yet">Nenhuma folga lançada neste período.</div>`}
           </div>
         </div>`;
-      }).join('') || '<div class="none-yet">Nenhuma folga registrada.</div>';
+      }).join('') + toggleHistHtml || '<div class="none-yet">Nenhuma folga registrada.</div>';
     }
 
     if(this.tabAtual==='notas'){
@@ -4272,6 +4366,7 @@ const Modals = {
           <select id="nRegime">${REGIMES.map(r=>`<option value="${r}">${regimeLabel(r)}</option>`).join('')}</select></div>
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${iso(hoje())}"></div>
       </div>
+      <div class="field"><label>CNPJ (opcional)</label><input id="nCnpj" placeholder="empresa que emprega o colaborador"></div>
       <div class="modal-actions">
         <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
         <button class="btn btn-primary" onclick="Actions.salvarColab()">Cadastrar</button>
@@ -4342,6 +4437,9 @@ const Modals = {
           <select id="nRegime">${REGIMES.map(r=>`<option value="${r}"${r===c.regime?' selected':''}>${regimeLabel(r)}</option>`).join('')}</select></div>
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${c.admissao}"></div>
       </div>
+      <div class="field"><label>CNPJ (opcional)</label><input id="nCnpj" value="${esc(c.cnpj||'')}" placeholder="empresa que emprega o colaborador">
+        ${c.cnpjDesde?`<p class="msub">Neste CNPJ desde ${fmt(c.cnpjDesde)}. Trocar o valor abaixo marca uma nova data de corte.</p>`:''}
+      </div>
       <div class="modal-actions">
         <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
         <button class="btn btn-primary" onclick="Actions.editarColab('${cid}')">Salvar</button>
@@ -4403,6 +4501,24 @@ const Modals = {
     const sync=()=>{ if(ini.value&&fim.value){ const n=isFer?diffD(pd(ini.value),pd(fim.value))+1:diasUteis(ini.value,fim.value); if(n>0) dias.value=n; } };
     ini.onchange=()=>{ if(!fim.value||fim.value<ini.value) fim.value=ini.value; sync(); };
     fim.onchange=sync;
+  },
+
+  editarPeriodo(cid, perId){
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores editam o período aquisitivo.'); return; }
+    const p = Store.data.periodos.find(x=>x.id===perId);
+    if(!p) return;
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    this.open(`
+      <h3>Editar período aquisitivo</h3>
+      <p class="msub">${esc(c?.nome||'')} · uso excepcional (ex.: período aquisitivo menor de 1 ano, rescisão, readmissão)</p>
+      <div class="field-row">
+        <div class="field"><label>Início</label><input type="date" id="ePerIni" value="${p.inicio}"></div>
+        <div class="field"><label>Fim</label><input type="date" id="ePerFim" value="${p.fim}"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
+        <button class="btn btn-primary" onclick="Actions.salvarEdicaoPeriodo('${cid}','${perId}')">Salvar alterações</button>
+      </div>`);
   },
 
   novaNota(cid){ this._notaModal(cid, null); },
@@ -4538,6 +4654,11 @@ const Actions = {
     const table = tipo==='ferias'?'ferias':'folgas';
     const cap_ = tipo==='ferias'?REGRAS.DIAS_CONTABEIS:REGRAS.DIAS_FOLGAS;
     const usado = tipo==='ferias'?Dom.diasFerias(perId):Dom.diasFolgas(perId);
+    if(tipo==='ferias'){
+      const v = Dom.validarSplitFerias(perId, dias);
+      if(v.bloqueio){ toast(v.bloqueio); return; }
+      if(v.aviso && !(await Modals.confirm({titulo:'Fracionamento fora da regra', message:v.aviso+' Salvar mesmo assim?', ok:'Salvar'}))) return;
+    }
     if(usado+dias>cap_ && !(await Modals.confirm({titulo:'Passa do limite do período', message:`Este lançamento passa de ${cap_} dias no período (${usado}+${dias}). Salvar mesmo assim?`, ok:'Salvar'}))) return;
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     await Store.insert(table,{periodo_id:perId,inicio:ini,fim,dias,obs},
@@ -4605,8 +4726,10 @@ const Actions = {
     if(!Auth.podeAdministrar()){ toast('Apenas administradores cadastram colaboradores.'); return; }
     const nome=$('#nNome').value.trim(), funcao=$('#nFuncao').value.trim(), adm=$('#nAdm').value;
     if(!nome||!funcao||!adm){ toast('Preencha nome, função e admissão.'); return; }
+    const cnpj = $('#nCnpj').value.trim();
     const c=await Store.insert('colaboradores',{nome,funcao,
       departamento:$('#nDepto').value,unidade:$('#nUni').value,regime:$('#nRegime').value,admissao:adm,
+      cnpj:cnpj||null, cnpjDesde:cnpj?adm:null,
       foto:UI._fotoPendente||null},
       `Cadastro de colaborador — ${nome} (${$('#nDepto').value} · ${$('#nUni').value})`);
     const a=pd(adm);
@@ -4623,11 +4746,13 @@ const Actions = {
     if(!c) return;
     const nome=$('#nNome').value.trim(), funcao=$('#nFuncao').value.trim(),
           departamento=$('#nDepto').value, unidade=$('#nUni').value,
-          regime=$('#nRegime').value, admissao=$('#nAdm').value;
+          regime=$('#nRegime').value, admissao=$('#nAdm').value, cnpj=$('#nCnpj').value.trim();
     if(!nome||!funcao||!admissao){ toast('Preencha nome, função e admissão.'); return; }
-    const antes = {nome:c.nome, funcao:c.funcao, departamento:c.departamento, unidade:c.unidade, regime:c.regime, admissao:c.admissao};
-    const depois = {nome, funcao, departamento, unidade, regime, admissao};
+    const antes = {nome:c.nome, funcao:c.funcao, departamento:c.departamento, unidade:c.unidade, regime:c.regime, admissao:c.admissao, cnpj:c.cnpj||''};
+    const depois = {nome, funcao, departamento, unidade, regime, admissao, cnpj};
     const mudou = Object.keys(depois).filter(k=>antes[k]!==depois[k]);
+    // troca de CNPJ marca a data de corte, usada p/ dividir/ocultar o histórico anterior na ficha
+    if(mudou.includes('cnpj')) depois.cnpjDesde = cnpj ? iso(hoje()) : null;
     const fotoMudou = UI._fotoPendente!==undefined && (UI._fotoPendente||null)!==(c.foto||null);
     if(!mudou.length && !fotoMudou){ Modals.close(); return; }
     if(Store.driver!=='local'){
@@ -4641,7 +4766,7 @@ const Actions = {
     Object.assign(c, depois);
     if(fotoMudou) c.foto = UI._fotoPendente || null; // null remove, string define
     Store.save();
-    const LAB={nome:'Nome',funcao:'Função',departamento:'Setor',unidade:'Unidade',regime:'Regime',admissao:'Admissão'};
+    const LAB={nome:'Nome',funcao:'Função',departamento:'Setor',unidade:'Unidade',regime:'Regime',admissao:'Admissão',cnpj:'CNPJ'};
     const partes = mudou.map(k=>`${LAB[k]}: ${antes[k]||'—'} → ${depois[k]||'—'}`);
     if(fotoMudou) partes.push(UI._fotoPendente ? 'Foto atualizada' : 'Foto removida');
     Store.logAudit('atualizar', 'colaboradores', cid, `Edição de dados — ${nome} · ${partes.join('; ')}`);
@@ -4690,6 +4815,11 @@ const Actions = {
     const perId = r.periodo_id;
     const usadoSem = (table==='ferias'?Dom.diasFerias(perId):Dom.diasFolgas(perId)) - r.dias;
     const cap_ = table==='ferias'?REGRAS.DIAS_CONTABEIS:REGRAS.DIAS_FOLGAS;
+    if(table==='ferias'){
+      const v = Dom.validarSplitFerias(perId, dias, id);
+      if(v.bloqueio){ toast(v.bloqueio); return; }
+      if(v.aviso && !(await Modals.confirm({titulo:'Fracionamento fora da regra', message:v.aviso+' Salvar mesmo assim?', ok:'Salvar'}))) return;
+    }
     if(usadoSem+dias>cap_ && !(await Modals.confirm({titulo:'Passa do limite do período', message:`Esta edição passa de ${cap_} dias no período (${usadoSem}+${dias}). Salvar mesmo assim?`, ok:'Salvar'}))) return;
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     const antes = `${fmt(r.inicio)} a ${fmt(r.fim)} (${r.dias} dias)`;
@@ -4756,6 +4886,28 @@ const Actions = {
     Store.logAudit('atualizar','periodos',perId,`Pagamento reaberto — ${c?.nome} · ${fmt(p.inicio)}–${fmt(p.fim)}`);
     toast('Período reaberto');
     UI.renderProfile(cid); UI.renderDir();
+  },
+
+  async salvarEdicaoPeriodo(cid, perId){
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores editam o período aquisitivo.'); return; }
+    const p = Store.data.periodos.find(x=>x.id===perId);
+    if(!p) return;
+    const ini=$('#ePerIni').value, fim=$('#ePerFim').value;
+    if(!ini||!fim||fim<ini){ toast('Confira as datas de início e fim.'); return; }
+    const sobrepoe = Store.data.periodos.some(o=>o.id!==perId && o.colaborador_id===p.colaborador_id && ini<=o.fim && fim>=o.inicio);
+    if(sobrepoe){ toast('As novas datas se sobrepõem a outro período deste colaborador.'); return; }
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    const antes = `${fmt(p.inicio)}–${fmt(p.fim)}`;
+    if(Store.driver!=='local'){
+      try{ await Store.update('periodos', perId, {inicio:ini, fim:fim}); }
+      catch(e){ toast('Erro: '+e.message); return; }
+      toast('Período atualizado ✓'); Modals.close(); UI.renderProfile(cid); UI.renderDir(); return;
+    }
+    p.inicio=ini; p.fim=fim;
+    Store.save();
+    Store.logAudit('atualizar','periodos',perId,`Datas do período ajustadas — ${c?.nome} · ${antes} → ${fmt(ini)}–${fmt(fim)}`);
+    toast('Período atualizado ✓');
+    Modals.close(); UI.renderProfile(cid); UI.renderDir();
   },
 
   salvarUsuario(id){
@@ -4972,7 +5124,7 @@ const Actions = {
       const frac = Math.max(0, Math.min(1, val/max));
       if(frac>0){ doc.setFillColor(cor[0],cor[1],cor[2]); doc.roundedRect(x, barY, Math.max(half*frac,5), 5, 2.5, 2.5, 'F'); }
     };
-    // sócios/estagiários não têm férias contábeis: mostra só Folgas
+    // sócio não tem férias contábeis: mostra só Folgas
     if(semFeriasColab){
       drawStat(14, 'FOLGAS DISPONÍVEIS', Math.max(r.saldoFolgas,0), REGRAS.DIAS_FOLGAS, [18,131,106]);
     } else {

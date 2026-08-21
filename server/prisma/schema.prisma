@@ -58,6 +58,8 @@ model Colaborador {
   admissao     DateTime            @db.Date
   foto         String?
   ativo        Boolean             @default(true)
+  cnpj         String? // empresa (CNPJ) que emprega o colaborador — pode divergir da unidade física
+  cnpjDesde    DateTime?           @map("cnpj_desde") @db.Date // data da troca p/ o CNPJ atual (marca o corte no histórico)
   periodos     PeriodoAquisitivo[]
   solicitacoes Solicitacao[]
   notas        Nota[]
