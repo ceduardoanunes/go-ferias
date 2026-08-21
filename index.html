@@ -778,6 +778,9 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .gozo-dates{flex:1;min-width:160px;font-weight:600}
 .gozo-dates small{display:block;font-weight:400;color:var(--muted);font-size:12px}
 .gozo-days{font-weight:700;font-size:13px;white-space:nowrap}
+.periodo-edit-btn{background:none;border:none;color:var(--faint);padding:6px;border-radius:8px;line-height:0;cursor:pointer;transition:all .15s}
+.periodo-edit-btn:hover{color:var(--ink);background:var(--gray-soft)}
+.periodo-edit-btn svg{width:15px;height:15px}
 .gozo-del{background:none;border:none;color:var(--faint);padding:5px;border-radius:8px;line-height:0;opacity:0;transition:opacity .15s}
 .gozo-row:hover .gozo-del{opacity:1}
 .gozo-del:hover{color:var(--red);background:var(--red-soft)}
@@ -4108,7 +4111,7 @@ const UI = {
                 : (!Dom.emAquisicao(p) && fer.length
                     ? `<button class="per-pay" onclick="event.stopPropagation();Actions.marcarPago('${cid}','${p.id}')">Marcar como pago</button>`
                     : '')}
-              ${Auth.podeAdministrar()?`<button class="per-pay" title="Editar datas do período — uso excepcional (ex.: aquisitivo menor de 1 ano)" onclick="event.stopPropagation();Modals.editarPeriodo('${cid}','${p.id}')">Editar datas</button>`:''}
+              ${Auth.podeAdministrar()?`<button class="periodo-edit-btn" title="Editar datas do período — uso excepcional (ex.: aquisitivo menor de 1 ano)" onclick="event.stopPropagation();Modals.editarPeriodo('${cid}','${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button>`:''}
               <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
             </div>
           </div>
