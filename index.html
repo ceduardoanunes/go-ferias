@@ -512,7 +512,9 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .chip.on{background:var(--graphite);border-color:var(--graphite);color:#fff}
 .chip.on b{color:rgba(255,255,255,.65)}
 /* chips de filtro (Colaboradores): unidade e setor padronizadas, quebrando linha quando necessário */
-#unidChips .chip,#deptChips .chip{padding:7px 15px;font-size:12.5px;white-space:nowrap;flex:none}
+#unidChips .chip,#deptChips .chip,#cnpjChips .chip,#statusChips .chip{padding:7px 15px;font-size:12.5px;white-space:nowrap;flex:none}
+.chip-group{display:flex;flex-direction:column;gap:8px}
+.chip-group-title{font-size:11.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--faint)}
 .chip-warn{border-color:transparent;background:var(--red-soft);color:var(--red)}
 .chip-warn b{color:var(--red)}
 .chip-warn:hover{border-color:#F0C7CF;color:var(--red)}
@@ -1911,9 +1913,22 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
         <input id="q" type="text" placeholder="Buscar por nome ou função..." autocomplete="off">
       </div>
-      <div class="chips" id="unidChips"></div>
-      <div class="chips" id="deptChips"></div>
-      <div class="chips" id="cnpjChips" style="display:none"></div>
+      <div class="chip-group">
+        <div class="chip-group-title">Status</div>
+        <div class="chips" id="statusChips"></div>
+      </div>
+      <div class="chip-group" id="cnpjGroup" style="display:none">
+        <div class="chip-group-title">Empresa</div>
+        <div class="chips" id="cnpjChips"></div>
+      </div>
+      <div class="chip-group">
+        <div class="chip-group-title">Unidade</div>
+        <div class="chips" id="unidChips"></div>
+      </div>
+      <div class="chip-group">
+        <div class="chip-group-title">Setor</div>
+        <div class="chips" id="deptChips"></div>
+      </div>
     </div>
     <div id="grid"></div>
   </section>
@@ -3732,29 +3747,38 @@ const Dom = {
    ================================================================ */
 
 const UI = {
-  filtro: {q:'', depto:'', unidade:'', cnpj:'', pendencias:false, inativos:false},
+  filtro: {q:'', depto:'', unidade:'', cnpj:'', status:''},
   anoPerfil: hoje().getFullYear(),
   tabAtual: 'oficiais',
   histAberto: false,
   _perfilAtual: null,
 
+  // classifica o colaborador num único status (prioridade: inativo > vencidas > em breve > outra pendência)
+  statusColab(c){
+    if(c.ativo===false) return 'inativos';
+    const al = Dom.alertas(c.id);
+    if(al.some(a=>a.t==='Férias vencidas')) return 'vencidas';
+    if(al.some(a=>a.t==='Férias vencendo')) return 'em-breve';
+    if(al.some(a=>a.tipo!=='green')) return 'pendencia';
+    return '';
+  },
+
   renderDir(){
-    const nInativos = Store.data.colaboradores.filter(c=>c.ativo===false).length;
-    if(!nInativos) this.filtro.inativos = false; // sem inativos, não há o que mostrar
-    const cs = Store.data.colaboradores
-      .filter(c => this.filtro.inativos ? c.ativo===false : c.ativo!==false)
-      .slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+    const todos = Store.data.colaboradores.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+    const nInativos = todos.filter(c=>c.ativo===false).length;
+    if(!nInativos && this.filtro.status==='inativos') this.filtro.status=''; // sem inativos, não há o que mostrar
+    const cs = this.filtro.status==='inativos' ? todos.filter(c=>c.ativo===false) : todos.filter(c=>c.ativo!==false);
     const q = normalizarBusca(this.filtro.q);
     const matchQ = c => !q || normalizarBusca(c.nome).includes(q) || normalizarBusca(c.funcao).includes(q);
-    const matchPend = c => !this.filtro.pendencias || Dom.alertas(c.id).some(a=>a.tipo!=='green');
-
+    // cs já vem restrito a ativos/inativos conforme o status escolhido; só falta distinguir vencidas/em-breve/pendência dentro dos ativos
+    const matchStatus = c => !this.filtro.status || this.filtro.status==='inativos' || this.statusColab(c)===this.filtro.status;
     const matchCnpj = c => !this.filtro.cnpj || empresaCanonica(c.cnpj)===this.filtro.cnpj;
 
     // bases "ao vivo": cada grupo de chip é contado respeitando os OUTROS filtros já ativos
-    const baseParaDepto = cs.filter(c => matchQ(c) && matchPend(c) && matchCnpj(c) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
-    const baseParaUnidade = cs.filter(c => matchQ(c) && matchPend(c) && matchCnpj(c) && (!this.filtro.depto || c.departamento===this.filtro.depto));
-    const baseParaPend = cs.filter(c => matchQ(c) && matchCnpj(c) && (!this.filtro.depto || c.departamento===this.filtro.depto) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
-    const baseParaCnpj = cs.filter(c => matchQ(c) && matchPend(c) && (!this.filtro.depto || c.departamento===this.filtro.depto) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
+    const baseParaDepto = cs.filter(c => matchQ(c) && matchStatus(c) && matchCnpj(c) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
+    const baseParaUnidade = cs.filter(c => matchQ(c) && matchStatus(c) && matchCnpj(c) && (!this.filtro.depto || c.departamento===this.filtro.depto));
+    const baseParaCnpj = cs.filter(c => matchQ(c) && matchStatus(c) && (!this.filtro.depto || c.departamento===this.filtro.depto) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
+    const baseParaStatus = todos.filter(c => matchQ(c) && matchCnpj(c) && (!this.filtro.depto || c.departamento===this.filtro.depto) && (!this.filtro.unidade || c.unidade===this.filtro.unidade));
 
     // chips de departamento — ordem fixa institucional (fonte única SETORES_BRAND); desconhecidos vão pro fim, em ordem alfabética
     const ORDEM_DEPTO = SETORES_BRAND.map(s=>s.nome);
@@ -3774,30 +3798,35 @@ const UI = {
     $('#deptChips').innerHTML = chips.join('');
     $$('#deptChips .chip').forEach(ch=>ch.onclick=()=>{ this.filtro.depto = (this.filtro.depto===ch.dataset.dep && ch.dataset.dep) ? '' : ch.dataset.dep; this.renderDir(); });
 
-    // unidades como segmented control + toggle de pendências ao lado
+    // unidades como segmented control
     const unis=[...new Set(cs.map(c=>c.unidade))].sort();
-    const nPend = baseParaPend.filter(c=>Dom.alertas(c.id).some(a=>a.tipo!=='green')).length;
     const unidHtml = [`<button class="chip ${!this.filtro.unidade?'on':''}" data-uni="">Todas<b>${baseParaUnidade.length}</b></button>`]
       .concat(unis.map(u=>
-        `<button class="chip ${this.filtro.unidade===u?'on':''}" data-uni="${esc(u)}">${esc(u)}<b>${baseParaUnidade.filter(c=>c.unidade===u).length}</b></button>`))
-      .concat([`<button class="chip chip-warn ${this.filtro.pendencias?'on':''}" id="chipPend">⚠ Pendências${nPend?`<b>${nPend}</b>`:''}</button>`])
-      .concat(nInativos?[`<button class="chip chip-inativo ${this.filtro.inativos?'on':''}" id="chipInativo">Inativos<b>${nInativos}</b></button>`]:[]);
+        `<button class="chip ${this.filtro.unidade===u?'on':''}" data-uni="${esc(u)}">${esc(u)}<b>${baseParaUnidade.filter(c=>c.unidade===u).length}</b></button>`));
     $('#unidChips').innerHTML = unidHtml.join('');
     $$('#unidChips .chip[data-uni]').forEach(ch=>ch.onclick=()=>{ this.filtro.unidade = (this.filtro.unidade===ch.dataset.uni && ch.dataset.uni) ? '' : ch.dataset.uni; this.renderDir(); });
-    $('#chipPend').onclick=()=>{ this.filtro.pendencias=!this.filtro.pendencias; this.renderDir(); };
-    const chipInativo=$('#chipInativo'); if(chipInativo) chipInativo.onclick=()=>{ this.filtro.inativos=!this.filtro.inativos; this.renderDir(); };
+
+    // status: único grupo de seleção — Todos / Férias Vencidas / Férias em Breve / Pendência / Inativos
+    const STATUS_LAB = {'vencidas':'Férias Vencidas','em-breve':'Férias em Breve','pendencia':'Pendência','inativos':'Inativos'};
+    const nStatus = k => baseParaStatus.filter(c=>k?this.statusColab(c)===k:c.ativo!==false).length;
+    const statusOpts = ['','vencidas','em-breve','pendencia'].concat(nInativos?['inativos']:[]);
+    const STATUS_CLS = {'vencidas':'chip-warn','em-breve':'chip-warn','inativos':'chip-inativo'};
+    $('#statusChips').innerHTML = statusOpts.map(k=>
+      `<button class="chip ${STATUS_CLS[k]||''} ${this.filtro.status===k?'on':''}" data-status="${k}">${k?STATUS_LAB[k]:'Todos'}<b>${nStatus(k)}</b></button>`
+    ).join('');
+    $$('#statusChips .chip').forEach(ch=>ch.onclick=()=>{ this.filtro.status = (this.filtro.status===ch.dataset.status && ch.dataset.status) ? '' : ch.dataset.status; this.renderDir(); });
 
     // CNPJs só aparecem como filtro quando pelo menos um colaborador tem o campo preenchido
     const cnpjs=[...new Set(cs.map(c=>empresaCanonica(c.cnpj)).filter(Boolean))].sort();
-    const cnpjChips=$('#cnpjChips');
+    const cnpjGroup=$('#cnpjGroup');
     if(cnpjs.length){
-      cnpjChips.style.display='';
-      cnpjChips.innerHTML = [`<button class="chip ${!this.filtro.cnpj?'on':''}" data-cnpj="">Todas as empresas<b>${baseParaCnpj.length}</b></button>`]
+      cnpjGroup.style.display='';
+      $('#cnpjChips').innerHTML = [`<button class="chip ${!this.filtro.cnpj?'on':''}" data-cnpj="">Todas as empresas<b>${baseParaCnpj.length}</b></button>`]
         .concat(cnpjs.map(v=>
           `<button class="chip ${this.filtro.cnpj===v?'on':''}" data-cnpj="${esc(v)}">${esc(nomeDaEmpresa(v))}<b>${baseParaCnpj.filter(c=>empresaCanonica(c.cnpj)===v).length}</b></button>`)).join('');
       $$('#cnpjChips .chip').forEach(ch=>ch.onclick=()=>{ this.filtro.cnpj = (this.filtro.cnpj===ch.dataset.cnpj && ch.dataset.cnpj) ? '' : ch.dataset.cnpj; this.renderDir(); });
     } else {
-      cnpjChips.style.display='none';
+      cnpjGroup.style.display='none';
       this.filtro.cnpj='';
     }
 
@@ -3807,7 +3836,7 @@ const UI = {
       if(this.filtro.depto && c.departamento!==this.filtro.depto) return false;
       if(this.filtro.unidade && c.unidade!==this.filtro.unidade) return false;
       if(!matchCnpj(c)) return false;
-      if(this.filtro.pendencias && !Dom.alertas(c.id).some(a=>a.tipo!=='green')) return false;
+      if(!matchStatus(c)) return false;
       return true;
     });
     this._ultimaLista = list;
@@ -6382,7 +6411,7 @@ UI.renderDash = function(){
       <span class="dx-stat-go">↗</span>
     </a>`;
   $('#dxHojeStats').innerHTML =
-    statCard('amber', ICO.sino, 'Alertas', nAlertas?'férias a vencer':'tudo em dia', nAlertas, '#/colaboradores?pend') +
+    statCard('amber', ICO.sino, 'Alertas', nAlertas?'férias a vencer':'tudo em dia', nAlertas, '#/colaboradores') +
     statCard('violet', ICO.inbox, 'Solicitações', nSolic?'aguardando RH':'nada pendente', nSolic, '#/agenda') +
     statCard('red', ICO.aviao, 'Férias Contábeis', feriasHoje.length?'hoje':'ninguém hoje', feriasHoje.length, '#/agenda?tipo=ferias') +
     statCard('teal', ICO.folga, 'Folgas', folgasHoje.length?'hoje':'ninguém hoje', folgasHoje.length, '#/agenda?tipo=folga') +
@@ -7328,7 +7357,7 @@ function route(){
   else if(isGraf){ const t=query.find(x=>x.startsWith('tab=')); if(t) UI.grafTab=t.slice(4); UI.renderGraficos(); }
   else if(isPessoas){ const t=query.find(x=>x.startsWith('tab=')); if(t) UI.pesTab=t.slice(4); UI.renderPessoas(); }
   else if(isConta) UI.renderConta();
-  else if(isColab){ UI.filtro.pendencias=query.includes('pend'); UI.renderDir(); }
+  else if(isColab){ UI.renderDir(); }
   else UI.renderDash();
   window.scrollTo({top:0});
 }
