@@ -734,6 +734,12 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .tabbody{padding:30px 34px 34px}
 
 /* timeline of períodos */
+.periodo-secao{margin-bottom:32px}
+.periodo-secao:last-child{margin-bottom:0}
+.periodo-secao-titulo{
+  font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--faint);
+  padding-bottom:10px;margin-bottom:16px;border-bottom:1px solid var(--line);
+}
 .periodo{border:1px solid var(--line);border-radius:18px;margin-bottom:20px;overflow:hidden;background:#fff}
 .periodo-head{
   display:flex;align-items:center;gap:16px;padding:21px 24px;cursor:pointer;user-select:none;
@@ -4047,15 +4053,16 @@ const UI = {
   renderTab(cid){
     const body=$('#tabbody'); const todosPers=Dom.periodosDe(cid);
     const c = Store.data.colaboradores.find(x=>x.id===cid);
-    // histórico antigo fica oculto por padrão: no corte de CNPJ, ou (sem corte) quando há muitos períodos acumulados
     const LIMIAR_HIST = 5;
-    const corteIdx = c?.cnpj_desde ? todosPers.findIndex(p=>p.fim<c.cnpj_desde) : (todosPers.length>LIMIAR_HIST ? LIMIAR_HIST : -1);
-    const temCorte = corteIdx>0 && corteIdx<todosPers.length;
-    const pers = (temCorte && !this.histAberto) ? todosPers.slice(0,corteIdx) : todosPers;
-    const nOcultos = todosPers.length - pers.length;
-    const toggleHistHtml = temCorte ? `
+    // histórico antigo fica oculto por padrão (usado pela aba Folgas, que continua em lista única):
+    // no corte de CNPJ, ou (sem corte) quando há muitos períodos acumulados
+    const corteIdxGeral = c?.cnpj_desde ? todosPers.findIndex(p=>p.fim<c.cnpj_desde) : (todosPers.length>LIMIAR_HIST ? LIMIAR_HIST : -1);
+    const temCorteGeral = corteIdxGeral>0 && corteIdxGeral<todosPers.length;
+    const pers = (temCorteGeral && !this.histAberto) ? todosPers.slice(0,corteIdxGeral) : todosPers;
+    const nOcultosGeral = todosPers.length - pers.length;
+    const toggleHistHtml = temCorteGeral ? `
       <button class="btn btn-soft" style="margin-top:12px" onclick="UI.histAberto=${!this.histAberto};UI.renderTab('${cid}')">
-        ${this.histAberto ? 'Ocultar histórico anterior' : `Ver histórico completo${c.cnpj_desde?' (antes da troca de CNPJ)':''} · +${nOcultos}`}
+        ${this.histAberto ? 'Ocultar histórico anterior' : `Ver histórico completo${c.cnpj_desde?' (antes da troca de CNPJ)':''} · +${nOcultosGeral}`}
       </button>` : '';
 
     // Transição: gap grande entre o fim de um período e o início do seguinte — provável rescisão + readmissão
@@ -4081,7 +4088,7 @@ const UI = {
     }[p.situacao]||'');
 
     if(this.tabAtual==='oficiais'){
-      body.innerHTML = pers.map((p,i)=>{
+      const cardOficial = p => {
         const fer=Dom.feriasDe(p.id); const tot=Dom.diasFerias(p.id);
         const direito = diasProporcionaisPeriodo(p);
         const proporcional = direito < REGRAS.DIAS_CONTABEIS;
@@ -4117,9 +4124,35 @@ const UI = {
             : `<div class="none-yet">Nenhum gozo contábil lançado neste período.</div>`}
           </div>
         </div>`;
-      }).join('') + toggleHistHtml || `<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>${
-        Auth.podeAdministrar() ? `<button class="btn btn-soft" style="margin-top:12px" onclick="Modals.novoPeriodo('${cid}')">Lançar período aquisitivo</button>` : ''
-      }`;
+      };
+
+      // separa em 3 seções pra facilitar a leitura: o que ainda tá em aquisição, o que já tem saldo
+      // pra usar (vencido ou agendado) e o que já foi pago/finalizado
+      const atual = todosPers.filter(p => p.situacao==='acumulando' && Dom.emAquisicao(p));
+      const abertos = todosPers.filter(p => p.situacao!=='pago' && !(p.situacao==='acumulando' && Dom.emAquisicao(p)));
+      const finalizadosTodos = todosPers.filter(p => p.situacao==='pago');
+
+      // o colapso de histórico (corte de CNPJ / muitos períodos) vale só pra "Períodos Finalizados"
+      const corteIdx = c?.cnpj_desde ? finalizadosTodos.findIndex(p=>p.fim<c.cnpj_desde) : (finalizadosTodos.length>LIMIAR_HIST ? LIMIAR_HIST : -1);
+      const temCorte = corteIdx>0 && corteIdx<finalizadosTodos.length;
+      const finalizados = (temCorte && !this.histAberto) ? finalizadosTodos.slice(0,corteIdx) : finalizadosTodos;
+      const nOcultos = finalizadosTodos.length - finalizados.length;
+      const toggleHistFinal = temCorte ? `
+        <button class="btn btn-soft" style="margin-top:12px" onclick="UI.histAberto=${!this.histAberto};UI.renderTab('${cid}')">
+          ${this.histAberto ? 'Ocultar histórico anterior' : `Ver histórico completo${c.cnpj_desde?' (antes da troca de CNPJ)':''} · +${nOcultos}`}
+        </button>` : '';
+
+      const secao = (titulo, lista, extra='') => lista.length ? `
+        <div class="periodo-secao">
+          <div class="periodo-secao-titulo">${esc(titulo)}</div>
+          ${lista.map(cardOficial).join('')}
+          ${extra}
+        </div>` : '';
+
+      body.innerHTML = secao('Período Atual', atual) + secao('Saldo em Aberto', abertos) + secao('Períodos Finalizados', finalizados, toggleHistFinal)
+        || `<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>${
+          Auth.podeAdministrar() ? `<button class="btn btn-soft" style="margin-top:12px" onclick="Modals.novoPeriodo('${cid}')">Lançar período aquisitivo</button>` : ''
+        }`;
     }
 
     if(this.tabAtual==='folgas'){
