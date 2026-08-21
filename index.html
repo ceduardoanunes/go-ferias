@@ -3934,7 +3934,7 @@ const UI = {
               ${c.ativo===false?'<span class="badge b-acumulando" style="margin-top:10px">● Inativo</span>':''}
             </div>
             <div class="pcard-facts">
-              ${c.cnpj?`<div class="fact"><span>Empresa</span><b>${esc(nomeEmpresa(c))}${c.cnpj_desde?' <small>(desde '+fmtCurto(c.cnpj_desde)+')</small>':''}</b></div>`:''}
+              ${c.cnpj?`<div class="fact"><span>Empresa</span><b>${esc(nomeEmpresa(c))}</b></div>`:''}
               <div class="fact"><span>Unidade</span><b>${esc(c.unidade)}</b></div>
               <div class="fact"><span>Setor</span><b>${esc(c.departamento)}</b></div>
               <div class="fact"><span>Regime</span><b>${esc(regimeLabel(c.regime))}</b></div>
