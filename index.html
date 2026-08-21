@@ -742,12 +742,12 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
   margin-bottom:16px;
 }
 .periodo-secao-titulo::after{content:'';flex:1;height:1px;background:var(--line)}
-.periodo{border:1px solid var(--line);border-radius:18px;margin-bottom:20px;overflow:hidden;background:var(--gray-soft)}
+.periodo{border:1px solid var(--line);border-radius:18px;margin-bottom:20px;overflow:hidden;background:#FBFBFA}
 .periodo-head{
   display:flex;align-items:center;gap:16px;padding:21px 24px;cursor:pointer;user-select:none;
   transition:background .15s;flex-wrap:wrap;
 }
-.periodo-head:hover{background:#FAFAF8}
+.periodo-head:hover{background:#F5F4F2}
 .periodo-meta{flex:1;min-width:180px}
 .periodo-meta b{font-size:14px;font-weight:700;display:block}
 .periodo-meta span{font-size:12px;color:var(--muted);margin-top:2px;display:block}
@@ -758,8 +758,6 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
   transition:all .15s;white-space:nowrap;line-height:1;
 }
 .per-pay:hover{background:#D4EEE0}
-.per-pay.reabrir{background:var(--gray-soft);color:var(--muted);border-color:var(--line)}
-.per-pay.reabrir:hover{background:#E7E5E1;color:var(--ink)}
 .chev{width:16px;height:16px;color:var(--faint);transition:transform .2s}
 .periodo.open .chev{transform:rotate(180deg)}
 .periodo-body{display:none;border-top:1px solid var(--line);padding:20px 24px;background:#F7F6F4}
@@ -4107,7 +4105,7 @@ const UI = {
             </div>
             <div class="periodo-right">${sitBadge(p)}
               ${p.situacao==='pago'
-                ? `<button class="per-pay reabrir" onclick="event.stopPropagation();Actions.reabrirPeriodo('${cid}','${p.id}')">Reabrir</button>`
+                ? `<button class="periodo-edit-btn" title="Reabrir período" onclick="event.stopPropagation();Actions.reabrirPeriodo('${cid}','${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>`
                 : (!Dom.emAquisicao(p) && fer.length
                     ? `<button class="per-pay" onclick="event.stopPropagation();Actions.marcarPago('${cid}','${p.id}')">Marcar como pago</button>`
                     : '')}
