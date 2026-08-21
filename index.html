@@ -3800,7 +3800,8 @@ const UI = {
     $$('#deptChips .chip').forEach(ch=>ch.onclick=()=>{ this.filtro.depto = (this.filtro.depto===ch.dataset.dep && ch.dataset.dep) ? '' : ch.dataset.dep; this.renderDir(); });
 
     // unidades como segmented control
-    const unis=[...new Set(cs.map(c=>c.unidade))].sort();
+    const unis=[...new Set(cs.map(c=>c.unidade))]
+      .sort((a,b)=>{const ia=ORDEM_UNI.indexOf(a),ib=ORDEM_UNI.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b);});
     const unidHtml = [`<button class="chip ${!this.filtro.unidade?'on':''}" data-uni="">Todas<b>${baseParaUnidade.length}</b></button>`]
       .concat(unis.map(u=>
         `<button class="chip ${this.filtro.unidade===u?'on':''}" data-uni="${esc(u)}">${esc(u)}<b>${baseParaUnidade.filter(c=>c.unidade===u).length}</b></button>`));
