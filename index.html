@@ -3087,8 +3087,9 @@ const regimeLabel = r => REGIME_LABEL[r] || r || 'Não informado';
 const isEstagiario = c => c.regime==='Estágio' || c.departamento==='Estagiários' || /estagi/i.test(c.funcao||'');
 // 1/3 constitucional: CLT e PJ (por contrato) recebem; estagiário não (Lei 11.788 não prevê o adicional)
 const temTercoConstitucional = c => !isEstagiario(c);
-// c.cnpj guarda "Nome — CNPJ"; na ficha mostramos só o nome, sem o número
-const nomeEmpresa = c => (c.cnpj||'').split(' — ')[0];
+// cnpj é guardado como "Nome — CNPJ"; em listas/telas mostramos só o nome, sem o número
+const nomeDaEmpresa = v => (v||'').split(' — ')[0];
+const nomeEmpresa = c => nomeDaEmpresa(c.cnpj);
 // fontes únicas — evitam listas duplicadas/divergentes entre modais e telas
 const REGIMES = ['CLT','PJ','Estágio','Sócio'];                       // ordem canônica dos regimes
 const ORDEM_UNI = ['Quintas da Avenida','Granbery','Home Office'];    // ordem canônica das unidades
@@ -3788,9 +3789,9 @@ const UI = {
     const cnpjChips=$('#cnpjChips');
     if(cnpjs.length){
       cnpjChips.style.display='';
-      cnpjChips.innerHTML = [`<button class="chip ${!this.filtro.cnpj?'on':''}" data-cnpj="">Todos os CNPJs<b>${baseParaCnpj.length}</b></button>`]
+      cnpjChips.innerHTML = [`<button class="chip ${!this.filtro.cnpj?'on':''}" data-cnpj="">Todas as empresas<b>${baseParaCnpj.length}</b></button>`]
         .concat(cnpjs.map(v=>
-          `<button class="chip ${this.filtro.cnpj===v?'on':''}" data-cnpj="${esc(v)}">${esc(v)}<b>${baseParaCnpj.filter(c=>c.cnpj===v).length}</b></button>`)).join('');
+          `<button class="chip ${this.filtro.cnpj===v?'on':''}" data-cnpj="${esc(v)}">${esc(nomeDaEmpresa(v))}<b>${baseParaCnpj.filter(c=>c.cnpj===v).length}</b></button>`)).join('');
       $$('#cnpjChips .chip').forEach(ch=>ch.onclick=()=>{ this.filtro.cnpj = (this.filtro.cnpj===ch.dataset.cnpj && ch.dataset.cnpj) ? '' : ch.dataset.cnpj; this.renderDir(); });
     } else {
       cnpjChips.style.display='none';
@@ -4368,7 +4369,7 @@ const Modals = {
       <div class="field"><label>Função</label><input id="nFuncao" placeholder="ex.: Designer Gráfico"></div>
       <div class="field-row">
         <div class="field"><label>CNPJ</label>
-          <select id="nCnpj"><option value="">— Não informado —</option>${cnpjs.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('')}</select></div>
+          <select id="nCnpj"><option value="">— Não informado —</option>${cnpjs.map(v=>`<option value="${esc(v)}">${esc(nomeDaEmpresa(v))}</option>`).join('')}</select></div>
         <div class="field"><label>Unidade</label>
           <select id="nUni">${unis.map(u=>`<option>${esc(u)}</option>`).join('')}</select></div>
       </div>
@@ -4444,7 +4445,7 @@ const Modals = {
       <div class="field"><label>Função</label><input id="nFuncao" value="${esc(c.funcao)}"></div>
       <div class="field-row">
         <div class="field"><label>CNPJ</label>
-          <select id="nCnpj"><option value="">— Não informado —</option>${cnpjs.map(v=>`<option value="${esc(v)}"${v===c.cnpj?' selected':''}>${esc(v)}</option>`).join('')}</select></div>
+          <select id="nCnpj"><option value="">— Não informado —</option>${cnpjs.map(v=>`<option value="${esc(v)}"${v===c.cnpj?' selected':''}>${esc(nomeDaEmpresa(v))}</option>`).join('')}</select></div>
         <div class="field"><label>Unidade</label>
           <select id="nUni">${unis.map(u=>`<option${u===c.unidade?' selected':''}>${esc(u)}</option>`).join('')}</select></div>
       </div>
