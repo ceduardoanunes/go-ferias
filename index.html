@@ -741,7 +741,13 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
   font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--faint);
   margin-bottom:16px;
 }
-.periodo-secao-titulo::after{content:'';flex:1;height:1px;background:var(--line)}
+.periodo-secao-linha{flex:1;height:1px;background:var(--line)}
+.periodo-secao-titulo-toggle{cursor:pointer;user-select:none}
+.periodo-secao-count{
+  font-size:10.5px;font-weight:800;background:rgba(28,27,26,.08);color:var(--muted);
+  border-radius:99px;padding:1.5px 8px;
+}
+.chev.open{transform:rotate(180deg)}
 .periodo{border:1px solid var(--line);border-radius:18px;margin-bottom:20px;overflow:hidden;background:#FBFBFA}
 .periodo-head{
   display:flex;align-items:center;gap:16px;padding:21px 24px;cursor:pointer;user-select:none;
@@ -4133,26 +4139,23 @@ const UI = {
       // pra usar (vencido ou agendado) e o que já foi pago/finalizado
       const atual = todosPers.filter(p => p.situacao==='acumulando' && Dom.emAquisicao(p));
       const abertos = todosPers.filter(p => p.situacao!=='pago' && !(p.situacao==='acumulando' && Dom.emAquisicao(p)));
-      const finalizadosTodos = todosPers.filter(p => p.situacao==='pago');
+      const finalizados = todosPers.filter(p => p.situacao==='pago');
 
-      // o colapso de histórico (corte de CNPJ / muitos períodos) vale só pra "Períodos Finalizados"
-      const corteIdx = c?.cnpj_desde ? finalizadosTodos.findIndex(p=>p.fim<c.cnpj_desde) : (finalizadosTodos.length>LIMIAR_HIST ? LIMIAR_HIST : -1);
-      const temCorte = corteIdx>0 && corteIdx<finalizadosTodos.length;
-      const finalizados = (temCorte && !this.histAberto) ? finalizadosTodos.slice(0,corteIdx) : finalizadosTodos;
-      const nOcultos = finalizadosTodos.length - finalizados.length;
-      const toggleHistFinal = temCorte ? `
-        <button class="btn btn-soft" style="margin-top:12px" onclick="UI.histAberto=${!this.histAberto};UI.renderTab('${cid}')">
-          ${this.histAberto ? 'Ocultar histórico anterior' : `Ver histórico completo${c.cnpj_desde?' (antes da troca de CNPJ)':''} · +${nOcultos}`}
-        </button>` : '';
-
-      const secao = (titulo, lista, extra='') => lista.length ? `
+      const secao = (titulo, lista, {colapsavel=false}={}) => {
+        if(!lista.length) return '';
+        const aberta = !colapsavel || this.histAberto;
+        return `
         <div class="periodo-secao">
-          <div class="periodo-secao-titulo">${esc(titulo)}</div>
-          ${lista.map(cardOficial).join('')}
-          ${extra}
-        </div>` : '';
+          <div class="periodo-secao-titulo${colapsavel?' periodo-secao-titulo-toggle':''}" ${colapsavel?`onclick="UI.histAberto=${!this.histAberto};UI.renderTab('${cid}')"`:''}>
+            <span>${esc(titulo)}</span>
+            <span class="periodo-secao-linha"></span>
+            ${colapsavel?`<span class="periodo-secao-count">${lista.length}</span><svg class="chev${aberta?' open':''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>`:''}
+          </div>
+          ${aberta ? lista.map(cardOficial).join('') : ''}
+        </div>`;
+      };
 
-      body.innerHTML = secao('Período Atual', atual) + secao('Saldo em Aberto', abertos) + secao('Períodos Finalizados', finalizados, toggleHistFinal)
+      body.innerHTML = secao('Período Atual', atual) + secao('Saldo em Aberto', abertos) + secao('Períodos Finalizados', finalizados, {colapsavel:true})
         || `<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>${
           Auth.podeAdministrar() ? `<button class="btn btn-soft" style="margin-top:12px" onclick="Modals.novoPeriodo('${cid}')">Lançar período aquisitivo</button>` : ''
         }`;
