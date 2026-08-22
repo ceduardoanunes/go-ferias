@@ -3147,6 +3147,7 @@ const CATEGORIAS_NOTA = [
   { k:'licenca',   lab:'Licença',                 cor:'#2980B9' },
   { k:'pandemia',  lab:'Pandemia / Banco de horas', cor:'#16A085' },
   { k:'abono',     lab:'Abono / Feriado coletivo', cor:'#B8860B' },
+  { k:'rescisao_readmissao', lab:'Rescisão/Readmissão', cor:'#C0392B' },
   { k:'outro',     lab:'Outro',                   cor:'#6E6C68' },
 ];
 const catNota = k => CATEGORIAS_NOTA.find(c=>c.k===k) || { k, lab:k||'Outro', cor:'#6E6C68' };
@@ -4168,7 +4169,6 @@ const UI = {
 
       body.innerHTML = secao('Período Atual', atual) + secao('Saldo em Aberto', abertos) + secao('Períodos Finalizados', finalizados, {colapsavel:true})
         || `<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>`;
-      if(Auth.podeAdministrar()) body.innerHTML += `<button class="btn btn-soft" style="margin-top:12px" onclick="Modals.novoPeriodo('${cid}')">Lançar período aquisitivo</button>`;
     }
 
     if(this.tabAtual==='folgas'){
@@ -4626,26 +4626,6 @@ const Modals = {
       </div>`);
   },
 
-  novoPeriodo(cid){
-    if(!Auth.podeAdministrar()){ toast('Apenas administradores lançam período aquisitivo.'); return; }
-    const c = Store.data.colaboradores.find(x=>x.id===cid);
-    if(!c) return;
-    const ini = c.admissao || iso(hoje());
-    this.open(`
-      <h3>Lançar período aquisitivo</h3>
-      <p class="msub">${esc(c.nome)} · uso excepcional — ex.: estagiário efetivado, readmissão após transição, cadastro sem período inicial.</p>
-      <div class="field-row">
-        <div class="field"><label>Início</label><input type="date" id="ePerIni" value="${ini}"></div>
-        <div class="field"><label>Fim</label><input type="date" id="ePerFim" value="${iso(addD(addM(pd(ini),12),-1))}"></div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
-        <button class="btn btn-primary" onclick="Actions.salvarNovoPeriodo('${cid}')">Lançar período</button>
-      </div>`);
-    const iniEl=$('#ePerIni'), fimEl=$('#ePerFim');
-    iniEl.onchange = ()=>{ if(iniEl.value) fimEl.value = iso(addD(addM(pd(iniEl.value),12),-1)); };
-  },
-
   novaNota(cid){ this._notaModal(cid, null); },
   editarNota(cid, nid){ const n=(Store.data.notas||[]).find(x=>x.id===nid); if(n) this._notaModal(cid, n); },
   _notaModal(cid, n){
@@ -4660,14 +4640,24 @@ const Modals = {
       <p class="msub">${esc(c?.nome||'')}</p>
       <div class="field-row">
         <div class="field"><label>Categoria</label><select id="nCat">${catOpts}</select></div>
-        <div class="field"><label>Data de referência (opcional)</label><input type="date" id="nData" value="${n&&n.data?n.data:''}"></div>
+        <div class="field"><label id="nDataLab">Data de referência (opcional)</label><input type="date" id="nData" value="${n&&n.data?n.data:''}"></div>
       </div>
+      ${!n?`<p class="msub" id="nRescHint" style="display:none;margin-top:-10px">Ao salvar, um novo período aquisitivo é criado automaticamente a partir dessa data.</p>`:''}
       <div class="field"><label>Período vinculado (opcional)</label><select id="nPer">${perOpts}</select></div>
       <div class="field"><label>Observação</label><textarea id="nTexto" rows="4" placeholder="ex.: 13 dias vendidos pela MP no período 2020/21.">${n?esc(n.texto):''}</textarea></div>
       <div class="modal-actions">
         <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
         <button class="btn btn-primary" onclick="Actions.${n?`salvarEdicaoNota('${cid}','${n.id}')`:`salvarNota('${cid}')`}">Salvar</button>
       </div>`);
+    if(!n){
+      const catEl=$('#nCat'), hint=$('#nRescHint'), dataLab=$('#nDataLab');
+      const sync=()=>{
+        const ehQuebra = catEl.value==='rescisao_readmissao';
+        hint.style.display = ehQuebra?'':'none';
+        dataLab.textContent = ehQuebra?'Data da readmissão':'Data de referência (opcional)';
+      };
+      catEl.onchange = sync; sync();
+    }
   },
 
   novoUsuario(usuario){
@@ -4824,14 +4814,31 @@ const Actions = {
       periodo_id: $('#nPer').value || null,
     };
   },
-  salvarNota(cid){
+  async salvarNota(cid){
     if(!this.guard()) return;
     const n = this._lerNota();
     if(!n.texto){ toast('Escreva a observação da nota.'); return; }
     const c = Store.data.colaboradores.find(x=>x.id===cid);
-    Store.insert('notas', {colaborador_id:cid, ...n}, `Nota (${catNota(n.categoria).lab}) — ${c?.nome||''}`)
-      .then(()=>{ UI.tabAtual='notas'; Modals.close(); toast('Nota registrada ✓'); UI.renderProfile(cid); })
-      .catch(e=>toast('Erro ao salvar: '+e.message));
+    // categoria "Rescisão/Readmissão" lança o período aquisitivo automaticamente a partir da
+    // data informada — é o caminho pra registrar a quebra sem precisar de um botão à parte
+    const ehQuebra = n.categoria==='rescisao_readmissao';
+    if(ehQuebra){
+      if(!Auth.podeAdministrar()){ toast('Apenas administradores registram rescisão/readmissão.'); return; }
+      if(!n.data){ toast('Informe a data da readmissão.'); return; }
+      var fimPeriodo = iso(addD(addM(pd(n.data),12),-1));
+      const sobrepoe = Store.data.periodos.some(o=>o.colaborador_id===cid && n.data<=o.fim && fimPeriodo>=o.inicio);
+      if(sobrepoe){ toast('A data informada se sobrepõe a um período já existente deste colaborador.'); return; }
+    }
+    try{
+      await Store.insert('notas', {colaborador_id:cid, ...n}, `Nota (${catNota(n.categoria).lab}) — ${c?.nome||''}`);
+      if(ehQuebra){
+        await Store.insert('periodos', {colaborador_id:cid, inicio:n.data, fim:fimPeriodo, situacao:'acumulando'},
+          `Período aquisitivo lançado via nota de Rescisão/Readmissão — ${c?.nome||''} (${fmt(n.data)})`);
+      }
+      UI.tabAtual='notas'; Modals.close();
+      toast(ehQuebra ? 'Nota registrada e período aquisitivo lançado ✓' : 'Nota registrada ✓');
+      UI.renderProfile(cid);
+    }catch(e){ toast('Erro ao salvar: '+e.message); }
   },
   salvarEdicaoNota(cid, nid){
     if(!this.guard()) return;
@@ -5039,20 +5046,6 @@ const Actions = {
     Store.save();
     Store.logAudit('atualizar','periodos',perId,`Datas do período ajustadas — ${c?.nome} · ${antes} → ${fmt(ini)}–${fmt(fim)}`);
     toast('Período atualizado ✓');
-    Modals.close(); UI.renderProfile(cid); UI.renderDir();
-  },
-
-  async salvarNovoPeriodo(cid){
-    if(!Auth.podeAdministrar()){ toast('Apenas administradores lançam período aquisitivo.'); return; }
-    const c = Store.data.colaboradores.find(x=>x.id===cid);
-    if(!c) return;
-    const ini=$('#ePerIni').value, fim=$('#ePerFim').value;
-    if(!ini||!fim||fim<ini){ toast('Confira as datas de início e fim.'); return; }
-    const sobrepoe = Store.data.periodos.some(o=>o.colaborador_id===cid && ini<=o.fim && fim>=o.inicio);
-    if(sobrepoe){ toast('As datas se sobrepõem a outro período deste colaborador.'); return; }
-    await Store.insert('periodos', {colaborador_id:cid, inicio:ini, fim:fim, situacao:'acumulando'},
-      `Período aquisitivo lançado manualmente — ${c.nome} (${fmt(ini)} a ${fmt(fim)})`);
-    toast('Período aquisitivo lançado ✓');
     Modals.close(); UI.renderProfile(cid); UI.renderDir();
   },
 
