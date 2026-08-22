@@ -771,7 +771,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .transicao-nota{display:flex;align-items:center;gap:10px;margin:28px 2px;color:var(--faint)}
 .transicao-nota .tn-line{flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--line) 0 4px,transparent 4px 8px)}
 .transicao-nota .tn-label{display:flex;align-items:center;gap:6px;flex:none;font-size:11.5px;white-space:nowrap}
-.transicao-nota svg{width:13px;height:13px;flex:none;color:var(--faint)}
+.transicao-nota .tn-ico{font-size:12px;line-height:1;flex:none;filter:grayscale(.4);opacity:.85}
 .transicao-nota b{color:var(--muted);font-weight:600}
 @media(max-width:520px){.transicao-nota .tn-label{white-space:normal;text-align:center}}
 
@@ -4093,7 +4093,7 @@ const UI = {
       <div class="transicao-nota" title="Provável rescisão e readmissão (novo aquisitivo)">
         <span class="tn-line"></span>
         <span class="tn-label">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v12a3 3 0 0 0 3 3h6"/><path d="m15 15 3 3-3 3"/><path d="M18 3v6a3 3 0 0 1-3 3H6"/></svg>
+          <span class="tn-ico">⚠️</span>
           <b>${transicaoAntesDe[p.id]} dias</b> sem período aquisitivo antes deste — provável rescisão e readmissão
         </span>
         <span class="tn-line"></span>
@@ -4457,13 +4457,13 @@ const Modals = {
         <div class="field"><label>CNPJ</label>
           <select id="nCnpj"><option value="">Selecione CNPJ</option>${cnpjs.map(v=>`<option value="${esc(v)}">${esc(nomeDaEmpresa(v))}</option>`).join('')}</select></div>
         <div class="field"><label>Unidade</label>
-          <select id="nUni"><option value="" disabled>Selecione Unidade</option>${unis.map(u=>`<option>${esc(u)}</option>`).join('')}</select></div>
+          <select id="nUni"><option value="" disabled selected>Selecione Unidade</option>${unis.map(u=>`<option>${esc(u)}</option>`).join('')}</select></div>
       </div>
       <div class="field-row">
         <div class="field"><label>Setor</label>
-          <select id="nDepto"><option value="" disabled>Selecione Setor</option>${deps.map(d=>`<option>${esc(d)}</option>`).join('')}</select></div>
+          <select id="nDepto"><option value="" disabled selected>Selecione Setor</option>${deps.map(d=>`<option>${esc(d)}</option>`).join('')}</select></div>
         <div class="field"><label>Regime</label>
-          <select id="nRegime"><option value="" disabled>Selecione Regime</option>${REGIMES.map(r=>`<option value="${r}">${regimeLabel(r)}</option>`).join('')}</select></div>
+          <select id="nRegime"><option value="" disabled selected>Selecione Regime</option>${REGIMES.map(r=>`<option value="${r}">${regimeLabel(r)}</option>`).join('')}</select></div>
       </div>
       <div class="field-row">
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${iso(hoje())}"></div>
