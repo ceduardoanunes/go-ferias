@@ -4167,9 +4167,8 @@ const UI = {
       };
 
       body.innerHTML = secao('Período Atual', atual) + secao('Saldo em Aberto', abertos) + secao('Períodos Finalizados', finalizados, {colapsavel:true})
-        || `<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>${
-          Auth.podeAdministrar() ? `<button class="btn btn-soft" style="margin-top:12px" onclick="Modals.novoPeriodo('${cid}')">Lançar período aquisitivo</button>` : ''
-        }`;
+        || `<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>`;
+      if(Auth.podeAdministrar()) body.innerHTML += `<button class="btn btn-soft" style="margin-top:12px" onclick="Modals.novoPeriodo('${cid}')">Lançar período aquisitivo</button>`;
     }
 
     if(this.tabAtual==='folgas'){
