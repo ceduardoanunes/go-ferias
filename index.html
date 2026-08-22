@@ -4113,7 +4113,6 @@ const UI = {
         const direito = diasProporcionaisPeriodo(p);
         const proporcional = direito < REGRAS.DIAS_CONTABEIS;
         return `
-        ${transicaoHtml(p)}
         <div class="periodo" data-per="${p.id}">
           <div class="periodo-head" onclick="this.parentElement.classList.toggle('open')">
             <div class="periodo-meta">
@@ -4143,7 +4142,8 @@ const UI = {
               </div>`).join('')
             : `<div class="none-yet">Nenhum gozo contábil lançado neste período.</div>`}
           </div>
-        </div>`;
+        </div>
+        ${transicaoHtml(p)}`;
       };
 
       // separa em 3 seções pra facilitar a leitura: o que ainda tá em aquisição, o que já tem saldo
@@ -4179,7 +4179,6 @@ const UI = {
         if(!fol.length && i>1) return trans;
         const acima = tot>REGRAS.DIAS_FOLGAS;
         return `
-        ${trans}
         <div class="periodo">
           <div class="periodo-head" onclick="this.parentElement.classList.toggle('open')">
             <div class="periodo-meta">
@@ -4204,7 +4203,8 @@ const UI = {
               </div>`).join('')
             : `<div class="none-yet">Nenhuma folga lançada neste período.</div>`}
           </div>
-        </div>`;
+        </div>
+        ${trans}`;
       }).join('') + toggleHistHtml || '<div class="none-yet">Nenhuma folga registrada.</div>';
     }
 
