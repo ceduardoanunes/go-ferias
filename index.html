@@ -4455,15 +4455,15 @@ const Modals = {
       <div class="field"><label>Função</label><input id="nFuncao" placeholder="ex.: Designer Gráfico"></div>
       <div class="field-row">
         <div class="field"><label>CNPJ</label>
-          <select id="nCnpj"><option value="">— Não informado —</option>${cnpjs.map(v=>`<option value="${esc(v)}">${esc(nomeDaEmpresa(v))}</option>`).join('')}</select></div>
+          <select id="nCnpj"><option value="">Selecione CNPJ</option>${cnpjs.map(v=>`<option value="${esc(v)}">${esc(nomeDaEmpresa(v))}</option>`).join('')}</select></div>
         <div class="field"><label>Unidade</label>
-          <select id="nUni">${unis.map(u=>`<option>${esc(u)}</option>`).join('')}</select></div>
+          <select id="nUni"><option value="" disabled>Selecione Unidade</option>${unis.map(u=>`<option>${esc(u)}</option>`).join('')}</select></div>
       </div>
       <div class="field-row">
         <div class="field"><label>Setor</label>
-          <select id="nDepto">${deps.map(d=>`<option>${esc(d)}</option>`).join('')}</select></div>
+          <select id="nDepto"><option value="" disabled>Selecione Setor</option>${deps.map(d=>`<option>${esc(d)}</option>`).join('')}</select></div>
         <div class="field"><label>Regime</label>
-          <select id="nRegime">${REGIMES.map(r=>`<option value="${r}">${regimeLabel(r)}</option>`).join('')}</select></div>
+          <select id="nRegime"><option value="" disabled>Selecione Regime</option>${REGIMES.map(r=>`<option value="${r}">${regimeLabel(r)}</option>`).join('')}</select></div>
       </div>
       <div class="field-row">
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${iso(hoje())}"></div>
@@ -4531,16 +4531,16 @@ const Modals = {
       <div class="field"><label>Função</label><input id="nFuncao" value="${esc(c.funcao)}"></div>
       <div class="field-row">
         <div class="field"><label>CNPJ</label>
-          <select id="nCnpj"><option value="">— Não informado —</option>${cnpjs.map(v=>`<option value="${esc(v)}"${v===empresaCanonica(c.cnpj)?' selected':''}>${esc(nomeDaEmpresa(v))}</option>`).join('')}</select></div>
+          <select id="nCnpj"><option value=""${empresaCanonica(c.cnpj)?'':' selected'}>Selecione CNPJ</option>${cnpjs.map(v=>`<option value="${esc(v)}"${v===empresaCanonica(c.cnpj)?' selected':''}>${esc(nomeDaEmpresa(v))}</option>`).join('')}</select></div>
         <div class="field"><label>Unidade</label>
-          <select id="nUni">${unis.map(u=>`<option${u===c.unidade?' selected':''}>${esc(u)}</option>`).join('')}</select></div>
+          <select id="nUni"><option value="" disabled${c.unidade?'':' selected'}>Selecione Unidade</option>${unis.map(u=>`<option${u===c.unidade?' selected':''}>${esc(u)}</option>`).join('')}</select></div>
       </div>
       ${c.cnpj_desde?`<p class="msub" style="margin-top:-10px">Neste CNPJ desde ${fmt(c.cnpj_desde)}. Trocar o valor acima marca uma nova data de corte.</p>`:''}
       <div class="field-row">
         <div class="field"><label>Setor</label>
-          <select id="nDepto">${deps.map(d=>`<option${d===c.departamento?' selected':''}>${esc(d)}</option>`).join('')}</select></div>
+          <select id="nDepto"><option value="" disabled${c.departamento?'':' selected'}>Selecione Setor</option>${deps.map(d=>`<option${d===c.departamento?' selected':''}>${esc(d)}</option>`).join('')}</select></div>
         <div class="field"><label>Regime</label>
-          <select id="nRegime">${REGIMES.map(r=>`<option value="${r}"${r===c.regime?' selected':''}>${regimeLabel(r)}</option>`).join('')}</select></div>
+          <select id="nRegime"><option value="" disabled${c.regime?'':' selected'}>Selecione Regime</option>${REGIMES.map(r=>`<option value="${r}"${r===c.regime?' selected':''}>${regimeLabel(r)}</option>`).join('')}</select></div>
       </div>
       <div class="field-row">
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${c.admissao}"></div>
@@ -4851,15 +4851,16 @@ const Actions = {
   async salvarColab(){
     if(!Auth.podeAdministrar()){ toast('Apenas administradores cadastram colaboradores.'); return; }
     const nome=$('#nNome').value.trim(), funcao=$('#nFuncao').value.trim(), adm=$('#nAdm').value;
-    if(!nome||!funcao||!adm){ toast('Preencha nome, função e admissão.'); return; }
+    const depto=$('#nDepto').value, unidade=$('#nUni').value, regime=$('#nRegime').value;
+    if(!nome||!funcao||!adm||!depto||!unidade||!regime){ toast('Preencha nome, função, admissão, unidade, setor e regime.'); return; }
     const cnpj = $('#nCnpj').value.trim();
     const desligamento = $('#nDeslig').value || null;
     const c=await Store.insert('colaboradores',{nome,funcao,
-      departamento:$('#nDepto').value,unidade:$('#nUni').value,regime:$('#nRegime').value,admissao:adm,
+      departamento:depto,unidade,regime,admissao:adm,
       cnpj:cnpj||null, cnpj_desde:cnpj?adm:null,
       desligamento, ativo:!desligamento,
       foto:UI._fotoPendente||null},
-      `Cadastro de colaborador — ${nome} (${$('#nDepto').value} · ${$('#nUni').value})`);
+      `Cadastro de colaborador — ${nome} (${depto} · ${unidade})`);
     const a=pd(adm);
     await Store.insert('periodos',{colaborador_id:c.id,inicio:adm,fim:iso(addD(addM(a,12),-1)),situacao:'acumulando'},
       `Período aquisitivo inicial — ${nome}`);
