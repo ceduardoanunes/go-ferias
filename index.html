@@ -2960,6 +2960,9 @@ const diasUteis = (a,b) => {
 };
 const ehFimDeSemana = d => { const wd=d.getDay(); return wd===0 || wd===6; };
 const initials = n => n.split(' ').filter(Boolean).map(w=>w[0]).filter((_,i,a)=>i===0||i===a.length-1).join('').toUpperCase();
+// nome curto p/ EXIBIÇÃO onde o nome inteiro estoura (ranking, cards): primeiros dois nomes
+// ("Victor Bosich", não "Victor Rezende"). O nome completo fica no title/hover e no perfil.
+const nomeCurto = n => (n||'').trim().split(/\s+/).filter(Boolean).slice(0,2).join(' ');
 const avatarInner = p => p.foto ? `<img src="${esc(p.foto)}" alt="${esc(p.nome)}" loading="lazy">` : initials(p.nome);
 const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -6205,7 +6208,7 @@ UI.renderAgenda = function(){
   const porSetorTl = {};
   csAtivosTl.forEach(c=>{ (porSetorTl[c.departamento]=porSetorTl[c.departamento]||[]).push(c); });
   const setoresTl = SETORES_BRAND.map(s=>s.nome).filter(d=>porSetorTl[d]&&porSetorTl[d].length);
-  const nomeCurtoTl = nome => { const partes = nome.trim().split(/\s+/); return partes.length>1 ? `${partes[0]} ${partes[partes.length-1]}` : partes[0]; };
+  const nomeCurtoTl = nome => nomeCurto(nome);   // primeiros dois nomes ("Victor Bosich", não "Victor Rezende")
   const diaCelTl = (c, dt, di) => {
     const feriado = feriados.get(di);
     const wknd = ehFimDeSemana(dt);
@@ -7180,7 +7183,7 @@ UI.renderPessoas = function(){
         <div class="casa-setor-linha">
           <div class="mini-av casa-setor-av" style="width:44px;height:44px;font-size:14px">${avatarInner({nome:antigo.nome, foto:antigo.foto})}</div>
           <div class="casa-setor-info">
-            <div class="casa-setor-pessoa">${esc(antigo.nome)}</div>
+            <div class="casa-setor-pessoa" title="${esc(antigo.nome)}">${esc(nomeCurto(antigo.nome))}</div>
             <div class="casa-setor-tempo">${tempoDeCasa(antigo.admissao)}</div>
           </div>
         </div>
@@ -7334,7 +7337,7 @@ UI.renderRankCasa = function(){
         return `
         <div class="casa-row">
           <div class="mini-av casa-row-av">${avatarInner({nome:c.nome, foto:c.foto})}</div>
-          <span class="casa-nome">${esc(c.nome)}</span>
+          <span class="casa-nome" title="${esc(c.nome)}">${esc(nomeCurto(c.nome))}</span>
           <span class="casa-cargo">${esc(c.departamento)}</span>
           <span class="casa-cargo">${esc(c.funcao)}</span>
           <span class="casa-data">${fmt(c.admissao)}</span>
