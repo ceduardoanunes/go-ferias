@@ -1,0 +1,8 @@
+# Ajustes locais (o compose aplica este arquivo automaticamente por cima do base).
+# Serve o index.html pela API: o Dockerfile não copia o index.html (ele fica na
+# raiz do repo), então montamos ele em /index.html — que é onde src/index.js procura.
+services:
+  api:
+    restart: unless-stopped
+    volumes:
+      - ../index.html:/index.html:ro
