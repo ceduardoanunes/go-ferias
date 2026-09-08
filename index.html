@@ -7262,7 +7262,7 @@ UI.renderPessoas = function(){
       ? `<div class="casa-aniv-panels">${milestones.map((anos,i)=>`
         <div class="casa-aniv-panel" style="--ring:${CORES_MILESTONE[Math.min(i,CORES_MILESTONE.length-1)]}">
           <div class="casa-aniv-wm"><b>${anos}</b></div>
-          <div class="casa-aniv-grid" style="margin-left:96px">${porMilestone[anos].map(({c})=>`
+          <div class="casa-aniv-grid" style="margin-left:60px">${porMilestone[anos].map(({c})=>`
             <a href="#/colab/${c.id}" class="casa-aniv-card">
               <div class="mini-av casa-aniv-av" style="width:44px;height:44px;font-size:13px">${avatarInner({nome:c.nome, foto:c.foto})}</div>
               <div class="casa-aniv-nome">${(()=>{ const p=c.nome.split(' ').filter(Boolean); return esc(p[0])+(p.length>1?'<br>'+esc(p.slice(-1)[0]):''); })()}</div>
