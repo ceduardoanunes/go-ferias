@@ -94,17 +94,16 @@ férias vencendo).
 ## Conectar o frontend (index.html)
 
 A API devolve o **mesmo formato** que o app já consome (snake_case, datas
-`YYYY-MM-DD`). Falta apenas apontar o `Store` do `index.html` para estes
-endpoints (as URLs mudam em relação ao modo PostgREST — ex.: `POST /auth/login`
-no lugar de `/rpc/login`, `PATCH /colaboradores/:id` no lugar de `?id=eq.`).
-Posso fazer esse adaptador quando a API estiver de pé para testar.
+`YYYY-MM-DD`). Já está conectado e testado — `index.html` é servido pela
+própria API (raiz do repo) e detecta sozinho o driver `node`.
 
-## Dados reais (120 colaboradores)
+## Dados reais (111 colaboradores)
 
-O importador em `../backend/import/` gera `dados.json` a partir da planilha do RH.
-Para carregar aqui, o caminho mais direto é um script Prisma que lê esse JSON e
-cria os registros (as tabelas têm os mesmos nomes). Posso escrever esse script
-quando a planilha real chegar.
+Já migrados e rodando em produção (estavam no Render). Pra carregar num
+servidor novo, ver `../PARA-O-TI.md` → "Carregar os dados reais": o
+snapshot fica em `../backend/import/saida_render/*.json` e
+`../backend/import/carregar_no_local.py` recria tudo aqui via API (não
+precisa de script Prisma nem acesso direto ao Postgres).
 
 ## Produção (antes de dados reais)
 

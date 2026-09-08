@@ -1,64 +1,32 @@
-# Importador da planilha do RH → backend
+# Ferramentas de dados — Go Férias!
 
-Converte a planilha de férias (formato do `OFF/MODELO PLANILHA FÉRIAS.xlsx`) nos
-dados do sistema. Foi **testado contra o modelo de 2 pessoas** e reproduz o
-Carlos e a Amanda exatamente como já estão no sistema (parte estruturada).
+Scripts Python que falam com a API do backend (não mexem direto no Postgres).
+Servem pra **migrar entre servidores** e pra **auditar/corrigir dado real**.
 
-## Como rodar
+## O que tem aqui hoje
 
-```bash
-cd backend/import
-pip3 install openpyxl          # uma vez
-python3 importar_planilha.py "caminho/para/PLANILHA-DOS-120.xlsx" saida
-```
+| Script | Pra quê |
+|---|---|
+| `baixar_do_render.py` | Baixa TODO o banco (pela API, só leitura) pra `saida_render/*.json`. |
+| `carregar_no_local.py` | Lê `saida_render/` e recria tudo num servidor novo (remapeia IDs). |
+| `auditar_desligamento_periodo.py` | Acha (e opcionalmente corrige) colaboradores desligados cujo período aquisitivo não fechou na data certa. |
 
-Gera na pasta `saida/`:
-- **`dados.json`** — tudo que foi extraído (para conferência).
-- **`inserts.sql`** — comandos SQL prontos para carregar no banco.
-- **`REVISAR.txt`** — a lista curta de folgas que precisam de olho humano.
+Ver **`../../PARA-O-TI.md`** pro passo a passo completo de migração (esse é
+o motivo desses dois primeiros scripts existirem: tirar os dados do Render
+antes dele expirar e recriar no servidor da empresa).
 
-## O que confiar × o que revisar
+## `historico-importacao-form18/`
 
-| Parte | Confiança | Observação |
-|-------|-----------|------------|
-| Nome, empresa, função, admissão | ✅ Alta | direto das colunas |
-| Períodos aquisitivos + situação | ✅ Alta | `FÉRIAS NÃO VENCIDAS`→acumulando, `PAGO`→pago, `PAGTO PROGRAMADO`→programado |
-| Férias contábeis (gozos de 30 dias) | ✅ Alta | datas e nº de dias conferem com o feito à mão |
-| **Folgas (coluna de texto livre)** | ⚠️ **Best-effort** | pega as datas simples; **marca para revisão** os casos de negócio (venda pela MP, licença, banco de horas) |
-
-> **Regra de ouro:** abra o `REVISAR.txt` e resolva cada item antes de considerar
-> a migração pronta. No modelo, os itens marcados foram coisas como
-> "8 DIAS VENDEU PELA MP", "LICENÇA MATERNIDADE", "banco 4 horas — descontar…" —
-> decisões que só o RH sabe tomar.
-
-## Carregar no banco
-
-### ✅ Backend Node/Prisma (o que está no Render) — use este
-Envie o `dados.json` **pela API** com o `enviar_para_api.py`. Não precisa de Node,
-psql nem Prisma na sua máquina — só Python (que o parser já usa):
-
-```bash
-py enviar_para_api.py saida/dados.json \
-   --url https://SEU-APP.onrender.com \
-   --email admin@goegrow.com.br --senha demo
-```
-
-- `--dry-run` mostra o que faria sem enviar nada (teste antes).
-- É **seguro re-rodar**: colaboradores cujo nome já existe são **pulados** (não duplica).
-- `empresa` (setor da planilha) vira `departamento`; `unidade`/`regime` usam padrões
-  ajustáveis no topo do script.
-
-> **Notas de RH** (venda pela MP, licença, pandemia/banco de horas) são extraídas
-> automaticamente do texto livre e **enviadas** como Notas do colaborador (aba Notas
-> na ficha, vinculadas ao período). Editáveis/excluíveis no app. Os demais itens do
-> **REVISAR.txt** (inconsistências de data, casos ambíguos) seguem para revisão à mão.
-
-### Backend legado (PostgREST em `backend/sql/`) — só se ainda usar aquele
-O `inserts.sql` gerado é para o schema `api.` do PostgREST **antigo**, e **não**
-funciona no backend Node/Prisma. Se ainda usar o legado: copie o `inserts.sql`
-(renomeado, ex. `07_dados_reais.sql`) para `backend/sql/`, ou rode via `psql`.
+A importação **original** dos ~120 colaboradores, a partir da planilha do RH
+(`OFF/MODELO PLANILHA FÉRIAS.xlsx` e as abas por setor) — já **concluída**,
+os dados já estão no sistema. Fica guardado só de referência (scripts de
+reconciliação pontual: admissão, CNPJ/setor, exclusão de duplicata). Não é
+preciso mexer aqui de novo, a menos que apareça uma divergência parecida.
 
 ## ⚠️ Privacidade
 
-A planilha dos 120 e as saídas contêm **dados pessoais reais**. O `.gitignore`
-desta pasta já bloqueia `*.xlsx` e a pasta `saida/` — **não force o commit deles**.
+`saida_render/` e qualquer coisa em `historico-importacao-form18/saida_*`
+contêm **dados pessoais reais** de colaboradores. O `.gitignore` já bloqueia
+essas pastas, `*.xlsx`, `*.pdf` e `*.local.*` — **nunca force o commit
+delas**. Pra levar esses dados pra outra máquina (ex.: mandar pro TI), copie
+a pasta por fora do git (zip, pendrive, etc.), nunca pelo GitHub.
