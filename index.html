@@ -4173,8 +4173,11 @@ const UI = {
         </div>`;
       };
 
-      body.innerHTML = secao('Período Atual', atual) + secao('Saldo em Aberto', abertos) + secao('Períodos Finalizados', finalizados, {colapsavel:true})
-        || `<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>`;
+      const addPeriodoBtn = Auth.podeAdministrar()
+        ? `<div class="notas-head"><button class="btn btn-soft" style="padding:9px 16px" onclick="Modals.novoPeriodo('${cid}')" title="Uso excepcional — ex.: creditar um hiato sem vínculo por acordo">+ Adicionar período</button></div>`
+        : '';
+      body.innerHTML = (secao('Período Atual', atual) + secao('Saldo em Aberto', abertos) + secao('Períodos Finalizados', finalizados, {colapsavel:true})
+        || `<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>`) + addPeriodoBtn;
     }
 
     if(this.tabAtual==='folgas'){
@@ -4634,6 +4637,23 @@ const Modals = {
       </div>`);
   },
 
+  novoPeriodo(cid){
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores adicionam período aquisitivo.'); return; }
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    if(!c) return;
+    this.open(`
+      <h3>Adicionar período aquisitivo</h3>
+      <p class="msub">${esc(c?.nome||'')} · uso excepcional (ex.: acordo que credita um hiato sem vínculo, backfill de dado antigo)</p>
+      <div class="field-row">
+        <div class="field"><label>Início</label><input type="date" id="nPerIni"></div>
+        <div class="field"><label>Fim</label><input type="date" id="nPerFim"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
+        <button class="btn btn-primary" onclick="Actions.salvarNovoPeriodo('${cid}')">Adicionar</button>
+      </div>`);
+  },
+
   novaNota(cid){ this._notaModal(cid, null); },
   editarNota(cid, nid){ const n=(Store.data.notas||[]).find(x=>x.id===nid); if(n) this._notaModal(cid, n); },
   _notaModal(cid, n){
@@ -5080,6 +5100,20 @@ const Actions = {
     Store.logAudit('atualizar','periodos',perId,`Datas do período ajustadas — ${c?.nome} · ${antes} → ${fmt(ini)}–${fmt(fim)}`);
     toast('Período atualizado ✓');
     Modals.close(); UI.renderProfile(cid); UI.renderDir();
+  },
+  async salvarNovoPeriodo(cid){
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores adicionam período aquisitivo.'); return; }
+    const ini=$('#nPerIni').value, fim=$('#nPerFim').value;
+    if(!ini||!fim||fim<ini){ toast('Confira as datas de início e fim.'); return; }
+    const sobrepoe = Store.data.periodos.some(o=>o.colaborador_id===cid && ini<=o.fim && fim>=o.inicio);
+    if(sobrepoe){ toast('As datas se sobrepõem a um período já existente deste colaborador.'); return; }
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    const situacao = pd(fim) >= hoje() ? 'acumulando' : 'aberto';
+    try{
+      await Store.insert('periodos', {colaborador_id:cid, inicio:ini, fim:fim, situacao},
+        `Período aquisitivo adicionado manualmente — ${c?.nome||''} (${fmt(ini)} a ${fmt(fim)})`);
+      toast('Período adicionado ✓'); Modals.close(); UI.renderProfile(cid); UI.renderDir();
+    }catch(e){ toast('Erro ao salvar: '+e.message); }
   },
 
   salvarUsuario(id){
