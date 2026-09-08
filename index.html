@@ -4944,8 +4944,10 @@ const Actions = {
     const depois = {nome, funcao, departamento, unidade, regime, admissao, cnpj, desligamento: readm ? null : desligamento};
     const mudou = Object.keys(depois).filter(k=>antes[k]!==depois[k]);
     // marca a data de corte só numa troca de fato (já tinha um CNPJ e virou outro) — primeiro
-    // preenchimento (backfill de dado histórico que faltava) não é "troca acontecendo hoje"
-    if(mudou.includes('cnpj')) depois.cnpj_desde = (antes.cnpj && cnpj) ? iso(hoje()) : null;
+    // preenchimento (backfill de dado histórico que faltava) não é "troca acontecendo hoje".
+    // Se a troca vem junto de uma Readmissão, a data de corte é a da readmissão (pode ser retroativa),
+    // não o dia em que essa edição foi salva.
+    if(mudou.includes('cnpj')) depois.cnpj_desde = (antes.cnpj && cnpj) ? (readm || iso(hoje())) : null;
     // desligamento preenchido/limpo controla o "ativo" automaticamente, sem mexer se essa edição não tocou nele
     if(mudou.includes('desligamento')) depois.ativo = !depois.desligamento;
     // desligar no meio de um período aquisitivo em aberto precisa fechar esse período na data do
