@@ -1516,11 +1516,15 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 @media(max-width:640px){.casa-top3-card.rank1,.casa-top3-card.rank2,.casa-top3-card.rank3,.casa-top3-card.rank4,.casa-top3-card.rank5{order:0}.casa-top3-card{flex-basis:100%;max-width:none}}
 
 /* tempo de casa — aniversários de empresa: painel com número em marca d'água, igual ao "Hoje" do dashboard */
-.casa-aniv-panels{display:flex;flex-direction:column;gap:20px}
-.casa-aniv-panel{position:relative;overflow:visible;padding:14px 0;display:flex;flex-direction:column}
-.casa-aniv-wm{position:static;transform:none;margin-bottom:10px;pointer-events:none;line-height:.8}
-.casa-aniv-wm b{display:block;font-family:var(--font-display);font-weight:800;font-size:100px;line-height:.8;letter-spacing:-4px;color:rgba(28,27,26,.13)}
+.casa-aniv-panels{display:flex;flex-direction:column;gap:28px}
+.casa-aniv-panel{position:relative;overflow:visible;padding:14px 0}
+.casa-aniv-wm{
+  position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:0;pointer-events:none;
+  line-height:.8;
+}
+.casa-aniv-wm b{display:block;font-family:var(--font-display);font-weight:800;font-size:155px;line-height:.8;letter-spacing:-6px;color:rgba(28,27,26,.13)}
 .casa-aniv-grid{display:flex;flex-wrap:wrap;gap:14px;position:relative;z-index:1}
+@media(max-width:820px){.casa-aniv-wm{position:static;transform:none;margin-bottom:10px}.casa-aniv-grid{margin-left:0!important}.casa-aniv-panel{display:flex;flex-direction:column}}
 .casa-aniv-card{
   position:relative;flex:0 0 140px;width:140px;overflow:visible;
   background:var(--card);border:1px solid var(--line);border-radius:16px;
@@ -7256,7 +7260,7 @@ UI.renderPessoas = function(){
       ? `<div class="casa-aniv-panels">${milestones.map((anos,i)=>`
         <div class="casa-aniv-panel" style="--ring:${CORES_MILESTONE[Math.min(i,CORES_MILESTONE.length-1)]}">
           <div class="casa-aniv-wm"><b>${anos}</b></div>
-          <div class="casa-aniv-grid">${porMilestone[anos].map(({c})=>`
+          <div class="casa-aniv-grid" style="margin-left:${String(anos).length===1?66:96}px">${porMilestone[anos].map(({c})=>`
             <a href="#/colab/${c.id}" class="casa-aniv-card">
               <div class="mini-av casa-aniv-av" style="width:44px;height:44px;font-size:13px">${avatarInner({nome:c.nome, foto:c.foto})}</div>
               <div class="casa-aniv-nome">${(()=>{ const p=c.nome.split(' ').filter(Boolean); return esc(p[0])+(p.length>1?'<br>'+esc(p.slice(-1)[0]):''); })()}</div>
