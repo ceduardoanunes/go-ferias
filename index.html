@@ -7469,7 +7469,7 @@ function route(){
   else if(isGraf){ const t=query.find(x=>x.startsWith('tab=')); if(t) UI.grafTab=t.slice(4); UI.renderGraficos(); }
   else if(isPessoas){ const t=query.find(x=>x.startsWith('tab=')); if(t) UI.pesTab=t.slice(4); UI.renderPessoas(); }
   else if(isConta) UI.renderConta();
-  else if(isColab){ UI.renderDir(); }
+  else if(isColab){ UI.filtro.q=''; if($('#q')) $('#q').value=''; UI.renderDir(); }
   else UI.renderDash();
   window.scrollTo({top:0});
 }
