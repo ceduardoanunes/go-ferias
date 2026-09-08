@@ -3315,6 +3315,9 @@ const Store = {
         .filter(p=>p.colaborador_id===c.id)
         .sort((a,b)=>b.inicio.localeCompare(a.inicio))[0];
       if(!ultimo || typeof ultimo.fim !== 'string') continue;  // sem período base / data inválida
+      // período mais curto que ~1 ano = foi encerrado cedo (desligamento) — não continua sozinho;
+      // espera a nota de Rescisão/Readmissão, que sabe a data real da volta (evita pular o hiato)
+      if(diffD(pd(ultimo.inicio), pd(ultimo.fim))+1 < 360) continue;
       let guard = 0;
       while(pd(ultimo.fim) < h && guard++ < 30){
         const ini = addD(pd(ultimo.fim), 1);
