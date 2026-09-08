@@ -2959,18 +2959,6 @@ const initials = n => n.split(' ').filter(Boolean).map(w=>w[0]).filter((_,i,a)=>
 // nome curto p/ EXIBIÇÃO onde o nome inteiro estoura (ranking, cards): primeiros dois nomes
 // ("Victor Bosich", não "Victor Rezende"). O nome completo fica no title/hover e no perfil.
 const nomeCurto = n => (n||'').trim().split(/\s+/).filter(Boolean).slice(0,2).join(' ');
-// variante usada só na lista "Mais Tempo de Casa": se o 2º "nome" for um conector
-// (de/da/do/dos/das/e), estende até pegar o sobrenome de verdade — senão corta em
-// "Vitor de" em vez de "Vitor de Souza". Só ali porque essa lista tem largura livre;
-// os cards (Top 3, Mais Antigo por Setor) contam com nomeCurto ficar em ~2 palavras.
-const CONECTIVOS_NOME = new Set(['de','da','do','das','dos','e']);
-const nomeCurtoLista = n => {
-  const partes = (n||'').trim().split(/\s+/).filter(Boolean);
-  if(partes.length<=2) return partes.join(' ');
-  let fim = 1;
-  while(fim<partes.length-1 && CONECTIVOS_NOME.has(partes[fim].toLowerCase())) fim++;
-  return partes.slice(0,fim+1).join(' ');
-};
 const avatarInner = p => p.foto ? `<img src="${esc(p.foto)}" alt="${esc(p.nome)}" loading="lazy">` : initials(p.nome);
 const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -7452,7 +7440,7 @@ UI.renderRankCasa = function(){
         return `
         <div class="casa-row">
           <div class="mini-av casa-row-av">${avatarInner({nome:c.nome, foto:c.foto})}</div>
-          <span class="casa-nome" title="${esc(c.nome)}">${esc(nomeCurtoLista(c.nome))}</span>
+          <span class="casa-nome" title="${esc(c.nome)}">${esc(c.nome)}</span>
           <span class="casa-cargo">${esc(c.departamento)}</span>
           <span class="casa-cargo">${esc(c.funcao)}</span>
           <span class="casa-data">${fmt(c.admissao)}</span>
