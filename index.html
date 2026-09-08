@@ -4091,18 +4091,39 @@ const UI = {
     // (continuação normal encadeia sem intervalo; ver garantirPeriodosAtuais/salvarColab)
     const GAP_TRANSICAO_DIAS = 30;
     const transicaoAntesDe = {};
+    const notasReadm = Dom.notasDe(cid).filter(n=>n.categoria==='rescisao_readmissao');
+    // período que fechou por desligamento: o imediatamente anterior a uma readmissão confirmada por
+    // nota, ou (se ainda não foi readmitido) o mais recente, quando bate com o Desligamento atual
+    const desligadoFim = {};
     for(let i=0;i<todosPers.length-1;i++){
       const atual=todosPers[i], anterior=todosPers[i+1]; // ordem desc: anterior é o período mais antigo
       const gap = diffD(pd(anterior.fim), pd(atual.inicio)) - 1;
       if(gap>GAP_TRANSICAO_DIAS) transicaoAntesDe[atual.id] = gap;
+      if(notasReadm.some(n=>n.data===atual.inicio)) desligadoFim[anterior.id] = anterior.fim;
     }
-    const transicaoHtml = p => transicaoAntesDe[p.id]!==undefined ? `
+    if(c?.desligamento && todosPers[0] && todosPers[0].fim===c.desligamento) desligadoFim[todosPers[0].id] = c.desligamento;
+    const transicaoHtml = p => {
+      const readm = notasReadm.find(n=>n.data===p.inicio);
+      if(readm) return `
+      <div class="transicao-nota" title="Readmissão registrada em nota">
+        <span class="tn-line"></span>
+        <span class="tn-label"><span class="tn-ico">🤝</span><b>Readmitido em ${fmt(readm.data)}</b></span>
+        <span class="tn-line"></span>
+      </div>`;
+      return transicaoAntesDe[p.id]!==undefined ? `
       <div class="transicao-nota" title="Provável rescisão e readmissão (novo aquisitivo)">
         <span class="tn-line"></span>
         <span class="tn-label">
           <span class="tn-ico">⚠️</span>
           <b>${transicaoAntesDe[p.id]} dias</b> sem período aquisitivo antes deste — provável rescisão e readmissão
         </span>
+        <span class="tn-line"></span>
+      </div>` : '';
+    };
+    const emAcordoHtml = c?.desligamento ? `
+      <div class="transicao-nota" title="Desligado, ainda sem readmissão lançada">
+        <span class="tn-line"></span>
+        <span class="tn-label"><span class="tn-ico">🤝</span><b>Em acordo desde ${fmt(c.desligamento)}</b> — aguardando readmissão</span>
         <span class="tn-line"></span>
       </div>` : '';
     const sitBadge = p => ({
@@ -4127,6 +4148,7 @@ const UI = {
               <span>${tot}/${direito} dias contábeis${proporcional?' <small>(proporcional — período menor que 1 ano)</small>':''}${fer.length?' · '+fer.length+' lançamento(s)':''}</span>
             </div>
             <div class="periodo-right">${sitBadge(p)}
+              ${desligadoFim[p.id]?`<span class="badge b-vencendo" title="Encerrado por desligamento">Desligado em ${fmt(desligadoFim[p.id])}</span>`:''}
               ${p.situacao==='pago'
                 ? `<button class="periodo-edit-btn" title="Reabrir período" onclick="event.stopPropagation();Actions.reabrirPeriodo('${cid}','${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>`
                 : (!Dom.emAquisicao(p) && fer.length
@@ -4176,7 +4198,7 @@ const UI = {
       const addPeriodoBtn = Auth.podeAdministrar()
         ? `<div class="notas-head"><button class="btn btn-soft" style="padding:9px 16px" onclick="Modals.novoPeriodo('${cid}')" title="Uso excepcional — ex.: creditar um hiato sem vínculo por acordo">+ Adicionar período</button></div>`
         : '';
-      body.innerHTML = (secao('Período Atual', atual) + secao('Saldo em Aberto', abertos) + secao('Períodos Finalizados', finalizados, {colapsavel:true})
+      body.innerHTML = emAcordoHtml + (secao('Período Atual', atual) + secao('Saldo em Aberto', abertos) + secao('Períodos Finalizados', finalizados, {colapsavel:true})
         || `<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>`) + addPeriodoBtn;
     }
 
