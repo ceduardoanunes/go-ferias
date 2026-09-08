@@ -2958,10 +2958,13 @@ const ehFimDeSemana = d => { const wd=d.getDay(); return wd===0 || wd===6; };
 const initials = n => n.split(' ').filter(Boolean).map(w=>w[0]).filter((_,i,a)=>i===0||i===a.length-1).join('').toUpperCase();
 // nome curto p/ EXIBIÇÃO onde o nome inteiro estoura (ranking, cards): primeiros dois nomes
 // ("Victor Bosich", não "Victor Rezende"). O nome completo fica no title/hover e no perfil.
-// Se o 2º "nome" for só um conector (de/da/do/dos/das/e), estende até pegar o sobrenome de
-// verdade — senão corta em "Vitor de" em vez de "Vitor de Souza".
+const nomeCurto = n => (n||'').trim().split(/\s+/).filter(Boolean).slice(0,2).join(' ');
+// variante usada só na lista "Mais Tempo de Casa": se o 2º "nome" for um conector
+// (de/da/do/dos/das/e), estende até pegar o sobrenome de verdade — senão corta em
+// "Vitor de" em vez de "Vitor de Souza". Só ali porque essa lista tem largura livre;
+// os cards (Top 3, Mais Antigo por Setor) contam com nomeCurto ficar em ~2 palavras.
 const CONECTIVOS_NOME = new Set(['de','da','do','das','dos','e']);
-const nomeCurto = n => {
+const nomeCurtoLista = n => {
   const partes = (n||'').trim().split(/\s+/).filter(Boolean);
   if(partes.length<=2) return partes.join(' ');
   let fim = 1;
@@ -7246,7 +7249,7 @@ UI.renderPessoas = function(){
       <a href="#/colab/${c.id}" class="casa-top3-card rank${i+1}" title="${esc(c.nome)}" style="text-decoration:none;color:inherit;--medal:${medalCor[i]}">
         <div class="casa-top3-medal">${i<3?medalhas[i]:`<span class="casa-top3-num">${i+1}</span>`}</div>
         <div class="mini-av casa-top3-av" style="width:56px;height:56px;font-size:16px">${avatarInner({nome:c.nome, foto:c.foto})}</div>
-        <div class="casa-top3-nome">${esc(nomeCurto(c.nome))}</div>
+        <div class="casa-top3-nome">${esc(c.nome.split(' ').slice(0,2).join(' '))}</div>
         <div class="casa-top3-tempo">${tempoDeCasa(c.admissao)}</div>
         <div class="casa-top3-desde">Desde ${fmt(c.admissao)}</div>
       </a>`).join('');
@@ -7449,7 +7452,7 @@ UI.renderRankCasa = function(){
         return `
         <div class="casa-row">
           <div class="mini-av casa-row-av">${avatarInner({nome:c.nome, foto:c.foto})}</div>
-          <span class="casa-nome" title="${esc(c.nome)}">${esc(nomeCurto(c.nome))}</span>
+          <span class="casa-nome" title="${esc(c.nome)}">${esc(nomeCurtoLista(c.nome))}</span>
           <span class="casa-cargo">${esc(c.departamento)}</span>
           <span class="casa-cargo">${esc(c.funcao)}</span>
           <span class="casa-data">${fmt(c.admissao)}</span>
