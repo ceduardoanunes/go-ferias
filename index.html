@@ -4895,22 +4895,33 @@ const Actions = {
     if(mudou.includes('cnpj')) depois.cnpj_desde = (antes.cnpj && cnpj) ? iso(hoje()) : null;
     // desligamento preenchido/limpo controla o "ativo" automaticamente, sem mexer se essa edição não tocou nele
     if(mudou.includes('desligamento')) depois.ativo = !desligamento;
+    // desligar no meio de um período aquisitivo em aberto precisa fechar esse período na data do
+    // desligamento — senão ele fica "contando" pra sempre e trava uma futura readmissão (sobreposição)
+    let perAjuste = null;
+    if(mudou.includes('desligamento') && desligamento){
+      const atual = Dom.periodosDe(cid)[0];
+      if(atual && atual.inicio<=desligamento && desligamento<atual.fim)
+        perAjuste = {id:atual.id, fimAntes:atual.fim, fimDepois:desligamento};
+    }
     const fotoMudou = UI._fotoPendente!==undefined && (UI._fotoPendente||null)!==(c.foto||null);
     if(!mudou.length && !fotoMudou){ Modals.close(); return; }
     if(Store.driver!=='local'){
       const patch = {...depois};
       if(fotoMudou) patch.foto = UI._fotoPendente || null;
       Store.update('colaboradores', cid, patch)
+        .then(()=> perAjuste ? Store.update('periodos', perAjuste.id, {fim:perAjuste.fimDepois}) : null)
         .then(()=>{ UI._fotoPendente=undefined; Modals.close(); toast('Dados atualizados ✓'); UI.renderProfile(cid); UI.renderDir(); })
         .catch(e=>toast('Erro ao salvar: '+e.message));
       return;
     }
     Object.assign(c, depois);
     if(fotoMudou) c.foto = UI._fotoPendente || null; // null remove, string define
+    if(perAjuste){ const p=Store.data.periodos.find(x=>x.id===perAjuste.id); if(p) p.fim=perAjuste.fimDepois; }
     Store.save();
     const LAB={nome:'Nome',funcao:'Função',departamento:'Setor',unidade:'Unidade',regime:'Regime',admissao:'Admissão',cnpj:'CNPJ',desligamento:'Desligamento'};
     const partes = mudou.map(k=>`${LAB[k]}: ${antes[k]||'—'} → ${depois[k]||'—'}`);
     if(fotoMudou) partes.push(UI._fotoPendente ? 'Foto atualizada' : 'Foto removida');
+    if(perAjuste) partes.push(`Período aquisitivo encerrado em ${fmt(perAjuste.fimDepois)} (era ${fmt(perAjuste.fimAntes)})`);
     Store.logAudit('atualizar', 'colaboradores', cid, `Edição de dados — ${nome} · ${partes.join('; ')}`);
     UI._fotoPendente = undefined;
     Modals.close(); toast('Dados atualizados ✓');
