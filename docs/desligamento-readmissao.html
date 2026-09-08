@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desligamento & Readmissão</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F2F1EE; --surface:#FFFFFF; --surface-2:#FBFAF8;
+  --ink:#1C1B1A; --muted:#6E6C68; --faint:#A6A39D; --line:#E4E1DA;
+  --red:#C4193B; --red-soft:#FBE7EA;
+  --teal:#12836A; --teal-soft:#E4F2ED;
+  --amber:#B4720A; --amber-soft:#FBF0DC;
+  --azul:#2F5FA8; --azul-soft:#E9EFF9;
+  --shadow: 0 1px 2px rgba(28,27,26,.04), 0 8px 24px -12px rgba(28,27,26,.12);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#18181A; --surface:#212123; --surface-2:#1D1D1F;
+    --ink:#EDEBE6; --muted:#A6A39D; --faint:#5C5A56; --line:#333234;
+    --red:#F0546E; --red-soft:#3A1E24;
+    --teal:#3FBE9E; --teal-soft:#173430;
+    --amber:#E0A542; --amber-soft:#3A2D14;
+    --azul:#7FA4E0; --azul-soft:#1D2A40;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#18181A; --surface:#212123; --surface-2:#1D1D1F;
+  --ink:#EDEBE6; --muted:#A6A39D; --faint:#5C5A56; --line:#333234;
+  --red:#F0546E; --red-soft:#3A1E24;
+  --teal:#3FBE9E; --teal-soft:#173430;
+  --amber:#E0A542; --amber-soft:#3A2D14;
+  --azul:#7FA4E0; --azul-soft:#1D2A40;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,-apple-system,Segoe UI,sans-serif;margin:0}
+img{max-width:100%}
+.wrap{max-width:760px;margin:0 auto;padding:56px 24px 96px}
+.eyebrow{
+  font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--red);
+  display:flex;align-items:center;gap:8px;margin:0 0 14px;
+}
+.eyebrow::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--red)}
+h1{
+  font-size:clamp(30px,5vw,40px);line-height:1.12;font-weight:800;letter-spacing:-.01em;
+  margin:0 0 12px;text-wrap:balance;
+}
+.lede{font-size:16.5px;line-height:1.6;color:var(--muted);max-width:56ch;margin:0 0 8px}
+.lede b{color:var(--ink);font-weight:700}
+.meta-row{display:flex;gap:16px;flex-wrap:wrap;margin:20px 0 44px;font-size:12.5px;color:var(--faint);
+  font-family:'DM Mono',ui-monospace,monospace;}
+.meta-row span{display:flex;align-items:center;gap:6px}
+
+h2{font-size:22px;font-weight:800;letter-spacing:-.005em;margin:0 0 6px;text-wrap:balance}
+.section-sub{font-size:14px;color:var(--muted);margin:0 0 24px;max-width:58ch;line-height:1.55}
+section{margin-bottom:56px}
+section:last-child{margin-bottom:0}
+
+/* ---- passos ---- */
+.passos{display:grid;grid-template-columns:1fr;gap:20px}
+@media (min-width:640px){.passos{grid-template-columns:1fr 1fr}}
+.passo{
+  background:var(--surface);border:1px solid var(--line);border-radius:16px;
+  box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;
+}
+.passo-head{display:flex;align-items:center;gap:12px;padding:20px 22px 16px}
+.passo-num{
+  width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--bg);
+  display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;
+  font-size:13px;font-weight:700;flex:none;
+}
+.passo-head h3{font-size:16.5px;font-weight:800;margin:0}
+.passo-head small{display:block;font-size:12px;color:var(--faint);font-weight:500;margin-top:1px}
+
+.mockform{
+  margin:0 22px;padding:16px 16px 14px;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:12px;
+}
+.mockfield{margin-bottom:10px}
+.mockfield:last-child{margin-bottom:0}
+.mockfield label{
+  display:block;font-size:10.5px;font-weight:700;color:var(--faint);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;
+}
+.mockval{
+  font-family:'DM Mono',ui-monospace,monospace;font-size:13.5px;
+  border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--surface);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.mockval.empty{color:var(--faint);font-style:italic}
+.mockval.novo{border-color:var(--teal);background:var(--teal-soft);color:var(--teal);font-weight:700}
+.chg{font-size:10.5px;font-family:'DM Mono',monospace;color:var(--azul);background:var(--azul-soft);
+  padding:2px 6px;border-radius:5px;white-space:nowrap}
+
+.efeitos{list-style:none;margin:16px 22px 20px;padding:0;font-size:13px;color:var(--muted);
+  line-height:1.5;display:flex;flex-direction:column;gap:6px}
+.efeitos li{display:flex;gap:8px;align-items:flex-start}
+.efeitos li::before{content:'→';color:var(--faint);flex:none;font-family:'DM Mono',monospace}
+
+/* ---- badges ---- */
+.badges{display:flex;flex-wrap:wrap;gap:12px}
+.badge-card{
+  flex:1 1 220px;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:16px 18px;box-shadow:var(--shadow);
+}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;
+  padding:5px 12px;border-radius:99px;letter-spacing:.2px;margin-bottom:10px;
+}
+.chip.desligado{background:var(--red-soft);color:var(--red)}
+.chip.readmitido{background:var(--teal-soft);color:var(--teal)}
+.chip.acordo{background:var(--amber-soft);color:var(--amber)}
+.badge-card p{font-size:12.5px;color:var(--muted);margin:0;line-height:1.5}
+.badge-card p b{color:var(--ink)}
+
+/* ---- tabela de regimes ---- */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;background:var(--surface);font-size:13.5px;min-width:560px}
+thead th{
+  text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);
+  font-weight:700;padding:12px 18px;border-bottom:1px solid var(--line);background:var(--surface-2);
+}
+thead th:first-child{width:44px}
+tbody td{padding:13px 18px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5}
+tbody tr:last-child td{border-bottom:none}
+.tbl-n{font-family:'DM Mono',monospace;color:var(--faint);font-size:12.5px}
+.tbl-caso{font-weight:700;color:var(--ink)}
+.tbl-acao{color:var(--muted)}
+.tbl-acao b{color:var(--ink);font-weight:700}
+.tag-passos{
+  display:inline-flex;gap:4px;font-family:'DM Mono',monospace;font-size:10.5px;font-weight:700;
+  color:var(--azul);background:var(--azul-soft);padding:2px 7px;border-radius:6px;margin-right:6px;
+}
+.tag-none{
+  display:inline-flex;font-family:'DM Mono',monospace;font-size:10.5px;font-weight:700;
+  color:var(--faint);background:var(--surface-2);border:1px solid var(--line);padding:2px 7px;border-radius:6px;margin-right:6px;
+}
+
+footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);
+  font-size:12px;color:var(--faint);font-family:'DM Mono',monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Go Férias! · guia interno</div>
+  <h1>Desligamento &amp; Readmissão</h1>
+  <p class="lede">Como registrar, na mesma ficha do colaborador, alguém que sai e depois volta — sem perder o histórico e sem travar o sistema. São <b>duas visitas</b> à mesma tela, em momentos diferentes.</p>
+  <div class="meta-row">
+    <span>tela: Ficha do colaborador → Editar</span>
+    <span>quem faz: admin</span>
+    <span>atualizado: 08/09/2026</span>
+  </div>
+
+  <section>
+    <h2>O fluxo em 2 passos</h2>
+    <p class="section-sub">Exemplo real: <b style="color:var(--ink)">Eduardo Moreira Valente Junior</b>, Coordenador de Contas Digitais, Go! Mídia — admitido 02/05/2023.</p>
+
+    <div class="passos">
+      <div class="passo">
+        <div class="passo-head">
+          <div class="passo-num">1</div>
+          <div>
+            <h3>Desligar</h3>
+            <small>no dia em que ele sai</small>
+          </div>
+        </div>
+        <div class="mockform">
+          <div class="mockfield">
+            <label>Regime</label>
+            <div class="mockval">Celetista</div>
+          </div>
+          <div class="mockfield">
+            <label>Desligamento</label>
+            <div class="mockval novo">31/07/2026</div>
+          </div>
+        </div>
+        <ul class="efeitos">
+          <li>Fecha o período aquisitivo dele nessa mesma data</li>
+          <li>Mais nada muda — regime, CNPJ, unidade continuam iguais</li>
+        </ul>
+      </div>
+
+      <div class="passo">
+        <div class="passo-head">
+          <div class="passo-num">2</div>
+          <div>
+            <h3>Readmitir</h3>
+            <small>semanas ou meses depois, quando ele volta</small>
+          </div>
+        </div>
+        <div class="mockform">
+          <div class="mockfield">
+            <label>Regime</label>
+            <div class="mockval">Pessoa Jurídica <span class="chg">era Celetista</span></div>
+          </div>
+          <div class="mockfield">
+            <label>Desligamento</label>
+            <div class="mockval empty">vazio</div>
+          </div>
+          <div class="mockfield">
+            <label>Readmissão <span class="chg">campo novo</span></label>
+            <div class="mockval novo">05/08/2026</div>
+          </div>
+        </div>
+        <ul class="efeitos">
+          <li>Limpa o Desligamento — ele volta a ficar ativo</li>
+          <li>Aplica qualquer outra troca feita junto (regime, CNPJ, unidade…)</li>
+          <li>Abre um período aquisitivo novo a partir de 05/08/2026</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Como confirmar que funcionou</h2>
+    <p class="section-sub">Na aba Histórico da ficha, os avisos aparecem sozinhos — sem precisar digitar nada.</p>
+    <div class="badges">
+      <div class="badge-card">
+        <span class="chip desligado">Desligado em 31/07/2026</span>
+        <p>Fica no período que <b>fechou</b> — mostra que o desligamento foi processado.</p>
+      </div>
+      <div class="badge-card">
+        <span class="chip acordo">Em acordo desde 31/07/2026</span>
+        <p>Aparece <b>enquanto</b> ele está desligado e ainda sem a volta lançada.</p>
+      </div>
+      <div class="badge-card">
+        <span class="chip readmitido">Readmitido em 05/08/2026</span>
+        <p>Substitui o aviso "provável" pelo dado <b>confirmado</b> pela nota.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Os 6 casos, resumidos</h2>
+    <p class="section-sub">Pra saber rápido se um caso passa pelos 2 passos ou não.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Caso</th><th>O que fazer</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tbl-n">1</td>
+            <td class="tbl-caso">Contratação normal, sem rescisão</td>
+            <td class="tbl-acao"><span class="tag-none">sem passos</span>Cadastra e segue.</td>
+          </tr>
+          <tr>
+            <td class="tbl-n">2</td>
+            <td class="tbl-caso">Rescisão por acordo, mesmo CNPJ, volta depois</td>
+            <td class="tbl-acao"><span class="tag-passos">1 → 2</span>Sem mudar mais nada no Passo 2.</td>
+          </tr>
+          <tr>
+            <td class="tbl-n">3</td>
+            <td class="tbl-caso">Desligado de um CNPJ, recontratado por outro do grupo</td>
+            <td class="tbl-acao"><span class="tag-passos">1 → 2</span>Troca o <b>CNPJ</b> junto, no Passo 2.</td>
+          </tr>
+          <tr>
+            <td class="tbl-n">4</td>
+            <td class="tbl-caso">CLT → seguro-desemprego → volta como PJ</td>
+            <td class="tbl-acao"><span class="tag-passos">1 → 2</span>Troca o <b>Regime</b> junto, no Passo 2.</td>
+          </tr>
+          <tr>
+            <td class="tbl-n">5</td>
+            <td class="tbl-caso">Trabalhou antes de "bater o ponto" oficial</td>
+            <td class="tbl-acao"><span class="tag-none">sem passos</span>Admissão recebe a data que ele <b>entrou de fato</b>.</td>
+          </tr>
+          <tr>
+            <td class="tbl-n">6</td>
+            <td class="tbl-caso">Estagiário efetivado na função</td>
+            <td class="tbl-acao"><span class="tag-none">sem passos</span>Só troca o <b>Regime</b> — Admissão não muda.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>go-ferias · index.html · Ficha do colaborador → Editar</footer>
+</div>
+</body>
+</html>
