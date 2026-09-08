@@ -1519,7 +1519,9 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 .casa-aniv-panels{display:flex;flex-direction:column;gap:28px}
 .casa-aniv-panel{position:relative;overflow:visible;padding:14px 0}
 .casa-aniv-wm{
-  position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:0;pointer-events:none;
+  /* alinhado com o centro da 1ª linha de cards (não com o painel inteiro — senão, quando a
+     faixa tem gente demais e quebra em mais linhas, o número sobe pro meio do bloco todo) */
+  position:absolute;left:0;top:83px;transform:translateY(-50%);z-index:0;pointer-events:none;
   line-height:.8;
 }
 .casa-aniv-wm b{display:block;font-family:var(--font-display);font-weight:800;font-size:155px;line-height:.8;letter-spacing:-6px;color:rgba(28,27,26,.13)}
@@ -1546,7 +1548,7 @@ a.dx-stat:hover .dx-stat-go{opacity:.75;transform:none}
 
 
 .casa-row{
-  display:grid;grid-template-columns:38px 1.9fr 1.15fr 1.7fr .9fr 2.3fr;
+  display:grid;grid-template-columns:38px 2.6fr 1.15fr 1.7fr .9fr 1.6fr;
   align-items:center;gap:14px;padding:11px 10px;border-radius:12px;
   transition:background .12s ease;
 }
