@@ -4551,6 +4551,8 @@ const Modals = {
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${c.admissao}"></div>
         <div class="field"><label>Desligamento</label><input type="date" id="nDeslig" value="${c.desligamento||''}"></div>
       </div>
+      ${c.desligamento?`<div class="field"><label>Readmissão</label><input type="date" id="nReadm"></div>
+      <p class="msub" style="margin-top:-10px">Preencha se a pessoa voltou a trabalhar — abre um novo período aquisitivo a partir dessa data e limpa o Desligamento.</p>`:''}
       <div class="modal-actions">
         <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
         <button class="btn btn-primary" onclick="Actions.editarColab('${cid}')">Salvar</button>
@@ -4881,54 +4883,68 @@ const Actions = {
     UI.renderDir(); location.hash='#/colab/'+c.id;
   },
 
-  editarColab(cid){
+  async editarColab(cid){
     if(!Auth.podeAdministrar()){ toast('Apenas administradores editam dados do colaborador.'); return; }
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     if(!c) return;
     const nome=$('#nNome').value.trim(), funcao=$('#nFuncao').value.trim(),
           departamento=$('#nDepto').value, unidade=$('#nUni').value,
           regime=$('#nRegime').value, admissao=$('#nAdm').value, cnpj=$('#nCnpj').value.trim(),
-          desligamento=$('#nDeslig').value || null;
+          desligamento=$('#nDeslig').value || null,
+          readm = $('#nReadm') ? ($('#nReadm').value || null) : null;
     if(!nome||!funcao||!admissao){ toast('Preencha nome, função e admissão.'); return; }
+    // Readmissão: fecha o Desligamento sozinha e já abre o novo período aquisitivo daqui —
+    // sem isso, readmitir viraria dois passos soltos (limpar o campo + lançar nota separada)
+    let fimPeriodoReadm = null;
+    if(readm){
+      if(readm <= (c.desligamento||'')){ toast('A readmissão precisa ser depois do desligamento.'); return; }
+      fimPeriodoReadm = iso(addD(addM(pd(readm),12),-1));
+      const sobrepoe = Store.data.periodos.some(o=>o.colaborador_id===cid && readm<=o.fim && fimPeriodoReadm>=o.inicio);
+      if(sobrepoe){ toast('A data de readmissão se sobrepõe a um período já existente deste colaborador.'); return; }
+    }
     const antes = {nome:c.nome, funcao:c.funcao, departamento:c.departamento, unidade:c.unidade, regime:c.regime, admissao:c.admissao, cnpj:empresaCanonica(c.cnpj)||'', desligamento:c.desligamento||null};
-    const depois = {nome, funcao, departamento, unidade, regime, admissao, cnpj, desligamento};
+    const depois = {nome, funcao, departamento, unidade, regime, admissao, cnpj, desligamento: readm ? null : desligamento};
     const mudou = Object.keys(depois).filter(k=>antes[k]!==depois[k]);
     // marca a data de corte só numa troca de fato (já tinha um CNPJ e virou outro) — primeiro
     // preenchimento (backfill de dado histórico que faltava) não é "troca acontecendo hoje"
     if(mudou.includes('cnpj')) depois.cnpj_desde = (antes.cnpj && cnpj) ? iso(hoje()) : null;
     // desligamento preenchido/limpo controla o "ativo" automaticamente, sem mexer se essa edição não tocou nele
-    if(mudou.includes('desligamento')) depois.ativo = !desligamento;
+    if(mudou.includes('desligamento')) depois.ativo = !depois.desligamento;
     // desligar no meio de um período aquisitivo em aberto precisa fechar esse período na data do
     // desligamento — senão ele fica "contando" pra sempre e trava uma futura readmissão (sobreposição)
     let perAjuste = null;
-    if(mudou.includes('desligamento') && desligamento){
+    if(mudou.includes('desligamento') && depois.desligamento){
       const atual = Dom.periodosDe(cid)[0];
-      if(atual && atual.inicio<=desligamento && desligamento<atual.fim)
-        perAjuste = {id:atual.id, fimAntes:atual.fim, fimDepois:desligamento};
+      if(atual && atual.inicio<=depois.desligamento && depois.desligamento<atual.fim)
+        perAjuste = {id:atual.id, fimAntes:atual.fim, fimDepois:depois.desligamento};
     }
     const fotoMudou = UI._fotoPendente!==undefined && (UI._fotoPendente||null)!==(c.foto||null);
-    if(!mudou.length && !fotoMudou){ Modals.close(); return; }
-    if(Store.driver!=='local'){
-      const patch = {...depois};
-      if(fotoMudou) patch.foto = UI._fotoPendente || null;
-      Store.update('colaboradores', cid, patch)
-        .then(()=> perAjuste ? Store.update('periodos', perAjuste.id, {fim:perAjuste.fimDepois}) : null)
-        .then(()=>{ UI._fotoPendente=undefined; Modals.close(); toast('Dados atualizados ✓'); UI.renderProfile(cid); UI.renderDir(); })
-        .catch(e=>toast('Erro ao salvar: '+e.message));
-      return;
-    }
-    Object.assign(c, depois);
-    if(fotoMudou) c.foto = UI._fotoPendente || null; // null remove, string define
-    if(perAjuste){ const p=Store.data.periodos.find(x=>x.id===perAjuste.id); if(p) p.fim=perAjuste.fimDepois; }
-    Store.save();
-    const LAB={nome:'Nome',funcao:'Função',departamento:'Setor',unidade:'Unidade',regime:'Regime',admissao:'Admissão',cnpj:'CNPJ',desligamento:'Desligamento'};
-    const partes = mudou.map(k=>`${LAB[k]}: ${antes[k]||'—'} → ${depois[k]||'—'}`);
-    if(fotoMudou) partes.push(UI._fotoPendente ? 'Foto atualizada' : 'Foto removida');
-    if(perAjuste) partes.push(`Período aquisitivo encerrado em ${fmt(perAjuste.fimDepois)} (era ${fmt(perAjuste.fimAntes)})`);
-    Store.logAudit('atualizar', 'colaboradores', cid, `Edição de dados — ${nome} · ${partes.join('; ')}`);
-    UI._fotoPendente = undefined;
-    Modals.close(); toast('Dados atualizados ✓');
-    UI.renderProfile(cid); UI.renderDir();
+    if(!mudou.length && !fotoMudou && !readm){ Modals.close(); return; }
+    try{
+      if(Store.driver!=='local'){
+        const patch = {...depois};
+        if(fotoMudou) patch.foto = UI._fotoPendente || null;
+        await Store.update('colaboradores', cid, patch);
+        if(perAjuste) await Store.update('periodos', perAjuste.id, {fim:perAjuste.fimDepois});
+      }else{
+        Object.assign(c, depois);
+        if(fotoMudou) c.foto = UI._fotoPendente || null; // null remove, string define
+        if(perAjuste){ const p=Store.data.periodos.find(x=>x.id===perAjuste.id); if(p) p.fim=perAjuste.fimDepois; }
+        Store.save();
+        const LAB={nome:'Nome',funcao:'Função',departamento:'Setor',unidade:'Unidade',regime:'Regime',admissao:'Admissão',cnpj:'CNPJ',desligamento:'Desligamento'};
+        const partes = mudou.map(k=>`${LAB[k]}: ${antes[k]||'—'} → ${depois[k]||'—'}`);
+        if(fotoMudou) partes.push(UI._fotoPendente ? 'Foto atualizada' : 'Foto removida');
+        if(perAjuste) partes.push(`Período aquisitivo encerrado em ${fmt(perAjuste.fimDepois)} (era ${fmt(perAjuste.fimAntes)})`);
+        Store.logAudit('atualizar', 'colaboradores', cid, `Edição de dados — ${nome} · ${partes.join('; ')}`);
+      }
+      if(readm){
+        await Store.insert('notas', {colaborador_id:cid, categoria:'rescisao_readmissao', data:readm, texto:'Readmissão registrada na edição de cadastro.', periodo_id:null}, `Nota (Rescisão/Readmissão) — ${nome}`);
+        await Store.insert('periodos', {colaborador_id:cid, inicio:readm, fim:fimPeriodoReadm, situacao:'acumulando'}, `Período aquisitivo lançado via readmissão — ${nome} (${fmt(readm)})`);
+      }
+      UI._fotoPendente = undefined;
+      Modals.close(); toast(readm ? 'Readmissão registrada, novo período aberto ✓' : 'Dados atualizados ✓');
+      UI.renderProfile(cid); UI.renderDir();
+    }catch(e){ toast('Erro ao salvar: '+e.message); }
   },
 
   async toggleAtivoColab(cid){
