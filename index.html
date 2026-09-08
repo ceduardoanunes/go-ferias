@@ -4158,6 +4158,7 @@ const UI = {
                     ? `<button class="per-pay" onclick="event.stopPropagation();Actions.marcarPago('${cid}','${p.id}')">Marcar como pago</button>`
                     : '')}
               ${Auth.podeAdministrar()?`<button class="periodo-edit-btn" title="Editar datas do período — uso excepcional (ex.: aquisitivo menor de 1 ano)" onclick="event.stopPropagation();Modals.editarPeriodo('${cid}','${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button>`:''}
+              ${Auth.podeAdministrar()?`<button class="periodo-edit-btn" title="Excluir período — uso excepcional" onclick="event.stopPropagation();Actions.excluirPeriodo('${cid}','${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2m1 0-1 14H8L7 6"/></svg></button>`:''}
               <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
             </div>
           </div>
@@ -5144,6 +5145,25 @@ const Actions = {
       }
       toast('Período adicionado ✓'); Modals.close(); UI.renderProfile(cid); UI.renderDir();
     }catch(e){ toast('Erro ao salvar: '+e.message); }
+  },
+  async excluirPeriodo(cid, perId){
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores excluem período aquisitivo.'); return; }
+    const p = Store.data.periodos.find(x=>x.id===perId);
+    if(!p) return;
+    const nFer = Dom.feriasDe(perId).length, nFol = Dom.folgasDe(perId).length;
+    const aviso = (nFer||nFol) ? ` Isso também apaga ${[nFer?`${nFer} lançamento(s) de férias`:'', nFol?`${nFol} de folga`:''].filter(Boolean).join(' e ')} deste período.` : '';
+    if(!(await Modals.confirm({titulo:'Excluir período aquisitivo?', message:`Esta ação não pode ser desfeita.${aviso}`, ok:'Excluir', perigo:true}))) return;
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    try{
+      if(Store.driver==='local'){
+        // sem FK no localStorage — cascata manual (o backend faz isso sozinho via schema)
+        Store.data.ferias = (Store.data.ferias||[]).filter(f=>f.periodo_id!==perId);
+        Store.data.folgas = (Store.data.folgas||[]).filter(f=>f.periodo_id!==perId);
+        (Store.data.notas||[]).forEach(n=>{ if(n.periodo_id===perId) n.periodo_id=null; });
+      }
+      await Store.remove('periodos', perId, `Exclusão de período aquisitivo — ${c?.nome||''} · ${fmt(p.inicio)}–${fmt(p.fim)}`);
+      toast('Período excluído'); UI.renderProfile(cid); UI.renderDir();
+    }catch(e){ toast('Erro ao excluir: '+e.message); }
   },
 
   salvarUsuario(id){
