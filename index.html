@@ -4076,17 +4076,6 @@ const UI = {
   renderTab(cid){
     const body=$('#tabbody'); const todosPers=Dom.periodosDe(cid);
     const c = Store.data.colaboradores.find(x=>x.id===cid);
-    const LIMIAR_HIST = 5;
-    // histórico antigo fica oculto por padrão (usado pela aba Folgas, que continua em lista única):
-    // no corte de CNPJ, ou (sem corte) quando há muitos períodos acumulados
-    const corteIdxGeral = c?.cnpj_desde ? todosPers.findIndex(p=>p.fim<c.cnpj_desde) : (todosPers.length>LIMIAR_HIST ? LIMIAR_HIST : -1);
-    const temCorteGeral = corteIdxGeral>0 && corteIdxGeral<todosPers.length;
-    const pers = (temCorteGeral && !this.histAberto) ? todosPers.slice(0,corteIdxGeral) : todosPers;
-    const nOcultosGeral = todosPers.length - pers.length;
-    const toggleHistHtml = temCorteGeral ? `
-      <button class="btn btn-soft" style="margin-top:12px" onclick="UI.histAberto=${!this.histAberto};UI.renderTab('${cid}')">
-        ${this.histAberto ? 'Ocultar histórico anterior' : `Ver histórico completo${c.cnpj_desde?' (antes da troca de CNPJ)':''} · +${nOcultosGeral}`}
-      </button>` : '';
 
     // Transição: gap grande entre o fim de um período e o início do seguinte — provável rescisão + readmissão
     // (continuação normal encadeia sem intervalo; ver garantirPeriodosAtuais/salvarColab)
@@ -4136,6 +4125,25 @@ const UI = {
         : ''
     }[p.situacao]||'');
 
+    // separa em 3 seções pra facilitar a leitura: o que ainda tá em aquisição, o que já tem saldo
+    // pra usar (vencido ou agendado) e o que já foi pago/finalizado — mesmo corte pras abas Oficial e Folgas
+    const atual = todosPers.filter(p => p.situacao==='acumulando' && Dom.emAquisicao(p));
+    const abertos = todosPers.filter(p => p.situacao!=='pago' && !(p.situacao==='acumulando' && Dom.emAquisicao(p)));
+    const finalizados = todosPers.filter(p => p.situacao==='pago');
+    const secao = (titulo, lista, cardFn, {colapsavel=false}={}) => {
+      if(!lista.length) return '';
+      const aberta = !colapsavel || this.histAberto;
+      return `
+      <div class="periodo-secao">
+        <div class="periodo-secao-titulo${colapsavel?' periodo-secao-titulo-toggle':''}" ${colapsavel?`onclick="UI.histAberto=${!this.histAberto};UI.renderTab('${cid}')"`:''}>
+          <span>${esc(titulo)}</span>
+          <span class="periodo-secao-linha"></span>
+          ${colapsavel?`<span class="periodo-secao-count">${lista.length}</span><svg class="chev${aberta?' open':''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>`:''}
+        </div>
+        ${aberta ? lista.map(cardFn).join('') : ''}
+      </div>`;
+    };
+
     if(this.tabAtual==='oficiais'){
       const cardOficial = p => {
         const fer=Dom.feriasDe(p.id); const tot=Dom.diasFerias(p.id);
@@ -4178,38 +4186,16 @@ const UI = {
         ${transicaoHtml(p)}`;
       };
 
-      // separa em 3 seções pra facilitar a leitura: o que ainda tá em aquisição, o que já tem saldo
-      // pra usar (vencido ou agendado) e o que já foi pago/finalizado
-      const atual = todosPers.filter(p => p.situacao==='acumulando' && Dom.emAquisicao(p));
-      const abertos = todosPers.filter(p => p.situacao!=='pago' && !(p.situacao==='acumulando' && Dom.emAquisicao(p)));
-      const finalizados = todosPers.filter(p => p.situacao==='pago');
-
-      const secao = (titulo, lista, {colapsavel=false}={}) => {
-        if(!lista.length) return '';
-        const aberta = !colapsavel || this.histAberto;
-        return `
-        <div class="periodo-secao">
-          <div class="periodo-secao-titulo${colapsavel?' periodo-secao-titulo-toggle':''}" ${colapsavel?`onclick="UI.histAberto=${!this.histAberto};UI.renderTab('${cid}')"`:''}>
-            <span>${esc(titulo)}</span>
-            <span class="periodo-secao-linha"></span>
-            ${colapsavel?`<span class="periodo-secao-count">${lista.length}</span><svg class="chev${aberta?' open':''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>`:''}
-          </div>
-          ${aberta ? lista.map(cardOficial).join('') : ''}
-        </div>`;
-      };
-
       const addPeriodoBtn = Auth.podeAdministrar()
         ? `<div class="notas-head"><button class="btn btn-soft" style="padding:9px 16px" onclick="Modals.novoPeriodo('${cid}')" title="Uso excepcional — ex.: creditar um hiato sem vínculo por acordo">+ Adicionar período</button></div>`
         : '';
-      body.innerHTML = emAcordoHtml + (secao('Período Atual', atual) + secao('Saldo em Aberto', abertos) + secao('Períodos Finalizados', finalizados, {colapsavel:true})
+      body.innerHTML = emAcordoHtml + (secao('Período Atual', atual, cardOficial) + secao('Saldo em Aberto', abertos, cardOficial) + secao('Períodos Finalizados', finalizados, cardOficial, {colapsavel:true})
         || `<div class="none-yet">Nenhum período aquisitivo cadastrado.</div>`) + addPeriodoBtn;
     }
 
     if(this.tabAtual==='folgas'){
-      body.innerHTML = pers.map((p,i)=>{
+      const cardFolga = p => {
         const fol=Dom.folgasDe(p.id); const tot=Dom.diasFolgas(p.id);
-        const trans = transicaoHtml(p);
-        if(!fol.length && i>1) return trans;
         const acima = tot>REGRAS.DIAS_FOLGAS;
         return `
         <div class="periodo">
@@ -4220,6 +4206,7 @@ const UI = {
             </div>
             <div class="periodo-right">
               ${acima?'<span class="badge b-vencendo">acima do limite</span>':`<span class="badge b-folga">${Math.max(REGRAS.DIAS_FOLGAS-tot,0)} dias restantes</span>`}
+              ${desligadoFim[p.id]?`<span class="badge b-vencendo" title="Encerrado por desligamento">Desligado em ${fmt(desligadoFim[p.id])}</span>`:''}
               <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
             </div>
           </div>
@@ -4237,8 +4224,10 @@ const UI = {
             : `<div class="none-yet">Nenhuma folga lançada neste período.</div>`}
           </div>
         </div>
-        ${trans}`;
-      }).join('') + toggleHistHtml || '<div class="none-yet">Nenhuma folga registrada.</div>';
+        ${transicaoHtml(p)}`;
+      };
+      body.innerHTML = emAcordoHtml + (secao('Período Atual', atual, cardFolga) + secao('Saldo em Aberto', abertos, cardFolga) + secao('Períodos Finalizados', finalizados, cardFolga, {colapsavel:true})
+        || `<div class="none-yet">Nenhuma folga registrada.</div>`);
     }
 
     if(this.tabAtual==='notas'){
