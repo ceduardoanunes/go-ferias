@@ -757,6 +757,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .periodo-meta{flex:1;min-width:180px}
 .periodo-meta b{font-size:14px;font-weight:700;display:block}
 .periodo-meta span{font-size:12px;color:var(--muted);margin-top:2px;display:block}
+.periodo-motivo{font-size:12px;color:var(--muted);margin-top:2px;display:block;font-style:italic}
 .periodo-right{display:flex;align-items:center;gap:14px}
 .per-pay{
   background:var(--green-soft);color:var(--green);border:1.5px solid #BBE3CD;
@@ -4140,12 +4141,14 @@ const UI = {
         const fer=Dom.feriasDe(p.id); const tot=Dom.diasFerias(p.id);
         const direito = diasProporcionaisPeriodo(p);
         const proporcional = direito < REGRAS.DIAS_CONTABEIS;
+        const motivos = Dom.notasDe(cid).filter(n=>n.periodo_id===p.id);
         return `
         <div class="periodo" data-per="${p.id}">
           <div class="periodo-head" onclick="this.parentElement.classList.toggle('open')">
             <div class="periodo-meta">
               <b>${fmt(p.inicio)} – ${fmt(p.fim)}</b>
               <span>${tot}/${direito} dias contábeis${proporcional?' <small>(proporcional — período menor que 1 ano)</small>':''}${fer.length?' · '+fer.length+' lançamento(s)':''}</span>
+              ${motivos.length?`<small class="periodo-motivo">📝 ${motivos.map(n=>esc(n.texto)).join(' · ')}</small>`:''}
             </div>
             <div class="periodo-right">${sitBadge(p)}
               ${desligadoFim[p.id]?`<span class="badge b-vencendo" title="Encerrado por desligamento">Desligado em ${fmt(desligadoFim[p.id])}</span>`:''}
@@ -4670,6 +4673,7 @@ const Modals = {
         <div class="field"><label>Início</label><input type="date" id="nPerIni"></div>
         <div class="field"><label>Fim</label><input type="date" id="nPerFim"></div>
       </div>
+      <div class="field"><label>Motivo</label><textarea id="nPerMotivo" rows="2" placeholder="ex.: acordo de rescisão — credita o hiato sem vínculo entre 31/07 e 04/08"></textarea></div>
       <div class="modal-actions">
         <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
         <button class="btn btn-primary" onclick="Actions.salvarNovoPeriodo('${cid}')">Adicionar</button>
@@ -5125,15 +5129,19 @@ const Actions = {
   },
   async salvarNovoPeriodo(cid){
     if(!Auth.podeAdministrar()){ toast('Apenas administradores adicionam período aquisitivo.'); return; }
-    const ini=$('#nPerIni').value, fim=$('#nPerFim').value;
+    const ini=$('#nPerIni').value, fim=$('#nPerFim').value, motivo=$('#nPerMotivo').value.trim();
     if(!ini||!fim||fim<ini){ toast('Confira as datas de início e fim.'); return; }
     const sobrepoe = Store.data.periodos.some(o=>o.colaborador_id===cid && ini<=o.fim && fim>=o.inicio);
     if(sobrepoe){ toast('As datas se sobrepõem a um período já existente deste colaborador.'); return; }
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     const situacao = pd(fim) >= hoje() ? 'acumulando' : 'aberto';
     try{
-      await Store.insert('periodos', {colaborador_id:cid, inicio:ini, fim:fim, situacao},
+      const per = await Store.insert('periodos', {colaborador_id:cid, inicio:ini, fim:fim, situacao},
         `Período aquisitivo adicionado manualmente — ${c?.nome||''} (${fmt(ini)} a ${fmt(fim)})`);
+      if(motivo){
+        await Store.insert('notas', {colaborador_id:cid, categoria:'outro', data:ini, periodo_id:per.id, texto:motivo},
+          `Nota (Outro) — ${c?.nome||''}`);
+      }
       toast('Período adicionado ✓'); Modals.close(); UI.renderProfile(cid); UI.renderDir();
     }catch(e){ toast('Erro ao salvar: '+e.message); }
   },
