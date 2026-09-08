@@ -3111,6 +3111,11 @@ const SS = safeStorage('sessionStorage');
    Tabelas espelham o schema.sql que acompanha este arquivo.
    ================================================================ */
 const REGRAS = { DIAS_CONTABEIS: 30, DIAS_FOLGAS: 22, ALERTA_VENC_DIAS: 120 };
+// PROVISÓRIO (aguardando o RH confirmar) — períodos aquisitivos iniciados antes desse corte
+// tinham direito a 30 dias de folga, não 22 (regra antiga). Ex.: período de 2024 com 26 dias
+// usados não estava "acima do limite" pela regra de então.
+const CORTE_FOLGA_30 = '2025-01-01';
+const limiteFolgas = p => (p && p.inicio < CORTE_FOLGA_30) ? 30 : REGRAS.DIAS_FOLGAS;
 // direito de férias de um período menor que 1 ano (ex.: rescisão antes de completar o aquisitivo):
 // CLT — 1/12 (2,5 dias) por mês completo trabalhado; mês com 15+ dias conta como completo. Período de ~1 ano mantém os 30 dias integrais.
 const diasProporcionaisPeriodo = p => {
@@ -3686,7 +3691,7 @@ const Dom = {
     const folgasAtual = atual ? this.diasFolgas(atual.id) : 0;
     const folgasAnterior = anterior ? this.diasFolgas(anterior.id) : 0;
     const usadasFolgas = folgasAtual;                    // só o período atual tem folga disponível
-    const baseFolgas = REGRAS.DIAS_FOLGAS;               // base 22 (períodos anteriores são completos/histórico)
+    const baseFolgas = limiteFolgas(atual);              // 22 (ou 30 se o período for anterior ao corte — ver limiteFolgas)
     const saldoFolgas = baseFolgas - usadasFolgas;
     // prazo legal: gozo deve terminar até 12 meses após o fim do aquisitivo
     let limite=null, diasParaLimite=null;
@@ -4199,16 +4204,17 @@ const UI = {
     if(this.tabAtual==='folgas'){
       const cardFolga = p => {
         const fol=Dom.folgasDe(p.id); const tot=Dom.diasFolgas(p.id);
-        const acima = tot>REGRAS.DIAS_FOLGAS;
+        const limite = limiteFolgas(p);
+        const acima = tot>limite;
         return `
         <div class="periodo">
           <div class="periodo-head" onclick="this.parentElement.classList.toggle('open')">
             <div class="periodo-meta">
               <b>${fmt(p.inicio)} – ${fmt(p.fim)}</b>
-              <span>${tot}/${REGRAS.DIAS_FOLGAS} dias${fol.length?' · '+fol.length+' lançamento(s)':''}</span>
+              <span>${tot}/${limite} dias${fol.length?' · '+fol.length+' lançamento(s)':''}</span>
             </div>
             <div class="periodo-right">
-              ${acima?'<span class="badge b-vencendo">acima do limite</span>':`<span class="badge b-folga">${Math.max(REGRAS.DIAS_FOLGAS-tot,0)} dias restantes</span>`}
+              ${acima?'<span class="badge b-vencendo">acima do limite</span>':`<span class="badge b-folga">${Math.max(limite-tot,0)} dias restantes</span>`}
               ${desligadoFim[p.id]?`<span class="badge b-vencendo" title="Encerrado por desligamento">Desligado em ${fmt(desligadoFim[p.id])}</span>`:''}
               <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
             </div>
