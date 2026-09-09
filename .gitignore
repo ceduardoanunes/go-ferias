@@ -4,6 +4,7 @@
 # planilhas do RH — dados pessoais reais, NUNCA versionar
 *.xlsx
 ~$*.xlsx
+/_dados-rh-nao-enviar/
 
 # docs locais com nomes reais — NUNCA versionar
 *.local.md

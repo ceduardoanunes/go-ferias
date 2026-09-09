@@ -18,7 +18,7 @@ git — contém dados pessoais; foi enviado separadamente, não pelo GitHub).
 ```bash
 cd server
 cp .env.example .env          # ajuste POSTGRES_PASSWORD, DATABASE_URL, JWT_SECRET
-docker compose up -d --build  # sobe Postgres + API; cria tabelas (prisma db push) e roda o seed
+docker compose up -d --build  # sobe Postgres + API; aplica as migrations (prisma migrate deploy) e roda o seed
 curl http://localhost:3000/health          # {"ok":true,"smtp":...}
 ```
 

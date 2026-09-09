@@ -50,7 +50,7 @@ server/
 ```bash
 cd server
 cp .env.example .env          # ajuste senha do banco, JWT_SECRET e (opcional) SMTP
-docker compose up -d --build  # sobe Postgres + API (cria tabelas e roda o seed)
+docker compose up -d --build  # sobe Postgres + API (aplica migrations e roda o seed)
 curl http://localhost:3000/health
 ```
 
@@ -61,7 +61,7 @@ Login de teste: `admin@goegrow.com.br` / `demo`.
 cd server
 npm install
 cp .env.example .env          # DATABASE_URL apontando p/ um Postgres acessível
-npx prisma db push            # cria as tabelas
+npx prisma migrate deploy     # cria as tabelas
 node prisma/seed.js
 npm start
 ```
