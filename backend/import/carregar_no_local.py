@@ -52,6 +52,12 @@ def main():
     ap.add_argument("--entrada", default="saida_render")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--com-solicitacoes", action="store_true")
+    ap.add_argument("--sem-foto", action="store_true",
+                     help="nao envia o campo foto (contorna coluna do banco remoto mais estreita que TEXT)")
+    ap.add_argument("--setor", default=None,
+                     help="carrega so este(s) departamento(s), separados por virgula "
+                          "(ex.: 'Video' ou 'Digital,Corporativo'). Permite ir aos poucos, "
+                          "conferindo no app entre um setor e outro. Padrao: todos.")
     ap.add_argument("--inseguro", action="store_true")
     a = ap.parse_args()
 
@@ -65,8 +71,15 @@ def main():
     notas   = carrega(a.entrada, "notas")
     solic   = carrega(a.entrada, "solicitacoes") if a.com_solicitacoes else []
 
-    print(f"Snapshot: {len(colabs)} colaboradores, {len(periodos)} periodos, "
-          f"{len(ferias)} ferias, {len(folgas)} folgas, {len(notas)} notas.")
+    if a.setor:
+        alvos = {s.strip().upper() for s in a.setor.split(",")}
+        colabs = [c for c in colabs if c["departamento"].strip().upper() in alvos]
+        if not colabs:
+            raise SystemExit(f"Nenhum colaborador do snapshot bate com --setor {a.setor!r}.")
+
+    print(f"Snapshot: {len(colabs)} colaboradores"
+          + (f" (setor: {a.setor})" if a.setor else "")
+          + f", {len(periodos)} periodos, {len(ferias)} ferias, {len(folgas)} folgas, {len(notas)} notas.")
 
     if a.dry_run:
         print("[dry-run] nada foi enviado.")
@@ -78,16 +91,11 @@ def main():
     token = login["token"]
     print(f"Login OK como {login['nome']} ({login['papel']}).")
 
-    # base ja tem colaboradores? avisa (evita duplicar numa re-execucao)
+    # quem ja existe no servidor (de uma carga anterior, por setor) nao entra de novo
     _, atuais = http(f"{base}/colaboradores", token=token, ctx=ctx)
+    nomes_existentes = {c["nome"].strip().upper() for c in atuais}
     if atuais:
-        nomes = {c["nome"].strip().upper() for c in atuais}
-        # remove os de exemplo do seed pra nao atrapalhar a contagem
-        if len(atuais) > 2:
-            raise SystemExit(
-                f"A base local ja tem {len(atuais)} colaboradores. Este script e "
-                f"para uma base VAZIA (so o seed). Zere o banco antes de recarregar "
-                f"(docker compose down -v && up -d) para nao duplicar.")
+        print(f"  (ja tem {len(atuais)} colaborador(es) no servidor; nomes repetidos serao pulados)")
 
     def post(rota, payload):
         _, r = http(f"{base}/{rota}", token=token, method="POST", body=payload, ctx=ctx)
@@ -97,16 +105,23 @@ def main():
     map_per   = {}
 
     # 1) colaboradores
+    pulados = 0
     for c in colabs:
-        novo = post("colaboradores", {
+        if c["nome"].strip().upper() in nomes_existentes:
+            pulados += 1
+            continue
+        payload = {
             "nome": c["nome"], "email": c.get("email"),
             "funcao": c["funcao"], "departamento": c["departamento"],
             "unidade": c["unidade"], "regime": c["regime"],
             "admissao": c["admissao"], "foto": c.get("foto"),
             "ativo": c.get("ativo", True),
-        })
+        }
+        if a.sem_foto:
+            payload.pop("foto")
+        novo = post("colaboradores", payload)
         map_colab[c["id"]] = novo["id"]
-    print(f"  colaboradores: {len(map_colab)} criados")
+    print(f"  colaboradores: {len(map_colab)} criados" + (f", {pulados} pulados (ja existiam)" if pulados else ""))
 
     # 2) periodos
     for p in periodos:
