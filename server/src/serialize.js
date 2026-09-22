@@ -9,6 +9,7 @@ const colaborador = (c) => c && ({
   id: c.id, nome: c.nome, email: c.email || null, funcao: c.funcao,
   departamento: c.departamento, unidade: c.unidade, regime: c.regime,
   admissao: dia(c.admissao), desligamento: dia(c.desligamento),
+  tipo_desligamento: c.tipoDesligamento || null,
   foto: c.foto || null, ativo: c.ativo,
   cnpj: c.cnpj || null, cnpj_desde: dia(c.cnpjDesde),
 });
@@ -55,6 +56,7 @@ const paraPrisma = {
     unidade: b.unidade, regime: b.regime,
     admissao: b.admissao ? new Date(b.admissao) : undefined,
     desligamento: b.desligamento ? new Date(b.desligamento) : (b.desligamento === null ? null : undefined),
+    tipoDesligamento: b.tipo_desligamento === undefined ? undefined : (b.tipo_desligamento || null),
     foto: b.foto, ativo: b.ativo,
     cnpj: b.cnpj, cnpjDesde: b.cnpj_desde ? new Date(b.cnpj_desde) : (b.cnpj_desde === null ? null : undefined),
   }),

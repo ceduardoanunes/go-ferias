@@ -3144,6 +3144,18 @@ const empresaCanonica = v => { if(!v) return v; const num=v.split(' — ')[1]; r
 const nomeEmpresa = c => nomeDaEmpresa(empresaCanonica(c.cnpj));
 // fontes únicas — evitam listas duplicadas/divergentes entre modais e telas
 const REGIMES = ['CLT','PJ','Estágio','Sócio'];                       // ordem canônica dos regimes
+// tipo de desligamento: distingue quem tem acordo pra voltar (mostra aviso "aguardando
+// readmissão" na ficha) de quem saiu de vez (não mostra) — só relevante com Desligamento preenchido
+const TIPOS_DESLIGAMENTO = ['acordo','rescisao'];
+const TIPO_DESLIGAMENTO_LABEL = { acordo:'Acordo (previsão de retorno)', rescisao:'Rescisão contratual (sem retorno previsto)' };
+const tipoDesligamentoLabel = t => TIPO_DESLIGAMENTO_LABEL[t] || t || '';
+// desligar no meio de um período aquisitivo em aberto precisa fechar esse período na data do
+// desligamento — senão ele fica "contando" pra sempre e trava uma futura readmissão (sobreposição).
+// Compartilhada entre o modal de Desligamento e a correção manual em Editar dados.
+const calcPerAjusteDesligamento = (cid, dataDeslig) => {
+  const atual = Dom.periodosDe(cid)[0];
+  return (atual && atual.inicio<=dataDeslig && dataDeslig<atual.fim) ? {id:atual.id, fimAntes:atual.fim, fimDepois:dataDeslig} : null;
+};
 const ORDEM_UNI = ['Quintas da Avenida','Granbery','Home Office'];    // ordem canônica das unidades
 // empresas (CNPJ) do grupo — valor guardado no colaborador é "Nome — CNPJ" (mesmo padrão de unidade/regime: string legível direto)
 const EMPRESAS_GRUPO = [
@@ -4029,7 +4041,7 @@ const UI = {
               <button class="pcard-ico-btn util" title="Editar dados" aria-label="Editar dados" onclick="Modals.editarColab('${c.id}')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
               </button>
-              <button class="pcard-ico-btn perigo" title="${c.ativo===false?'Reativar colaborador':'Inativar colaborador'}" aria-label="${c.ativo===false?'Reativar colaborador':'Inativar colaborador'}" onclick="Actions.toggleAtivoColab('${c.id}')">
+              <button class="pcard-ico-btn perigo" title="${c.ativo===false?'Reativar colaborador':'Desligar colaborador'}" aria-label="${c.ativo===false?'Reativar colaborador':'Desligar colaborador'}" onclick="${c.ativo===false?`Actions.toggleAtivoColab('${c.id}')`:`Modals.desligarColab('${c.id}')`}">
                 ${c.ativo===false
                   ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.5 15a9 9 0 1 0 2.1-9.4L1 10"/></svg>'
                   : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/></svg>'}
@@ -4118,12 +4130,17 @@ const UI = {
         <span class="tn-line"></span>
       </div>` : '';
     };
-    const emAcordoHtml = c?.desligamento ? `
+    const emAcordoHtml = (c?.desligamento && c?.tipo_desligamento!=='rescisao') ? `
       <div class="transicao-nota" title="Desligado, ainda sem readmissão lançada">
         <span class="tn-line"></span>
         <span class="tn-label"><span class="tn-ico">🤝</span><b>Em acordo desde ${fmt(c.desligamento)}</b> — aguardando readmissão</span>
         <span class="tn-line"></span>
-      </div>` : '';
+      </div>` : (c?.desligamento ? `
+      <div class="transicao-nota" title="Desligado por rescisão contratual, sem retorno previsto">
+        <span class="tn-line"></span>
+        <span class="tn-label"><span class="tn-ico">🔒</span><b>Desligado em ${fmt(c.desligamento)}</b> — rescisão contratual</span>
+        <span class="tn-line"></span>
+      </div>` : '');
     const sitBadge = p => ({
       pago:`<span class="badge b-pago">Pago${p.pago_em?' · '+fmt(p.pago_em):''}</span>`,
       programado:'<span class="badge b-programado">Pagamento programado</span>',
@@ -4577,12 +4594,18 @@ const Modals = {
         <div class="field"><label>Admissão</label><input type="date" id="nAdm" value="${c.admissao}"></div>
         <div class="field"><label>Desligamento</label><input type="date" id="nDeslig" value="${c.desligamento||''}"></div>
       </div>
+      <div class="field" id="tipoDesligGroup" style="display:${c.desligamento?'':'none'}">
+        <label>Tipo de desligamento</label>
+        <select id="nTipoDeslig"><option value="" disabled${c.tipo_desligamento?'':' selected'}>Selecione</option>${TIPOS_DESLIGAMENTO.map(t=>`<option value="${t}"${t===c.tipo_desligamento?' selected':''}>${tipoDesligamentoLabel(t)}</option>`).join('')}</select>
+      </div>
       ${c.desligamento?`<div class="field"><label>Readmissão</label><input type="date" id="nReadm"></div>
       <p class="msub" style="margin-top:-10px">Preencha se a pessoa voltou a trabalhar — abre um novo período aquisitivo a partir dessa data e limpa o Desligamento.</p>`:''}
       <div class="modal-actions">
         <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
         <button class="btn btn-primary" onclick="Actions.editarColab('${cid}')">Salvar</button>
       </div>`, {wide:true});
+    // tipo de desligamento só faz sentido com Desligamento preenchido
+    $('#nDeslig').oninput = () => { $('#tipoDesligGroup').style.display = $('#nDeslig').value ? '' : 'none'; };
     // ---- foto: preview + resize (undefined = sem mudança, null = remover, string = nova) ----
     UI._fotoPendente = undefined;
     $('#fotoFile').onchange = e=>{
@@ -4606,6 +4629,26 @@ const Modals = {
       $('#fotoPreview').innerHTML = initials(c.nome);
       $('#fotoRemover').style.display='none';
     };
+  },
+
+  // ação única e guiada pra desligar: pede data + tipo e aplica tudo de uma vez (fecha
+  // período, marca inativo) — substitui o antigo "Inativar" que só trocava o ativo
+  desligarColab(cid){
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores podem desligar colaboradores.'); return; }
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    if(!c) return;
+    this.open(`
+      <h3>Desligar ${esc(c.nome)}</h3>
+      <p class="msub">Fecha o período aquisitivo em aberto na data informada e marca o colaborador como inativo. O histórico de férias e folgas é preservado.</p>
+      <div class="field"><label>Data do desligamento</label><input type="date" id="dDeslig" value="${iso(hoje())}"></div>
+      <div class="field">
+        <label>Tipo</label>
+        <select id="dTipo"><option value="" disabled selected>Selecione</option>${TIPOS_DESLIGAMENTO.map(t=>`<option value="${t}">${tipoDesligamentoLabel(t)}</option>`).join('')}</select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
+        <button class="btn btn-danger" onclick="Actions.desligarColab('${cid}')">Desligar</button>
+      </div>`);
   },
 
   editarLanc(table, id, cid){
@@ -4938,8 +4981,10 @@ const Actions = {
           departamento=$('#nDepto').value, unidade=$('#nUni').value,
           regime=$('#nRegime').value, admissao=$('#nAdm').value, cnpj=$('#nCnpj').value.trim(),
           desligamento=$('#nDeslig').value || null,
+          tipoDesligamento = $('#nTipoDeslig') ? ($('#nTipoDeslig').value || null) : null,
           readm = $('#nReadm') ? ($('#nReadm').value || null) : null;
     if(!nome||!funcao||!admissao){ toast('Preencha nome, função e admissão.'); return; }
+    if(desligamento && !tipoDesligamento){ toast('Selecione o tipo de desligamento (acordo ou rescisão).'); return; }
     // Readmissão: fecha o Desligamento sozinha e já abre o novo período aquisitivo daqui —
     // sem isso, readmitir viraria dois passos soltos (limpar o campo + lançar nota separada)
     let fimPeriodoReadm = null;
@@ -4949,8 +4994,8 @@ const Actions = {
       const sobrepoe = Store.data.periodos.some(o=>o.colaborador_id===cid && readm<=o.fim && fimPeriodoReadm>=o.inicio);
       if(sobrepoe){ toast('A data de readmissão se sobrepõe a um período já existente deste colaborador.'); return; }
     }
-    const antes = {nome:c.nome, funcao:c.funcao, departamento:c.departamento, unidade:c.unidade, regime:c.regime, admissao:c.admissao, cnpj:empresaCanonica(c.cnpj)||'', desligamento:c.desligamento||null};
-    const depois = {nome, funcao, departamento, unidade, regime, admissao, cnpj, desligamento: readm ? null : desligamento};
+    const antes = {nome:c.nome, funcao:c.funcao, departamento:c.departamento, unidade:c.unidade, regime:c.regime, admissao:c.admissao, cnpj:empresaCanonica(c.cnpj)||'', desligamento:c.desligamento||null, tipo_desligamento:c.tipo_desligamento||null};
+    const depois = {nome, funcao, departamento, unidade, regime, admissao, cnpj, desligamento: readm ? null : desligamento, tipo_desligamento: readm ? null : tipoDesligamento};
     const mudou = Object.keys(depois).filter(k=>antes[k]!==depois[k]);
     // marca a data de corte só numa troca de fato (já tinha um CNPJ e virou outro) — primeiro
     // preenchimento (backfill de dado histórico que faltava) não é "troca acontecendo hoje".
@@ -4959,14 +5004,8 @@ const Actions = {
     if(mudou.includes('cnpj')) depois.cnpj_desde = (antes.cnpj && cnpj) ? (readm || iso(hoje())) : null;
     // desligamento preenchido/limpo controla o "ativo" automaticamente, sem mexer se essa edição não tocou nele
     if(mudou.includes('desligamento')) depois.ativo = !depois.desligamento;
-    // desligar no meio de um período aquisitivo em aberto precisa fechar esse período na data do
-    // desligamento — senão ele fica "contando" pra sempre e trava uma futura readmissão (sobreposição)
-    let perAjuste = null;
-    if(mudou.includes('desligamento') && depois.desligamento){
-      const atual = Dom.periodosDe(cid)[0];
-      if(atual && atual.inicio<=depois.desligamento && depois.desligamento<atual.fim)
-        perAjuste = {id:atual.id, fimAntes:atual.fim, fimDepois:depois.desligamento};
-    }
+    const perAjuste = (mudou.includes('desligamento') && depois.desligamento)
+      ? calcPerAjusteDesligamento(cid, depois.desligamento) : null;
     const fotoMudou = UI._fotoPendente!==undefined && (UI._fotoPendente||null)!==(c.foto||null);
     if(!mudou.length && !fotoMudou && !readm){ Modals.close(); return; }
     try{
@@ -4996,31 +5035,56 @@ const Actions = {
     }catch(e){ toast('Erro ao salvar: '+e.message); }
   },
 
+  // reativação simples (desfaz um Inativar/Desligar antigo) — não mexe em desligamento/tipo/
+  // período; pra um retorno de verdade com novo período aquisitivo, usa a Readmissão em Editar dados
   async toggleAtivoColab(cid){
-    if(!Auth.podeAdministrar()){ toast('Apenas administradores podem inativar colaboradores.'); return; }
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores podem reativar colaboradores.'); return; }
     const c = Store.data.colaboradores.find(x=>x.id===cid);
     if(!c) return;
-    const inativando = c.ativo!==false;
-    const ok = await Modals.confirm(inativando ? {
-      titulo:`Inativar ${c.nome}?`,
-      message:'O histórico de férias e folgas é preservado, mas o colaborador some da lista, da agenda e do calendário.',
-      ok:'Inativar', perigo:true
-    } : {
+    const ok = await Modals.confirm({
       titulo:`Reativar ${c.nome}?`,
       message:'O colaborador volta a aparecer na lista, na agenda e no calendário.',
       ok:'Reativar'
     });
     if(!ok) return;
     if(Store.driver!=='local'){
-      try{ await Store.update('colaboradores', cid, {ativo: !inativando}); }
+      try{ await Store.update('colaboradores', cid, {ativo:true}); }
       catch(e){ toast('Erro: '+e.message); return; }
-      toast(inativando?'Colaborador inativado':'Colaborador reativado ✓');
+      toast('Colaborador reativado ✓');
       UI.renderProfile(cid); UI.renderDir(); return;
     }
-    c.ativo = inativando ? false : true;
+    c.ativo = true;
     Store.save();
-    Store.logAudit('atualizar', 'colaboradores', cid, `${inativando?'Inativação':'Reativação'} de colaborador — ${c.nome}`);
-    toast(inativando?'Colaborador inativado':'Colaborador reativado ✓');
+    Store.logAudit('atualizar', 'colaboradores', cid, `Reativação de colaborador — ${c.nome}`);
+    toast('Colaborador reativado ✓');
+    UI.renderProfile(cid); UI.renderDir();
+  },
+
+  // desligamento "completo": fecha o período aquisitivo em aberto na data informada, marca
+  // inativo e salva o tipo (acordo/rescisão) — ação única e guiada, pra não deixar o período
+  // "correndo" igual acontecia com o Inativar antigo (só trocava o ativo, sem mexer em mais nada)
+  async desligarColab(cid){
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores podem desligar colaboradores.'); return; }
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    if(!c) return;
+    const data = $('#dDeslig').value, tipo = $('#dTipo').value;
+    if(!data){ toast('Informe a data do desligamento.'); return; }
+    if(!tipo){ toast('Selecione o tipo de desligamento.'); return; }
+    const perAjuste = calcPerAjusteDesligamento(cid, data);
+    const patch = {desligamento:data, tipo_desligamento:tipo, ativo:false};
+    if(Store.driver!=='local'){
+      try{
+        await Store.update('colaboradores', cid, patch);
+        if(perAjuste) await Store.update('periodos', perAjuste.id, {fim:perAjuste.fimDepois});
+      }catch(e){ toast('Erro: '+e.message); return; }
+    }else{
+      Object.assign(c, patch);
+      if(perAjuste){ const p=Store.data.periodos.find(x=>x.id===perAjuste.id); if(p) p.fim=perAjuste.fimDepois; }
+      Store.save();
+      Store.logAudit('atualizar', 'colaboradores', cid, `Desligamento (${tipoDesligamentoLabel(tipo)}) — ${c.nome}`);
+    }
+    Modals.close();
+    toast('Colaborador desligado ✓');
     UI.renderProfile(cid); UI.renderDir();
   },
 

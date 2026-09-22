@@ -57,6 +57,7 @@ model Colaborador {
   regime       String
   admissao     DateTime            @db.Date
   desligamento DateTime?           @db.Date // data de saída — quando preenchida, o colaborador é tratado como inativo
+  tipoDesligamento String?         @map("tipo_desligamento") // 'acordo' (previsão de retorno) | 'rescisao' (sem retorno previsto) — só relevante quando desligamento preenchido
   foto         String?
   ativo        Boolean             @default(true)
   cnpj         String? // empresa (CNPJ) que emprega o colaborador — pode divergir da unidade física
