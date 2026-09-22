@@ -91,8 +91,16 @@ devolve snake_case + datas `YYYY-MM-DD` — o formato que o frontend consome.
 
 No `index.html`, objeto `Store`: detecta sozinho — servido por `http(s)` vira
 `driver:'node'`, apontando `/` na mesma origem (o `server/src/index.js` serve
-o `index.html` da raiz do repo e faz proxy da API). Não precisa editar nada
-pra trocar de servidor, contanto que o Node sirva os dois juntos como já está.
+o `index.html`). Não precisa editar nada pra trocar de servidor, contanto que
+o Node sirva os dois juntos como já está.
+
+**Importante:** o `index.html` é **copiado pra dentro da imagem Docker no
+build** (`server/Dockerfile`, contexto = raiz do repo) — não é bind mount.
+Isso é de propósito: front-end e schema do banco só mudam **juntos**, no
+mesmo `docker compose up -d --build`. Um `git pull` sozinho não muda nada em
+produção até rodar o build; nunca dá pra ficar com o front numa versão à
+frente da API/banco (o que já causou erro 500 na listagem de colaboradores
+inteira, por causa de uma coluna nova ainda não migrada).
 
 ## O que falta (decisões e produção)
 
@@ -114,6 +122,7 @@ pra trocar de servidor, contanto que o Node sirva os dois juntos como já está.
 
 ```
 index.html               frontend (arquivo único)
+.dockerignore            evita levar dado do RH/backend pro build da imagem
 server/
   prisma/schema.prisma  seed.js
   src/index.js  prisma.js  auth.js  mailer.js  audit.js  serialize.js

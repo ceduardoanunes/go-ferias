@@ -1,0 +1,15 @@
+.git
+.claude
+_arquivo
+_dados-rh-nao-enviar
+backend
+docs
+*.xlsx
+~$*.xlsx
+*.pdf
+*.local.md
+GUIA-WINDOWS.md
+PARA-O-TI.md
+INSTRUCOES-TI.md
+server/node_modules
+server/.env
