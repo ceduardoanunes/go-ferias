@@ -2,8 +2,22 @@
 require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
+const { execSync } = require('child_process');
 const express = require('express');
 const cors = require('cors');
+
+// Aplica migrations pendentes ANTES de tudo, toda vez que o processo sobe —
+// não depende de ninguém lembrar de rodar `npx prisma migrate deploy` à
+// parte (rodar via Docker, PM2, tarefa agendada ou só "node src/index.js"
+// dá na mesma). Se falhar, o processo para aqui: melhor não subir do que
+// subir servindo com o schema desatualizado (foi o que quebrou a listagem
+// de colaboradores em 22/09 — coluna nova sem migration aplicada).
+try {
+  execSync('npx prisma migrate deploy', { cwd: path.join(__dirname, '..'), stdio: 'inherit' });
+} catch (e) {
+  console.error('Falha ao aplicar migrations do banco — API não vai subir. Corrija o banco antes de tentar de novo.');
+  process.exit(1);
+}
 
 const ser = require('./serialize');
 const { crudRouter } = require('./routes/crud');

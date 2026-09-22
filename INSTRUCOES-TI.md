@@ -71,17 +71,26 @@ na pasta onde foi feito o `git clone` (Passo 1):
 
 ```bash
 git pull
-cd server
-docker compose up -d --build
-curl http://localhost:3000/health
 ```
 
-Isso reconstrói a API com o código novo e aplica migrations de banco pendentes
-(se houver). **Não apaga dado nenhum** — o Postgres fica num volume separado,
-intocado pelo rebuild. Deve responder `{"ok":true,...}` no fim, igual ao Passo 3.
+Depois, **reinicie o processo da API** do jeito que ele já roda hoje na
+máquina de vocês (serviço, PM2, tarefa agendada, terminal — o que for).
+Não precisa rodar mais nenhum comando de banco separado: desde 22/09, a
+própria API aplica sozinha qualquer migration pendente assim que sobe,
+antes de aceitar requisição. Se a migration falhar por algum motivo, a API
+**não sobe** de propósito — nesse caso ela não vai responder no
+`http://localhost:3000/health` e precisa chamar a gente.
 
-> **Agora, 22/09**, tem código novo pra subir: adiciona o campo "Tipo de
-> desligamento" (Acordo × Rescisão contratual) na ficha do colaborador.
+**Não apaga dado nenhum** — o `git pull` só troca arquivo de código, o
+banco Postgres é outra coisa, intocado por isso.
+
+⚠️ Se vocês sobem a API por Docker (`docker compose up -d --build`), o
+passo funciona igual — o container também aplica as migrations sozinho ao
+subir.
+
+> **22/09**: adicionou o campo "Tipo de desligamento" (Acordo × Rescisão
+> contratual) na ficha do colaborador — precisa de um `git pull` +
+> reiniciar o processo pra essa coluna nova entrar no banco.
 
 ## Depois disso (não trava o uso, mas fica pendente)
 

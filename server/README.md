@@ -61,10 +61,18 @@ Login de teste: `admin@goegrow.com.br` / `demo`.
 cd server
 npm install
 cp .env.example .env          # DATABASE_URL apontando p/ um Postgres acessível
-npx prisma migrate deploy     # cria as tabelas
-node prisma/seed.js
+node prisma/seed.js           # só na primeira vez
 npm start
 ```
+
+`npm start` (`node src/index.js`) aplica sozinho as migrations pendentes
+(`prisma migrate deploy`) antes de subir a API — não precisa rodar esse
+passo à parte, nem na primeira vez nem depois. **Isso vale pra atualização
+também**: depois de um `git pull`, só reiniciar o processo (do jeito que
+já for reiniciado hoje — serviço, PM2, tarefa agendada, o que for) já
+aplica qualquer coluna/tabela nova sozinho. Se a migration falhar, o
+processo **não sobe** (propositalmente — melhor ficar fora do ar um
+instante do que servir com o schema desatualizado).
 
 ## Endpoints
 
