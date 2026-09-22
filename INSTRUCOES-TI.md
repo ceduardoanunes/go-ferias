@@ -64,6 +64,25 @@ O login de admin/RH **não migra com senha** (a API antiga nunca guarda a
 senha em texto nem devolve o hash). Entre com `admin@goegrow.com.br` / `demo`,
 **troque essa senha** e cadastre os acessos reais em **Minha Conta → Usuários**.
 
+## Atualizar o sistema (quando tiver código novo)
+
+Sempre que avisarmos que subiu código novo no GitHub (correção ou funcionalidade),
+na pasta onde foi feito o `git clone` (Passo 1):
+
+```bash
+git pull
+cd server
+docker compose up -d --build
+curl http://localhost:3000/health
+```
+
+Isso reconstrói a API com o código novo e aplica migrations de banco pendentes
+(se houver). **Não apaga dado nenhum** — o Postgres fica num volume separado,
+intocado pelo rebuild. Deve responder `{"ok":true,...}` no fim, igual ao Passo 3.
+
+> **Agora, 22/09**, tem código novo pra subir: adiciona o campo "Tipo de
+> desligamento" (Acordo × Rescisão contratual) na ficha do colaborador.
+
 ## Depois disso (não trava o uso, mas fica pendente)
 
 - Backup do Postgres (rotina — o Render tinha o dele próprio, esse precisa de um)
