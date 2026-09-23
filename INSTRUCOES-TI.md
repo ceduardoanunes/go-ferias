@@ -88,6 +88,20 @@ banco Postgres é outra coisa, intocado por isso.
 passo funciona igual — o container também aplica as migrations sozinho ao
 subir.
 
+### 🚫 Na atualização, NÃO fazer
+
+O banco é o mesmo pra sempre — atualizar é só `git pull` + reiniciar. Qualquer
+um destes **apaga todos os colaboradores** (aconteceu em 23/09):
+
+- `docker compose down -v` (o `-v` apaga o volume do banco)
+- `npx prisma migrate reset`, `npx prisma db push --force-reset`
+- apagar/recriar o banco `goferias` no Postgres, ou trocar o `DATABASE_URL`
+- `git clone` numa pasta nova com um banco novo — use sempre a mesma pasta
+  e o mesmo banco
+
+Se a API não subir depois do `git pull` (erro de migration), **não resetem o
+banco pra "destravar"** — mandem o erro pra gente.
+
 > **22/09**: adicionou o campo "Tipo de desligamento" (Acordo × Rescisão
 > contratual) na ficha do colaborador — precisa de um `git pull` +
 > reiniciar o processo pra essa coluna nova entrar no banco.

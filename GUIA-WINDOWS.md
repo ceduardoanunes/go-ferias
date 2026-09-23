@@ -87,6 +87,6 @@ Ou use os botões **Start/Stop** no Docker Desktop, no grupo `server`.
 | "Docker daemon not running" | Abra o Docker Desktop e espere a baleia ficar verde. |
 | Pediu WSL / virtualização | Siga o link que ele mostra e reinicie o PC. |
 | Porta 3000 ocupada | No `.env`, adicione a linha `API_PORT=3001` e suba de novo; teste em `http://localhost:3001/health`. |
-| Mudei algo e não surtiu efeito | `docker compose down -v` e depois `docker compose up -d --build` (recria do zero). |
+| Mudei algo e não surtiu efeito | `docker compose up -d --build` (reconstrói a API, mantém os dados). ⚠️ **Nunca** use `down -v`: o `-v` apaga o banco com todos os colaboradores. |
 
 Deu um erro que não está aqui? Me manda a mensagem que eu ajudo.
