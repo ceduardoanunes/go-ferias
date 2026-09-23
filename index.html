@@ -3115,12 +3115,12 @@ const REGRAS = { DIAS_CONTABEIS: 30, DIAS_FOLGAS: 22, ALERTA_VENC_DIAS: 120 };
 // tinham direito a 30 dias de folga, não 22 (regra antiga). Ex.: período de 2024 com 26 dias
 // usados não estava "acima do limite" pela regra de então.
 const CORTE_FOLGA_30 = '2025-01-01';
-const limiteFolgas = p => (p && p.inicio < CORTE_FOLGA_30) ? 30 : REGRAS.DIAS_FOLGAS;
-// direito de férias de um período menor que 1 ano (ex.: rescisão antes de completar o aquisitivo):
-// CLT — 1/12 (2,5 dias) por mês completo trabalhado; mês com 15+ dias conta como completo. Período de ~1 ano mantém os 30 dias integrais.
-const diasProporcionaisPeriodo = p => {
+// meses de um período menor que 1 ano (ex.: rescisão antes de completar o aquisitivo), regra CLT:
+// mês com 15+ dias conta como completo. Período de ~1 ano (360+ dias) → null = direito integral.
+const mesesProporcionais = p => {
+  if(!p || !p.inicio || !p.fim) return null;
   const ini = pd(p.inicio), fim = pd(p.fim);
-  if(diffD(ini,fim)+1 >= 360) return REGRAS.DIAS_CONTABEIS;
+  if(diffD(ini,fim)+1 >= 360) return null;
   let meses = 0, d = new Date(ini);
   while(d <= fim){
     const fimMes = addD(addM(d,1),-1);
@@ -3128,7 +3128,18 @@ const diasProporcionaisPeriodo = p => {
     if(diffD(d,fimContagem)+1 >= 15) meses++;
     d = addM(d,1);
   }
-  return Math.min(REGRAS.DIAS_CONTABEIS, Math.round(meses*2.5));
+  return Math.min(12, meses);
+};
+// férias: 1/12 (2,5 dias) por mês
+const diasProporcionaisPeriodo = p => {
+  const m = mesesProporcionais(p);
+  return m===null ? REGRAS.DIAS_CONTABEIS : Math.round(m*2.5);
+};
+// folgas: mesma proporção sobre a base do período (22, ou 30 antes do corte)
+const limiteFolgas = p => {
+  const base = (p && p.inicio < CORTE_FOLGA_30) ? 30 : REGRAS.DIAS_FOLGAS;
+  const m = mesesProporcionais(p);
+  return m===null ? base : Math.round(base*m/12);
 };
 // rótulo amigável do regime (valor guardado continua 'CLT'/'PJ' p/ compatibilidade com dados existentes)
 const REGIME_LABEL = { CLT:'Celetista', PJ:'Pessoa Jurídica', 'Estágio':'Estágio', 'Sócio':'Sócio' };
@@ -3972,7 +3983,7 @@ const UI = {
     const periodoRefC = r.gozavel || r.atual;
     const gozadosC = periodoRefC ? Dom.diasFerias(periodoRefC.id) : 0;
     const pctC=Math.max(0,Math.min(1, gozadosC/REGRAS.DIAS_CONTABEIS));
-    const pctF=Math.max(0,Math.min(1,r.usadasFolgas/r.baseFolgas));
+    const pctF=r.baseFolgas ? Math.max(0,Math.min(1,r.usadasFolgas/r.baseFolgas)) : (r.usadasFolgas?1:0);
     const nAlertReal = alertas.filter(a=>a.tipo!=='green').length;
 
     const proxima = Dom.proximaMarcacao(cid);
@@ -4220,12 +4231,13 @@ const UI = {
         const fol=Dom.folgasDe(p.id); const tot=Dom.diasFolgas(p.id);
         const limite = limiteFolgas(p);
         const acima = tot>limite;
+        const proporcional = mesesProporcionais(p)!==null;
         return `
         <div class="periodo">
           <div class="periodo-head" onclick="this.parentElement.classList.toggle('open')">
             <div class="periodo-meta">
               <b>${fmt(p.inicio)} – ${fmt(p.fim)}</b>
-              <span>${tot}/${limite} dias${fol.length?' · '+fol.length+' lançamento(s)':''}</span>
+              <span>${tot}/${limite} dias${proporcional?' <small>(proporcional — período menor que 1 ano)</small>':''}${fol.length?' · '+fol.length+' lançamento(s)':''}</span>
             </div>
             <div class="periodo-right">
               ${acima?'<span class="badge b-vencendo">acima do limite</span>':`<span class="badge b-folga">${Math.max(limite-tot,0)} dias restantes</span>`}
@@ -4430,7 +4442,7 @@ const Modals = {
     const alvo = isFer ? (Dom.resumo(cid).gozavel || pers[0]) : pers[0];
     const opts = pers.map(p=>{
       const usado = isFer?Dom.diasFerias(p.id):Dom.diasFolgas(p.id);
-      const cap_ = isFer?REGRAS.DIAS_CONTABEIS:REGRAS.DIAS_FOLGAS;
+      const cap_ = isFer?diasProporcionaisPeriodo(p):limiteFolgas(p);
       return `<option value="${p.id}" ${alvo&&p.id===alvo.id?'selected':''}>${fmt(p.inicio)} – ${fmt(p.fim)} · ${usado}/${cap_} usados</option>`;
     }).join('');
     this.open(`
@@ -4597,9 +4609,12 @@ const Modals = {
       </div>
       ${c.desligamento?`<div class="field"><label>Readmissão</label><input type="date" id="nReadm"></div>
       <p class="msub" style="margin-top:-10px">Preencha se a pessoa voltou a trabalhar — abre um novo período aquisitivo a partir dessa data e limpa o Desligamento.</p>`:''}
-      <div class="modal-actions">
-        <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
-        <button class="btn btn-primary" onclick="Actions.editarColab('${cid}')">Salvar</button>
+      <div class="modal-actions" style="justify-content:space-between">
+        ${Auth.podeAdministrar()?`<button class="btn btn-danger-soft" onclick="Actions.excluirColab('${cid}')">Excluir colaborador</button>`:'<span></span>'}
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-soft" onclick="Modals.close()">Cancelar</button>
+          <button class="btn btn-primary" onclick="Actions.editarColab('${cid}')">Salvar</button>
+        </div>
       </div>`, {wide:true});
     // tipo de desligamento só faz sentido com Desligamento preenchido
     $('#nDeslig').oninput = () => { $('#tipoDesligGroup').style.display = $('#nDeslig').value ? '' : 'none'; };
@@ -4862,7 +4877,8 @@ const Actions = {
     const conflito = this.conflitoDatas(cid, ini, fim, null, tipo);
     if(conflito){ toast(`Conflito: já existe ${tipo==='ferias'?'férias':'folga'} de ${fmt(conflito.inicio)} a ${fmt(conflito.fim)}.`); return; }
     const table = tipo==='ferias'?'ferias':'folgas';
-    const cap_ = tipo==='ferias'?REGRAS.DIAS_CONTABEIS:REGRAS.DIAS_FOLGAS;
+    const perSel = Store.data.periodos.find(p=>p.id===perId);
+    const cap_ = tipo==='ferias'?diasProporcionaisPeriodo(perSel):limiteFolgas(perSel);
     const usado = tipo==='ferias'?Dom.diasFerias(perId):Dom.diasFolgas(perId);
     if(tipo==='ferias'){
       const v = Dom.validarSplitFerias(perId, dias);
@@ -5096,7 +5112,8 @@ const Actions = {
     const r = Store.data[table].find(x=>x.id===id);
     const perId = r.periodo_id;
     const usadoSem = (table==='ferias'?Dom.diasFerias(perId):Dom.diasFolgas(perId)) - r.dias;
-    const cap_ = table==='ferias'?REGRAS.DIAS_CONTABEIS:REGRAS.DIAS_FOLGAS;
+    const perSel = Store.data.periodos.find(p=>p.id===perId);
+    const cap_ = table==='ferias'?diasProporcionaisPeriodo(perSel):limiteFolgas(perSel);
     if(table==='ferias'){
       const v = Dom.validarSplitFerias(perId, dias, id);
       if(v.bloqueio){ toast(v.bloqueio); return; }
@@ -5227,6 +5244,31 @@ const Actions = {
       await Store.remove('periodos', perId, `Exclusão de período aquisitivo — ${c?.nome||''} · ${fmt(p.inicio)}–${fmt(p.fim)}`);
       Modals.close();
       toast('Período excluído'); UI.renderProfile(cid); UI.renderDir();
+    }catch(e){ toast('Erro ao excluir: '+e.message); }
+  },
+
+  async excluirColab(cid){
+    if(!Auth.podeAdministrar()){ toast('Apenas administradores excluem colaborador.'); return; }
+    const c = Store.data.colaboradores.find(x=>x.id===cid);
+    if(!c) return;
+    const perIds = new Set(Dom.periodosDe(cid).map(p=>p.id));
+    const nFer = (Store.data.ferias||[]).filter(f=>perIds.has(f.periodo_id)).length;
+    const nFol = (Store.data.folgas||[]).filter(f=>perIds.has(f.periodo_id)).length;
+    const junto = [perIds.size?`${perIds.size} período(s) aquisitivo(s)`:'', nFer?`${nFer} lançamento(s) de férias`:'', nFol?`${nFol} de folga`:''].filter(Boolean).join(', ');
+    if(!(await Modals.confirm({titulo:`Excluir ${c.nome}?`,
+      message:`Esta ação não pode ser desfeita.${junto?` Isso também apaga ${junto} e as notas deste colaborador.`:''} Se a pessoa saiu da empresa, prefira preencher o Desligamento.`,
+      ok:'Excluir', perigo:true}))) return;
+    try{
+      await Store.remove('colaboradores', cid, `Exclusão de colaborador — ${c.nome}`);
+      // o backend apaga em cascata; aqui só limpa a cópia em memória (e o localStorage no modo local)
+      Store.data.periodos = (Store.data.periodos||[]).filter(p=>p.colaborador_id!==cid);
+      Store.data.ferias = (Store.data.ferias||[]).filter(f=>!perIds.has(f.periodo_id));
+      Store.data.folgas = (Store.data.folgas||[]).filter(f=>!perIds.has(f.periodo_id));
+      Store.data.notas = (Store.data.notas||[]).filter(n=>n.colaborador_id!==cid);
+      (Store.data.solicitacoes||[]).forEach(s=>{ if(s.colaborador_id===cid) s.colaborador_id=null; });
+      if(Store.driver==='local') Store.save();
+      Modals.close(); toast('Colaborador excluído');
+      location.hash='#/colaboradores'; UI.renderDir();
     }catch(e){ toast('Erro ao excluir: '+e.message); }
   },
 
@@ -5441,15 +5483,15 @@ const Actions = {
       doc.text(`/ ${max} dias`, x+nvw+2, cy+9);
       const barY = cy+13;
       doc.setFillColor(233,231,227); doc.roundedRect(x, barY, half, 5, 2.5, 2.5, 'F');
-      const frac = Math.max(0, Math.min(1, val/max));
+      const frac = max ? Math.max(0, Math.min(1, val/max)) : 0;
       if(frac>0){ doc.setFillColor(cor[0],cor[1],cor[2]); doc.roundedRect(x, barY, Math.max(half*frac,5), 5, 2.5, 2.5, 'F'); }
     };
     // sócio não tem férias contábeis: mostra só Folgas
     if(semFeriasColab){
-      drawStat(14, 'FOLGAS DISPONÍVEIS', Math.max(r.saldoFolgas,0), REGRAS.DIAS_FOLGAS, [18,131,106]);
+      drawStat(14, 'FOLGAS DISPONÍVEIS', Math.max(r.saldoFolgas,0), r.baseFolgas, [18,131,106]);
     } else {
       drawStat(14,         'FÉRIAS A USUFRUIR', r.saldoContabil,           REGRAS.DIAS_CONTABEIS, [196,25,59]);
-      drawStat(14+half+10, 'FOLGAS DISPONÍVEIS', Math.max(r.saldoFolgas,0), REGRAS.DIAS_FOLGAS,    [18,131,106]);
+      drawStat(14+half+10, 'FOLGAS DISPONÍVEIS', Math.max(r.saldoFolgas,0), r.baseFolgas,    [18,131,106]);
 
       const feriasLinhas = [];
       Dom.periodosDe(c.id).forEach(p=>Dom.feriasDe(p.id).forEach(f=>
