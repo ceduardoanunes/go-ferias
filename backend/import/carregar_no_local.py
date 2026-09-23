@@ -58,6 +58,8 @@ def main():
                      help="carrega so este(s) departamento(s), separados por virgula "
                           "(ex.: 'Video' ou 'Digital,Corporativo'). Permite ir aos poucos, "
                           "conferindo no app entre um setor e outro. Padrao: todos.")
+    ap.add_argument("--nome", default=None,
+                     help="carrega so este(s) colaborador(es) pelo nome exato, separados por virgula")
     ap.add_argument("--inseguro", action="store_true")
     a = ap.parse_args()
 
@@ -76,6 +78,12 @@ def main():
         colabs = [c for c in colabs if c["departamento"].strip().upper() in alvos]
         if not colabs:
             raise SystemExit(f"Nenhum colaborador do snapshot bate com --setor {a.setor!r}.")
+
+    if a.nome:
+        alvos = {n.strip().upper() for n in a.nome.split(",")}
+        colabs = [c for c in colabs if c["nome"].strip().upper() in alvos]
+        if not colabs:
+            raise SystemExit(f"Nenhum colaborador do snapshot bate com --nome {a.nome!r}.")
 
     print(f"Snapshot: {len(colabs)} colaboradores"
           + (f" (setor: {a.setor})" if a.setor else "")
@@ -116,6 +124,9 @@ def main():
             "unidade": c["unidade"], "regime": c["regime"],
             "admissao": c["admissao"], "foto": c.get("foto"),
             "ativo": c.get("ativo", True),
+            "desligamento": c.get("desligamento"),
+            "tipo_desligamento": c.get("tipo_desligamento"),
+            "cnpj": c.get("cnpj"), "cnpj_desde": c.get("cnpj_desde"),
         }
         if a.sem_foto:
             payload.pop("foto")
